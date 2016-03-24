@@ -2,14 +2,8 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>http://localhost:55978/</loc>
-    <lastmod>2016-03-15T19:51:21+08:00</lastmod>
+    <loc>http://coofee.github.io/</loc>
     <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://localhost:55978/post/about/</loc>
-    <lastmod>2016-03-15T19:51:21+08:00</lastmod>
   </url>
   
 </urlset>
