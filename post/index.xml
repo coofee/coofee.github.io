@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-      <title>Posts on  </title>
+      <title>Posts on Simple... </title>
       <generator uri="https://gohugo.io">Hugo</generator>
-    <link>/post/</link>
-    
-    
+    <link>http://coofee.github.io/post/</link>
+    <language>en-us</language>
+    <author>Coofee</author>
     
     <updated>Fri, 25 Mar 2016 13:14:08 CST</updated>
     
     <item>
       <title>如何科学上网</title>
-      <link>/post/%E5%A6%82%E4%BD%95%E7%A7%91%E5%AD%A6%E4%B8%8A%E7%BD%91/</link>
+      <link>http://coofee.github.io/post/%E5%A6%82%E4%BD%95%E7%A7%91%E5%AD%A6%E4%B8%8A%E7%BD%91/</link>
       <pubDate>Fri, 25 Mar 2016 13:14:08 CST</pubDate>
-      
-      <guid>/post/%E5%A6%82%E4%BD%95%E7%A7%91%E5%AD%A6%E4%B8%8A%E7%BD%91/</guid>
+      <author>Coofee</author>
+      <guid>http://coofee.github.io/post/%E5%A6%82%E4%BD%95%E7%A7%91%E5%AD%A6%E4%B8%8A%E7%BD%91/</guid>
       <description>
 
 &lt;h2 id=&#34;1-如何使用shadowsocks代理访问网络:eaf5e01403dc73c26c20eeeb0e6aaf23&#34;&gt;1. 如何使用shadowsocks代理访问网络？&lt;/h2&gt;
@@ -85,10 +85,10 @@ alias noproxy=&#39;unset http_proxy https_proxy&#39;
     
     <item>
       <title>about</title>
-      <link>/post/about/</link>
+      <link>http://coofee.github.io/post/about/</link>
       <pubDate>Tue, 15 Mar 2016 19:51:21 CST</pubDate>
-      
-      <guid>/post/about/</guid>
+      <author>Coofee</author>
+      <guid>http://coofee.github.io/post/about/</guid>
       <description>
 
 &lt;h2 id=&#34;about:6083a88ee3411b0d17ce02d738f69d47&#34;&gt;About&lt;/h2&gt;
