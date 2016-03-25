@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Simple...</title>
+      <title> on Simple... </title>
+      <generator uri="https://gohugo.io">Hugo</generator>
     <link>http://coofee.github.io/</link>
-    <description>Recent content on Simple...</description>
-    <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <managingEditor>coffeerene.zhao@gmail.com (Coofee)</managingEditor>
-    <webMaster>coffeerene.zhao@gmail.com (Coofee)</webMaster>
-    <atom:link href="http://coofee.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <author>Coofee</author>
+    
+    <updated>Mon, 01 Jan 0001 00:00:00 UTC</updated>
     
   </channel>
 </rss>
