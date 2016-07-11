@@ -4,7 +4,7 @@
 
 <head>
 	<meta charset="utf-8">
-	<title>break_wall - Simple...</title>
+	<title>hugo help - Simple...</title>
 	<meta name="author" content="map[name:Coofee email:coffeerene.zhao@gmail.com]">
 
 	
@@ -19,13 +19,18 @@
     
 	<link href='/index.xml' rel="alternate" title="Simple..." type="application/atom+xml">
 	
-	<link rel="canonical" href="http://coofee.github.io/post/break_wall/">
+	<link rel="canonical" href="http://coofee.github.io/post/hugo-help/">
 	<link href="http://coofee.github.io/favicon.png" rel="shortcut icon">
 	<link href="http://coofee.github.io/css/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
 	<link href="http://coofee.github.io/css/font-awesome.min.css" media="screen, projection" rel="stylesheet" type="text/css">
 	
 	<link href='http://fonts.googleapis.com/css?family=Nunito:400,300,700' rel='stylesheet' type='text/css'>
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+
+	
+	<link href="http://coofee.github.io/css/prism.css" rel="stylesheet" />
+	<script src="http://coofee.github.io/js/prism.js"></script>
+
 	
   
 
@@ -51,7 +56,7 @@
 
 <nav id="main-nav"><ul class="main">
     <li><a href="/">Blog</a></li>
-    <li><a href="http://about.me/shashankmehta">About</a></li>
+    <li><a href="/post/about">About</a></li>
     <li><a href="/post/">Archives</a></li>
 </ul>
 
@@ -94,72 +99,28 @@
 				<div id="content" class="inner">
 					<div itemscope itemtype="http://schema.org/Blog">
 					<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
-    <h1 class="title" itemprop="name">break_wall</h1>
+    <h1 class="title" itemprop="name">hugo help</h1>
 	<div class="entry-content" itemprop="articleBody">
 
-<h2 id="1-如何使用shadowsocks代理访问网络:4c1d09d5366a4b65d7aabb25494c5f77">1. 如何使用shadowsocks代理访问网络？</h2>
+<h1 id="hugo">Hugo</h1>
 
-<ul>
-<li>购买代理服务器，安装shadowsocks。</li>
-<li>本机安装shadowsocks-gui，然后添加代理服务器上shadowsocks的配置，此时shadowsocks会在本机上面开启一个socks代理，其默认端口是: 1080。</li>
-<li>打开shadowsocks，勾选代理服务器，同时勾选shadowsocks-gui的全局模式或者自动代理模式，然后在浏览器上面选择使用系统代理即可正常访问google。</li>
-</ul>
+<h2 id="1-1-发布到本地预览网站">1.1 发布到本地预览网站</h2>
 
-<h2 id="2-如何在mac的terminal中使用socks代理:4c1d09d5366a4b65d7aabb25494c5f77">2. 如何在mac的Terminal中使用socks代理？</h2>
+<pre><code class="language-bash">
+$ hugo server --theme=greyshade --buildDrafts --watch
 
-<ul>
-<li>使用homebrew安装proxychains4-ng</li>
+</code></pre>
 
-<li><p>创建<code>~/.proxychains/proxychains.conf</code>文件，文件内容如下。</p>
+<h2 id="1-2-发布网站到github">1.2 发布网站到github</h2>
 
-<pre><code>strict_chain
-proxy_dns
-remote_dns_subnet 224
-tcp_read_time_out 15000
-tcp_connect_time_out 8000
-localnet 127.0.0.0/255.0.0.0
-quiet_mode
+<pre><code class="language-bash">
+$ hugo  --theme=greyshade --buildDrafts
+$ cd public
+$ git add * 
+$ git commit -a -m 'add all'
+$ git push origin master
 
-
-[ProxyList]
-socks5  127.0.0.1 1080
-</code></pre></li>
-
-<li><p>在Terminal中，使用<code>proxychains4 [cmd]</code>就可以使用代理服务器了。如：</p></li>
-</ul>
-
-<p><code>~$ proxychains4 brew update</code></p>
-
-<ul>
-<li>对于mac osx 10.11，由于apple新增了sip模式，需要进入到Recovery模式(<strong>cmmand+R</strong>)，然后在terminal中执行<code>csrutil enable --without debug</code>命令，然后重启电脑，即可正常使用proxychains4-ng。</li>
-</ul>
-
-<h2 id="3-如何让socks代理支持http代理:4c1d09d5366a4b65d7aabb25494c5f77">3. 如何让socks代理支持http代理？</h2>
-
-<ul>
-<li>安装polipo：<code>brew install polipo</code></li>
-<li>查看配置参数：<code>polipo -v</code></li>
-<li>启动http代理：<code>polipo socksParentProxy=localhost:1080</code>，其默认端口是8123。</li>
-<li>此时其他应该程序就可以设置polipo的http代理：<code>localhost:8123</code></li>
-</ul>
-
-<h2 id="4-如何在terminal中使用http代理:4c1d09d5366a4b65d7aabb25494c5f77">4. 如何在Terminal中使用Http代理？</h2>
-
-<ul>
-<li><p>在<code>~/.bash_profile</code>文件中添加以下代码，然后执行<code>source ~/.bash_profile</code>。</p>
-
-<pre><code class="language-bash">alias gaproxy='export http_proxy=127.0.0.1:8123 https_proxy=127.0.0.1:8123'
-alias noproxy='unset http_proxy https_proxy'
-</code></pre></li>
-
-<li><p>当使用http代理时，执行gaproxy，然后执行其他命令即可。如：</p>
-
-<pre><code class="language-bash">~$ gaproxy
-~$ curl www.google.com
-</code></pre></li>
-
-<li><p>不使用时，可以直接执行noproxy。</p></li>
-</ul>
+</code></pre>
 </div></article>
 					
 						<div class="share">
@@ -182,7 +143,29 @@ alias noproxy='unset http_proxy https_proxy'
 
 					
 					
+					<section id="comment">
+					    <h1 class="title">Comments</h1>
+					    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+					</section>
 					
+					
+
+<script type="text/javascript">
+    
+    var disqus_shortname = 'coofee-github-io';
+
+    
+    
+
+    
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+    
+</script>
 
 
 				    </div>

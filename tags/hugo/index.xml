@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+      <title>Hugo on Simple... </title>
+      <generator uri="https://gohugo.io">Hugo</generator>
+    <link>http://coofee.github.io/tags/hugo/</link>
+    <language>en-us</language>
+    <author>Coofee</author>
+    
+    <updated>Mon, 11 Jul 2016 23:07:37 CST</updated>
+    
+    <item>
+      <title>hugo help</title>
+      <link>http://coofee.github.io/post/hugo-help/</link>
+      <pubDate>Mon, 11 Jul 2016 23:07:37 CST</pubDate>
+      <author>Coofee</author>
+      <guid>http://coofee.github.io/post/hugo-help/</guid>
+      <description>
+
+&lt;h1 id=&#34;hugo&#34;&gt;Hugo&lt;/h1&gt;
+
+&lt;h2 id=&#34;1-1-发布到本地预览网站&#34;&gt;1.1 发布到本地预览网站&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;
+$ hugo server --theme=greyshade --buildDrafts --watch
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;1-2-发布网站到github&#34;&gt;1.2 发布网站到github&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;
+$ hugo  --theme=greyshade --buildDrafts
+$ cd public
+$ git add * 
+$ git commit -a -m &#39;add all&#39;
+$ git push origin master
+
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

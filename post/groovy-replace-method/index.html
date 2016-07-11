@@ -4,7 +4,7 @@
 
 <head>
 	<meta charset="utf-8">
-	<title>如何科学上网 - Simple...</title>
+	<title>groovy replace method - Simple...</title>
 	<meta name="author" content="map[name:Coofee email:coffeerene.zhao@gmail.com]">
 
 	
@@ -19,7 +19,7 @@
     
 	<link href='/index.xml' rel="alternate" title="Simple..." type="application/atom+xml">
 	
-	<link rel="canonical" href="http://coofee.github.io/post/%E5%A6%82%E4%BD%95%E7%A7%91%E5%AD%A6%E4%B8%8A%E7%BD%91/">
+	<link rel="canonical" href="http://coofee.github.io/post/groovy-replace-method/">
 	<link href="http://coofee.github.io/favicon.png" rel="shortcut icon">
 	<link href="http://coofee.github.io/css/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
 	<link href="http://coofee.github.io/css/font-awesome.min.css" media="screen, projection" rel="stylesheet" type="text/css">
@@ -99,71 +99,97 @@
 				<div id="content" class="inner">
 					<div itemscope itemtype="http://schema.org/Blog">
 					<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
-    <h1 class="title" itemprop="name">如何科学上网</h1>
+    <h1 class="title" itemprop="name">groovy replace method</h1>
 	<div class="entry-content" itemprop="articleBody">
 
-<h2 id="1-如何使用shadowsocks代理访问网络">1. 如何使用shadowsocks代理访问网络？</h2>
+<p>[TOC]</p>
 
-<ul>
-<li>购买代理服务器，安装shadowsocks。</li>
-<li>本机安装shadowsocks-gui，然后添加代理服务器上shadowsocks的配置，此时shadowsocks会在本机上面开启一个socks代理，其默认端口是: 1080。</li>
-<li>打开shadowsocks，勾选代理服务器，同时勾选shadowsocks-gui的全局模式或者自动代理模式，然后在浏览器上面选择使用系统代理即可正常访问google。</li>
-</ul>
+<h1 id="groovy-动态代理即替换方法">Groovy 动态代理即替换方法</h1>
 
-<h2 id="2-如何在mac的terminal中使用socks代理">2. 如何在mac的Terminal中使用socks代理？</h2>
+<p>我们知道在Java中可以使用以下几种方法替换方法。</p>
 
-<ul>
-<li>使用homebrew安装proxychains4-ng</li>
+<ol>
+<li>JDK自带的动态代理只支持修改某个类所实现的接口的方法。java只支持单继承，所有的代理类都是Proxy的子类，所以只能覆盖接口的方法。</li>
+<li>asm直接修改字节码，直接修改字节码，直接修改类的方法和所实现接口的方法。</li>
+<li>javassist直接修改字节码，直接修改类的方法和所实现接口的方法。</li>
+<li>cglib基于asm封装，直接修改类的方法和所实现接口的方法。</li>
+</ol>
 
-<li><p>创建<code>~/.proxychains/proxychains.conf</code>文件，文件内容如下。</p>
+<p>总的来说，使用jdk自带的方案有局限，使用第三方框架能够支持全部功能。下面我们就来看一下，groovy作为一门jvm语言如何更加方便的实现动态代理的。</p>
 
-<pre><code>strict_chain
-proxy_dns
-remote_dns_subnet 224
-tcp_read_time_out 15000
-tcp_connect_time_out 8000
-localnet 127.0.0.0/255.0.0.0
-quiet_mode
+<h2 id="1-1-演示类">1.1 演示类</h2>
 
-[ProxyList]
-socks5  127.0.0.1 1080
-</code></pre></li>
+<pre><code class="language-groovy">class ReplaceMethod {
+    
+    // 用于演示替换实例方法
+    public List&lt;String&gt; getStreamInputs() {
+        List&lt;String&gt; strings = &quot;a, b, c, d&quot;.split(&quot;, &quot;);
+        return strings;
+    }
 
-<li><p>在Terminal中，使用<code>proxychains4 [cmd]</code>就可以使用代理服务器了。如：</p></li>
-</ul>
+    // 用于演示替换泛型方法，同时演示如何区分同名的方法。
+    public void genericMethod(List&lt;String&gt; strings) {
+        println strings
+    }
 
-<p><code>~$ proxychains4 brew update</code></p>
+    public void genericMethod(List&lt;String&gt; strings, boolean num) {
+        println strings
+    }
 
-<ul>
-<li>对于mac osx 10.11，由于apple新增了sip模式，需要进入到Recovery模式(<strong>cmmand+R</strong>)，然后在terminal中执行<code>csrutil enable --without debug</code>命令，然后重启电脑，即可正常使用proxychains4-ng。</li>
-</ul>
+}   
+</code></pre>
 
-<h2 id="3-如何让socks代理支持http代理">3. 如何让socks代理支持http代理？</h2>
+<h2 id="2-如何替换方法">2 如何替换方法？</h2>
 
-<ul>
-<li>安装polipo：<code>brew install polipo</code></li>
-<li>查看配置参数：<code>polipo -v</code></li>
-<li>启动http代理：<code>polipo socksParentProxy=localhost:1080</code>，其默认端口是8123。</li>
-<li>此时其他应该程序就可以设置polipo的http代理：<code>localhost:8123</code></li>
-</ul>
+<ol>
+<li>通过metaClass的<code>pickMethod</code>获取到原始的方法引用。</li>
+<li>使用闭包替换metaClass上要替换的方法即可。</li>
+</ol>
 
-<h2 id="4-如何在terminal中使用http代理">4. 如何在Terminal中使用Http代理？</h2>
+<p>样例代码如下：</p>
 
-<ul>
-<li><p>在<code>~/.bash_profile</code>文件中添加以下代码，然后执行<code>source ~/.bash_profile</code>。</p>
+<pre><code class="language-groovy">def repalceMethod = new ReplaceMethod();
+println repalceMethod.getStreamInputs();
+def oldMethod = ReplaceMethod.metaClass.&amp;pickMethod('getStreamInputs', (Class[]) null)
+repalceMethod.metaClass.getStreamInputs = {
+    println &quot;replaced&quot;
+    // 执行旧方法.
+    println oldMethod.invoke(repalceMethod);
+    List&lt;String&gt; strings = &quot;1, 2, 3, 4&quot;.split(&quot;, &quot;);
+    return strings;
+}
+println repalceMethod.getStreamInputs()
+</code></pre>
 
-<pre><code class="language-bash">alias gaproxy='export http_proxy=127.0.0.1:8123 https_proxy=127.0.0.1:8123'
-alias noproxy='unset http_proxy https_proxy'
-</code></pre></li>
+<h3 id="2-1-通过class的meta直接替换方法">2.1 通过class的meta直接替换方法</h3>
 
-<li><p>当使用http代理时，执行gaproxy，然后执行其他命令即可。如：</p>
+<pre><code class="language-groovy">Class.forName('com.coffee.groovy.metaclass.ReplaceMethod').metaClass.invokeMethod = { name, args -&gt;
+    println &quot;replaced: Called ${name} with ${args}&quot;
+    println args.length
+    println args.class
+    println args.metaClass
+    // http://stackoverflow.com/questions/10125903/groovy-overriding-invokemethod-for-a-single-instance
+    delegate.class.metaClass.getMetaMethod(name, args)?.invoke(delegate, args)
+}
+</code></pre>
 
-<pre><code class="language-bash">~$ gaproxy
-~$ curl www.google.com
-</code></pre></li>
+<h3 id="2-2-替换泛型方法-替换同名方法">2.2 替换泛型方法&amp;替换同名方法</h3>
 
-<li><p>不使用时，可以直接执行noproxy。</p></li>
-</ul>
+<p>通过指定要替换的方法的参数类型，既可以通过<code>pickMethod</code>获取到对应的正确函数。对泛型而言，无需指定其具体的类型。</p>
+
+<pre><code class="language-groovy">List&lt;Class&gt; argClasses = [];
+argClasses.add(List.class)
+argClasses.add(boolean.class)
+println argClasses
+def clazz = Class.forName('com.coffee.groovy.metaclass.ReplaceMethod');
+def oldGenericMethod = clazz.metaClass.&amp;pickMethod('genericMethod',
+        argClasses.toArray(new Class[0]))
+clazz.metaClass.genericMethod = { strings, result -&gt;
+    println &quot;replaced: $strings : $result&quot;
+}
+
+repalceMethod.genericMethod(&quot;ac, sd, dc, dd&quot;.split(&quot;, &quot;), true)
+</code></pre>
 </div></article>
 					
 						<div class="share">
