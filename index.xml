@@ -7,7 +7,308 @@
     <language>en-us</language>
     <author>Coofee</author>
     
-    <updated>Mon, 11 Jul 2016 23:07:37 CST</updated>
+    <updated>Thu, 01 Sep 2016 19:27:06 CST</updated>
+    
+    <item>
+      <title>android gradle plugin compat</title>
+      <link>http://coofee.github.io/post/android-gradle-plugin-compat/</link>
+      <pubDate>Thu, 01 Sep 2016 19:27:06 CST</pubDate>
+      <author>Coofee</author>
+      <guid>http://coofee.github.io/post/android-gradle-plugin-compat/</guid>
+      <description>
+
+&lt;p&gt;[TOC]&lt;/p&gt;
+
+&lt;p&gt;Android Gradle插件升级填坑指南&lt;/p&gt;
+
+&lt;h2 id=&#34;1-引子&#34;&gt;1. 引子&lt;/h2&gt;
+
+&lt;p&gt;自打android开发环境从eclipse迁移到android studio之后，android项目的打包就从ant迁移到了gradle。自此只要是在打包过程中需要干扰代码生成或执行其他特殊处理，都需要通过gradle脚本完成，具体来说就是通过在打包过程中插入task或者给现用task添加hook。
+对于我们的项目而言，在插件化和热修复技术，为了降低打包成本，我们编写了自己的gradle插件，用于支持app的插件化和热修复打包。&lt;/p&gt;
+
+&lt;h2 id=&#34;2-由instant-run引发的血案&#34;&gt;2. 由instant-run引发的血案&lt;/h2&gt;
+
+&lt;p&gt;时间来到了16年，随着Instant-Run功能的逐渐完善，我们也升级android studio和gradle来体验强大的Instant-Run，刚一运行就崩溃了。。。&lt;/p&gt;
+
+&lt;!--![](http://d.ifengimg.com/mw604/y0.ifengimg.com/ifengimcp/pic/20160418/5628dd6ecd9fa100f371_size30_w521_h534.jpg)
+--&gt;
+
+&lt;p&gt;查看一下报错日志，发现&lt;code&gt;proguardDebug&lt;/code&gt;任务找不到；瞅了一下打包产生的临时目录，发现&lt;strong&gt;intermediates/classes-proguard&lt;/strong&gt;目录也找不到了，并且还多出来了&lt;strong&gt;intermediates/transforms&lt;/strong&gt;这个奇怪的目录，赶紧google一下，发现google在gradle插件高版本中引入了&lt;a href=&#34;http://tools.android.com/tech-docs/new-build-system/transform-api&#34;&gt;transform-api&lt;/a&gt;（主要是给大家提供了一个操作代码的接口，比如可以注入代码什么的），并且在高版本的gradle插件中使用&lt;code&gt;transformClassesAndResourcesWithProguardForDebug&lt;/code&gt;任务替换了低版本的&lt;code&gt;proguardDebug&lt;/code&gt;任务。&lt;/p&gt;
+
+&lt;h2 id=&#34;3-兼容transform-api&#34;&gt;3. 兼容Transform Api&lt;/h2&gt;
+
+&lt;p&gt;知道了问题所在，那就让我们撸起袖子干起来吧，将原本需要在&lt;code&gt;proguardDebug&lt;/code&gt;之后执行的代码迁移到&lt;code&gt;transformClassesAndResourcesWithProguardForDebug&lt;/code&gt;之后，并稍作改动就可以了。大概代码如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;def proguardTaskName = &amp;quot;transformClassesAndResourcesWithProguardFor${flavor.capitalize()}${buildType.capitalize()}&amp;quot;.toString()
+
+gradle.taskGraph.afterTask { Task task, TaskState state -&amp;gt;
+    if (state.failure != null) {
+        println &amp;quot;${task} error: ${state.failure}&amp;quot;
+        state.failure.printStackTrace()
+        state.rethrowFailure();
+        return;
+    }
+    
+    if (task.name.equals(proguardTaskName)) {
+    	// 执行自己的代码，将先前的代码迁移至此，并稍作改动即可。
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;4-兼容不同版本&#34;&gt;4. 兼容不同版本&lt;/h2&gt;
+
+&lt;p&gt;这里我们为了兼容各个版本的gradle插件，那么就出现了一个新问题如何区分某个gradle插件版本是否支持transform api？&lt;/p&gt;
+
+&lt;p&gt;查看官网，发现上面有这么一句话
+&amp;gt; (The API existed in 1.4.0-beta2 but it&amp;rsquo;s been completely revamped in 1.5.0-beta1)&lt;/p&gt;
+
+&lt;p&gt;也就是说，这个api在1.4.0-beta2的时候就已经存在了，但是直到1.5.0-beta1版本的时候才改造完成。这么来看的话，通过版本来判断比较复杂，并且不一定靠谱，那么如何能够既简单又靠谱的判断呢？&lt;/p&gt;
+
+&lt;p&gt;答案很简单，直接判断project是否拥有transform的task即可，大概代码如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;boolean isSupportTransformApi(Project project, def variant) {
+	def supportTransformApi = false;
+	def flavor = variant.flavorName == null ? &amp;quot;&amp;quot; : variant.flavorName;
+	def buildType = variant.buildType.name == null ? &amp;quot;&amp;quot; : variant.buildType.name;
+	def proguardTaskName = &amp;quot;transformClassesAndResourcesWithProguardFor${variant flavor.capitalize()}${buildType.capitalize()}&amp;quot;.toString()
+	project.tasks.each {
+	    if (it.name.equals(proguardTaskName)) {
+	        supportTransformApi = true;
+	    }
+	}
+
+	return supportTransformApi;
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;搞完这个兼容，再次运行项目，就可以成功编译并安装apk了，点击运行，直接崩溃了！！！查看日志发现是资源找不到，并且资源id的值也是错误的，这么来看的话，那就是public.xml和ids.xml没有生效造成的。&lt;/p&gt;
+
+&lt;h2 id=&#34;5-解决public-xml-ids-xml不生效问题&#34;&gt;5. 解决public.xml、ids.xml不生效问题&lt;/h2&gt;
+
+&lt;p&gt;原来在gradle插件的高版本中打包时会忽略&lt;strong&gt;res/values/&lt;/strong&gt;目录中定义的public.xml、ids.xml文件；对比一下老版本gradle插件打包生成的临时文件，我们发现其在打包时将public.xml、ids.xml复制到了&lt;strong&gt;intermediates/res/merged/${flavor}/${buildType}&lt;/strong&gt;这个目录*(该目录是打包编译资源时生成的临时目录)*。那么我们自己手动复制这些文件到&lt;strong&gt;intermediates/res/merged/${flavor}/${buildType}&lt;/strong&gt;目录中，是不是就可以让高版本的gradle插件支持public.xml、ids.xml了呢？&lt;/p&gt;
+
+&lt;p&gt;代码如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;// 获取task名称
+def mergeResourcesName = &amp;quot;merge${flavor.capitalize()}${buildType.capitalize()}Resources&amp;quot;.toString();
+def mergeResourceTask = project.tasks.getByName(mergeResourcesName)
+mergeResourceTask.doLast {
+	// 复制public.xml
+	project.copy {
+		int i = 0;
+		from(project.android.sourceSets.main.res.srcDirs) {
+		    include &#39;values/public.xml&#39;
+		    rename &#39;public.xml&#39;, (i++ == 0 ? &amp;quot;public.xml&amp;quot; : &amp;quot;public_${i}.xml&amp;quot;)
+		}
+		
+		into(task.outputDir)
+	}
+
+	// 复制ids.xml
+	project.copy {
+		int i = 0;
+		from(project.android.sourceSets.main.res.srcDirs) {
+			include &#39;values/ids.xml&#39;
+			rename &#39;ids.xml&#39;, (i++ == 0 ? &amp;quot;ids.xml&amp;quot; : &amp;quot;ids_${i}.xml&amp;quot;)
+		}
+		
+		into(task.outputDir)
+	}
+
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;添加如上代码之后，重新编译工程，在合并资源时出现了资源重复定义错误，由此可以得出是复制public.xml和ids.xml到打包产生的临时目录导致的。&lt;/p&gt;
+
+&lt;h2 id=&#34;6-解决public-xml与values-xml中的资源重复定义&#34;&gt;6. 解决public.xml与values.xml中的资源重复定义&lt;/h2&gt;
+
+&lt;p&gt;从错误信息上面可以知道，是因为public.xml和values.xml出现了相同的元素导致；所以简单粗暴的将public.xml和values.xml中相同的元素剔除是不是就能够解决这个问题了呢？&lt;/p&gt;
+
+&lt;p&gt;我们在mergeResourceTask.doLast{}复制完public.xml和ids.xml后，解析并对比public.xml和values.xml文件，然后剔除values.xml中与public.xml中相同的元素，大致代码如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;def valuesDir = new File(task.outputDir, &#39;values&#39;);
+def publicResSet = [];
+
+// 获取public.xml中的元素
+valuesDir.eachFile { f -&amp;gt;
+    if (f.name.startsWith(&#39;public&#39;) &amp;amp;&amp;amp; f.name.endsWith(&#39;.xml&#39;)) {
+        def publicNode = new XmlParser().parse(f);
+        publicNode.each { node -&amp;gt;
+            def name = node.attribute(&#39;name&#39;).toString();
+            def type = node.attribute(&#39;type&#39;).toString()
+            publicResSet.add(new PublicXmlRes(name, type));
+        }
+    }
+}
+
+// 剔除values.xml中与public.xml相同的元素。
+def valuesXmlFile = new File(task.outputDir, &#39;values/values.xml&#39;);
+def valuesNode = new XmlParser().parse(valuesXmlFile);
+def noIdNode = new Node(null, &#39;resources&#39;);
+valuesNode.each {
+    if (&#39;item&#39;.equals(it.name())) {
+        def name = it.attribute(&#39;name&#39;).toString();
+        def type = it.attribute(&#39;type&#39;).toString();
+        def publicRes = new PublicXmlRes(name, type);
+        if (publicResSet.contains(publicRes)) {
+            println &amp;quot;skip public res: ${publicRes}&amp;quot;
+            return;
+        } else {
+            println &amp;quot;not skip public res: ${publicRes}&amp;quot;
+        }
+    }
+
+    noIdNode.append(it);
+}
+
+// 使用剔除相同元素的values.xml覆盖原来的values.xml文件;
+def out = new PrintWriter(new FileWriter(valuesXmlFile));
+out &amp;lt;&amp;lt; &#39;&amp;lt;?xml version=&amp;quot;1.0&amp;quot; encoding=&amp;quot;utf-8&amp;quot;?&amp;gt;\n&#39;;
+XmlNodePrinter xmlNodePrinter = new XmlNodePrinter(out);
+xmlNodePrinter.with {
+    preserveWhitespace = true;
+    expandEmptyElements = false;
+}
+xmlNodePrinter.print(noIdNode)
+out.flush()
+IOGroovyMethods.closeWithWarning(out)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;至此，整个项目就可以用Instant-Run跑起来了。。。&lt;/p&gt;
+
+&lt;h2 id=&#34;7-兼容multidex&#34;&gt;7. 兼容Multidex&lt;/h2&gt;
+
+&lt;h3 id=&#34;7-1-transform-api之前&#34;&gt;7.1 Transform Api之前&lt;/h3&gt;
+
+&lt;p&gt;在Transform Api出现之前，大家拆分dex时，一般都是获取dex任务，然后给dex添加参数，来实现干扰multidex，具体代码大致如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;project.tasks.matching {
+    it.name.startsWith(&#39;dex&#39;)
+}.each { dx -&amp;gt;
+    if (dx.additionalParameters == null) {
+        dx.additionalParameters = []
+    }
+    dx.additionalParameters += &#39;--multi-dex&#39;;
+    // dx.additionalParameters += &#39;--minimal-main-dex&#39;;
+    dx.additionalParameters += &#39;--set-max-idx-number=55000&#39;;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;然后在生成manifest_keep.txt文件后，修改manifest_keep.txt文件，来达到拆分multidex，具体代码如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;def multidexTaskNames = [];
+
+afterEvaluate {
+    android.applicationVariants.all { variant -&amp;gt;
+        def flavorName = variant.flavorName == null ? &amp;quot;&amp;quot; : variant.flavorName;
+        def buildType = variant.buildType.name == null ? &amp;quot;&amp;quot; : variant.buildType.name;
+        def multidexTaskName = &amp;quot;collect${flavorName.capitalize()}${buildType.capitalize()}MultiDexComponents&amp;quot;.toString();
+        multidexTaskNames.add(multidexTaskName);
+    }
+}
+
+gradle.taskGraph.beforeTask { Task multiDexTask -&amp;gt;
+    if (!multidexTaskNames.contains(multiDexTask.name)) {
+        return;
+    }
+
+    println &amp;quot;multidexTaskName=${multiDexTask.name}; multiDexTask.outputFile=${multiDexTask.outputFile}&amp;quot;
+    multiDexTask.doLast {
+		File manifestKeepFile = multiDexTask.outputFile;
+		// 修改manifestKeepFile文件，将不需要的类从该文件中删除；
+		// 来达到mutidex分包的目的.
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;7-2-transform-api之后&#34;&gt;7.2 Transform Api之后&lt;/h3&gt;
+
+&lt;p&gt;当有了Transform Api之后，给dex任务添加dx.additionalParameters参数就无效了，但是*collect MultiDexComponents*仍然有效，所以只需要找到如何添加dx参数就好。分析gradle插件可以发现，在Transform Api中使用DexTransform来将jar转换为dex，并且在DexTransform最终由AndroidBuilder调用dx生成dex文件。&lt;/p&gt;
+
+&lt;p&gt;其中DexTransform在*transform*方法中调用androidBuilder的*convertByteCode*方法，代码如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;
+public void transform(TransformInvocation transformInvocation) throws TransformException, IOException, InterruptedException {
+	// 忽略....
+ 	this.androidBuilder.convertByteCode(outputs2, outputDir3, this.multiDex, this.mainDexListFile, this.dexOptions, (List)null, false, true, outputHandler1);
+ 	// 忽略....
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;通过查看AndroidBuilder的*convertByteCode*方法签名如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;void convertByteCode(Collection&amp;lt;File&amp;gt; inputs, File outDexFolder, boolean multidex, File mainDexList, DexOptions dexOptions, List&amp;lt;String&amp;gt; additionalParameters, boolean incremental, boolean optimize, ProcessOutputHandler processOutputHandler) throws IOException, InterruptedException, ProcessException {...}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;对比以上两个代码片段，我们发现在*transform*方法中调用*convertByteCode*方法，直接将&lt;strong&gt;additionalParameters&lt;/strong&gt;参数传入了null，所以只需要在调用*convertByteCode*方法时，传入自己的&lt;strong&gt;additionalParameters&lt;/strong&gt;，就可以实现和以前一样的功能，那么如何实现呢？&lt;/p&gt;
+
+&lt;p&gt;我们的解决方案是，在执行DexTransform前替换DexTransform的&lt;strong&gt;androidBuilder&lt;/strong&gt;字段，然后在调用*convertByteCode*方法前，添加dx参数，大概代码如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;
+// 找到DexTransform
+project.tasks.matching {
+    it instanceof TransformTask
+}.each { TransformTask transformTask -&amp;gt;
+    Transform transform = transformTask.transform;
+    if (transform.name.equals(&#39;dex&#39;)) {
+        DexTransform dexTransform = (DexTransform) transform;
+        if (dexTransform.multiDex) {
+            // wrapper androidBuilder and add dex paramters.
+            replaceFieldAndroidBuilder(dexTransform);
+        }
+    }
+}
+
+// 替换androidBuilder字段。
+private
+static void replaceFieldAndroidBuilder(DexTransform dexTransform) {
+    def fieldAndroidBuilder = DexTransform.class.getDeclaredField(&#39;androidBuilder&#39;);
+    fieldAndroidBuilder.setAccessible(true);
+
+    AndroidBuilder androidBuilder = dexTransform.androidBuilder;
+    fieldAndroidBuilder.set(dexTransform, AndroidBuilderWrapper.wrapperAndroidBuilder(androidBuilder));
+}
+
+// 自定义androidBuidler.
+private static class AndroidBuilderWrapper extends AndroidBuilder {
+
+    public
+    static AndroidBuilder wrapperAndroidBuilder(AndroidBuilder androidBuilder) {
+        return new AndroidBuilderWrapper(androidBuilder);
+    }
+
+    AndroidBuilderWrapper(AndroidBuilder androidBuilder) {
+        super(androidBuilder.mProjectId, androidBuilder.mCreatedBy, androidBuilder.getProcessExecutor(), androidBuilder.mJavaProcessExecutor, androidBuilder.getErrorReporter(), androidBuilder.getLogger(), androidBuilder.mVerboseExec);
+        setTargetInfo(androidBuilder.sdkInfo, androidBuilder.targetInfo, androidBuilder.mLibraryRequests);
+    }
+
+    @Override
+    void convertByteCode(Collection&amp;lt;File&amp;gt; inputs, File outDexFolder, boolean multidex, File mainDexList, DexOptions dexOptions, List&amp;lt;String&amp;gt; additionalParameters, boolean incremental, boolean optimize, ProcessOutputHandler processOutputHandler) throws IOException, InterruptedException, ProcessException {
+        println &amp;quot;AndroidBuilderWrapper invoke convertByteCode&amp;quot;;
+        // 添加dx参数.
+        if (additionalParameters == null) {
+            additionalParameters = new ArrayList&amp;lt;String&amp;gt;();
+        }
+        dx.additionalParameters += &#39;--multi-dex&#39;;
+    	// dx.additionalParameters += &#39;--minimal-main-dex&#39;;
+    	dx.additionalParameters += &#39;--set-max-idx-number=55000&#39;;        
+        println &amp;quot;AndroidBuilderWrapper invoke convertByteCode, additionalParameters=${additionalParameters}&amp;quot;;
+        super.convertByteCode(inputs, outDexFolder, multidex, mainDexList, dexOptions, additionalParameters, incremental, optimize, processOutputHandler)
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;8-参考&#34;&gt;8. 参考&lt;/h2&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;http://tools.android.com/tech-docs/new-build-system/user-guide&#34;&gt;New Build System&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://tools.android.com/tech-docs/new-build-system/transform-api&#34;&gt;Transform Api&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/ceabie/AndroidPublicXmlCompat/blob/master/app/public-xml.gradle&#34;&gt;AndroidPublicXmlCompat&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+    </item>
     
     <item>
       <title>hugo help</title>
@@ -19,14 +320,22 @@
 
 &lt;h1 id=&#34;hugo&#34;&gt;Hugo&lt;/h1&gt;
 
-&lt;h2 id=&#34;1-1-发布到本地预览网站&#34;&gt;1.1 发布到本地预览网站&lt;/h2&gt;
+&lt;h2 id=&#34;1-1-创建文件&#34;&gt;1.1 创建文件&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;
+# 切换到博客目录
+$ hugo new post/xxxxx.md
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;1-2-发布到本地预览网站&#34;&gt;1.2 发布到本地预览网站&lt;/h2&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;
 $ hugo server --theme=greyshade --buildDrafts --watch
 
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h2 id=&#34;1-2-发布网站到github&#34;&gt;1.2 发布网站到github&lt;/h2&gt;
+&lt;h2 id=&#34;1-3-发布网站到github&#34;&gt;1.3 发布网站到github&lt;/h2&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;
 $ hugo  --theme=greyshade --buildDrafts

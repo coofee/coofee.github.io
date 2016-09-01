@@ -103,6 +103,24 @@
 					
 				        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
     <div class="meta">
+		<div class="date"><time datetime='Thu, Sep 1, 2016' data-updated="true" itemprop="datePublished">Thu, Sep 1, 2016</time>
+</div>
+		<div class="tags">
+</div>
+		
+			<span class="comments"><a href="http://coofee.github.io/post/android-gradle-plugin-compat/#disqus_thread">Comments</a></span>
+		
+	</div>
+	<h1 class="title" itemprop="name"><a href="http://coofee.github.io/post/android-gradle-plugin-compat/" itemprop="url">android gradle plugin compat</a></h1>
+	<div class="entry-content" itemprop="articleBody">
+		[TOC] Android Gradle插件升级填坑指南 1. 引子 自打android开发环境从eclipse迁移到android studio之后，android项目的打包就从ant迁移到了gradle。自此只要是在打包过程中需要干扰代码生成或执行其他特殊处理，都需要通过gradle脚本完成，具体来说就是通过在打包过程中插入task或者给现用task添加hook。 对于我们的项目而言，在插件化和热修复技术，为了降低打包成本，我们编写了自己的gradle插件，用于支持app的插件化和热修复打包。 2. 由instant-run引发的血案 时间来到了16年，随着Instant-Run功能的逐渐完善，我们也升级android studio和gradle来体验强大的Instant-Run，刚一运行就崩溃了。。。 查看一下报错日志，发现proguardDebug任务找不到；瞅了一下打包产生的临时目录，发现intermediates/classes-proguard目录也找不到了，并且还多出来了intermediates/transforms这个奇怪的目录，赶紧google一下，发现google在gradle插件高版本中引入了transform-api（主要是给大家提供了一个操作代码的接口，比如可以注入代码什么的），并且在高版本的gradle插件中使用transformClassesAndResourcesWithProguardForDebug任务替换了低版本的proguardDebug任务。 3. 兼容Transform Api 知道了问题所在，那就让我们撸起袖子干起来吧，将原本需要在proguardDebug之后执行的代码迁移到transformClassesAndResourcesWithProguardForDebug之后，并稍作改动就可以了。大概代码如下： def proguardTaskName = &quot;transformClassesAndResourcesWithProguardFor${flavor.capitalize()}${buildType.capitalize()}&quot;.toString() gradle.taskGraph.afterTask { Task task, TaskState state -&gt; if (state.failure != null) { println &quot;${task} error: ${state.failure}&quot; state.failure.printStackTrace() state.rethrowFailure(); return; } if (task.name.equals(proguardTaskName)) { // 执行自己的代码，将先前的代码迁移至此，并稍作改动即可。 } } 4. 兼容不同版本 这里我们为了兼容各个版本的gradle插件，那么就出现了一个新问题如何区分某个gradle插件版本是否支持transform api？ 查看官网，发现上面有这么一句话 &gt; (The API existed in 1.4.0-beta2 but it&rsquo;s been completely revamped in 1.5.0-beta1) 也就是说，这个api在1.4.0-beta2的时候就已经存在了，但是直到1.5.0-beta1版本的时候才改造完成。这么来看的话，通过版本来判断比较复杂，并且不一定靠谱，那么如何能够既简单又靠谱的判断呢？ 答案很简单，直接判断project是否拥有transform的task即可，大概代码如下： boolean isSupportTransformApi(Project project, def variant) { def supportTransformApi = false; def flavor = variant.flavorName == null ?
+		<a href="http://coofee.github.io/post/android-gradle-plugin-compat/" class="more-link">Read on →</a>
+	</div>
+</article>
+
+				    
+				        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+    <div class="meta">
 		<div class="date"><time datetime='Mon, Jul 11, 2016' data-updated="true" itemprop="datePublished">Mon, Jul 11, 2016</time>
 </div>
 		<div class="tags">
@@ -113,7 +131,7 @@
 	</div>
 	<h1 class="title" itemprop="name"><a href="http://coofee.github.io/post/hugo-help/" itemprop="url">hugo help</a></h1>
 	<div class="entry-content" itemprop="articleBody">
-		Hugo 1.1 发布到本地预览网站 $ hugo server --theme=greyshade --buildDrafts --watch 1.2 发布网站到github $ hugo --theme=greyshade --buildDrafts $ cd public $ git add * $ git commit -a -m 'add all' $ git push origin master
+		Hugo 1.1 创建文件 # 切换到博客目录 $ hugo new post/xxxxx.md 1.2 发布到本地预览网站 $ hugo server --theme=greyshade --buildDrafts --watch 1.3 发布网站到github $ hugo --theme=greyshade --buildDrafts $ cd public $ git add * $ git commit -a -m 'add all' $ git push origin master
 		
 	</div>
 </article>

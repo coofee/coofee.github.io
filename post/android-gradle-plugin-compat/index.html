@@ -1,0 +1,461 @@
+<!DOCTYPE HTML>
+
+<html lang="en-us">
+
+<head>
+	<meta charset="utf-8">
+	<title>android gradle plugin compat - Simple...</title>
+	<meta name="author" content="map[name:Coofee email:coffeerene.zhao@gmail.com]">
+
+	
+	
+	<meta name="description" content="">
+	
+
+	
+	<meta name="HandheldFriendly" content="True">
+	<meta name="MobileOptimized" content="320">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+    
+	<link href='/index.xml' rel="alternate" title="Simple..." type="application/atom+xml">
+	
+	<link rel="canonical" href="http://coofee.github.io/post/android-gradle-plugin-compat/">
+	<link href="http://coofee.github.io/favicon.png" rel="shortcut icon">
+	<link href="http://coofee.github.io/css/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<link href="http://coofee.github.io/css/font-awesome.min.css" media="screen, projection" rel="stylesheet" type="text/css">
+	
+	<link href='http://fonts.googleapis.com/css?family=Nunito:400,300,700' rel='stylesheet' type='text/css'>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+
+	
+	<link href="http://coofee.github.io/css/prism.css" rel="stylesheet" />
+	<script src="http://coofee.github.io/js/prism.js"></script>
+
+	
+  
+
+</head>
+
+
+<body>
+	<div class="container">
+		<div class="left-col">
+			<div class="intrude-less">
+			<header id="header" class="inner"><div class="profilepic">
+	
+	
+	<script src="http://coofee.github.io/js/md5.js"></script>
+	<script type="text/javascript">
+		$(function(){
+			$('.profilepic').append("<img src='http://www.gravatar.com/avatar/" + MD5('coffeerene.zhao@gmail.com') + "?s=160' alt='Profile Picture' style='width: 160px;' />");
+		});
+	</script>
+	
+	
+</div>
+
+<nav id="main-nav"><ul class="main">
+    <li><a href="/">Blog</a></li>
+    <li><a href="/post/about">About</a></li>
+    <li><a href="/post/">Archives</a></li>
+</ul>
+
+<section class="aboutme">
+  <p>
+    Less is more
+  </p>
+</section>
+</nav>
+<nav id="sub-nav">
+	<div class="social">
+		
+			<a class="email" href='mailto:coffeerene.zhao@gmail.com' title="Email">Email</a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+    	
+    	
+			<a class="rss" href='/index.xml' title="RSS">RSS</a>
+		
+	</div>
+</nav>
+</header>
+			</div>
+		</div>
+		<div class="mid-col">
+			
+			<div class="mid-col-container">
+				<div id="content" class="inner">
+					<div itemscope itemtype="http://schema.org/Blog">
+					<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+    <h1 class="title" itemprop="name">android gradle plugin compat</h1>
+	<div class="entry-content" itemprop="articleBody">
+
+<p>[TOC]</p>
+
+<p>Android Gradle插件升级填坑指南</p>
+
+<h2 id="1-引子">1. 引子</h2>
+
+<p>自打android开发环境从eclipse迁移到android studio之后，android项目的打包就从ant迁移到了gradle。自此只要是在打包过程中需要干扰代码生成或执行其他特殊处理，都需要通过gradle脚本完成，具体来说就是通过在打包过程中插入task或者给现用task添加hook。
+对于我们的项目而言，在插件化和热修复技术，为了降低打包成本，我们编写了自己的gradle插件，用于支持app的插件化和热修复打包。</p>
+
+<h2 id="2-由instant-run引发的血案">2. 由instant-run引发的血案</h2>
+
+<p>时间来到了16年，随着Instant-Run功能的逐渐完善，我们也升级android studio和gradle来体验强大的Instant-Run，刚一运行就崩溃了。。。</p>
+
+<!--![](http://d.ifengimg.com/mw604/y0.ifengimg.com/ifengimcp/pic/20160418/5628dd6ecd9fa100f371_size30_w521_h534.jpg)
+-->
+
+<p>查看一下报错日志，发现<code>proguardDebug</code>任务找不到；瞅了一下打包产生的临时目录，发现<strong>intermediates/classes-proguard</strong>目录也找不到了，并且还多出来了<strong>intermediates/transforms</strong>这个奇怪的目录，赶紧google一下，发现google在gradle插件高版本中引入了<a href="http://tools.android.com/tech-docs/new-build-system/transform-api">transform-api</a>（主要是给大家提供了一个操作代码的接口，比如可以注入代码什么的），并且在高版本的gradle插件中使用<code>transformClassesAndResourcesWithProguardForDebug</code>任务替换了低版本的<code>proguardDebug</code>任务。</p>
+
+<h2 id="3-兼容transform-api">3. 兼容Transform Api</h2>
+
+<p>知道了问题所在，那就让我们撸起袖子干起来吧，将原本需要在<code>proguardDebug</code>之后执行的代码迁移到<code>transformClassesAndResourcesWithProguardForDebug</code>之后，并稍作改动就可以了。大概代码如下：</p>
+
+<pre><code class="language-groovy">def proguardTaskName = &quot;transformClassesAndResourcesWithProguardFor${flavor.capitalize()}${buildType.capitalize()}&quot;.toString()
+
+gradle.taskGraph.afterTask { Task task, TaskState state -&gt;
+    if (state.failure != null) {
+        println &quot;${task} error: ${state.failure}&quot;
+        state.failure.printStackTrace()
+        state.rethrowFailure();
+        return;
+    }
+    
+    if (task.name.equals(proguardTaskName)) {
+    	// 执行自己的代码，将先前的代码迁移至此，并稍作改动即可。
+    }
+}
+</code></pre>
+
+<h2 id="4-兼容不同版本">4. 兼容不同版本</h2>
+
+<p>这里我们为了兼容各个版本的gradle插件，那么就出现了一个新问题如何区分某个gradle插件版本是否支持transform api？</p>
+
+<p>查看官网，发现上面有这么一句话
+&gt; (The API existed in 1.4.0-beta2 but it&rsquo;s been completely revamped in 1.5.0-beta1)</p>
+
+<p>也就是说，这个api在1.4.0-beta2的时候就已经存在了，但是直到1.5.0-beta1版本的时候才改造完成。这么来看的话，通过版本来判断比较复杂，并且不一定靠谱，那么如何能够既简单又靠谱的判断呢？</p>
+
+<p>答案很简单，直接判断project是否拥有transform的task即可，大概代码如下：</p>
+
+<pre><code class="language-groovy">boolean isSupportTransformApi(Project project, def variant) {
+	def supportTransformApi = false;
+	def flavor = variant.flavorName == null ? &quot;&quot; : variant.flavorName;
+	def buildType = variant.buildType.name == null ? &quot;&quot; : variant.buildType.name;
+	def proguardTaskName = &quot;transformClassesAndResourcesWithProguardFor${variant flavor.capitalize()}${buildType.capitalize()}&quot;.toString()
+	project.tasks.each {
+	    if (it.name.equals(proguardTaskName)) {
+	        supportTransformApi = true;
+	    }
+	}
+
+	return supportTransformApi;
+}
+
+</code></pre>
+
+<p>搞完这个兼容，再次运行项目，就可以成功编译并安装apk了，点击运行，直接崩溃了！！！查看日志发现是资源找不到，并且资源id的值也是错误的，这么来看的话，那就是public.xml和ids.xml没有生效造成的。</p>
+
+<h2 id="5-解决public-xml-ids-xml不生效问题">5. 解决public.xml、ids.xml不生效问题</h2>
+
+<p>原来在gradle插件的高版本中打包时会忽略<strong>res/values/</strong>目录中定义的public.xml、ids.xml文件；对比一下老版本gradle插件打包生成的临时文件，我们发现其在打包时将public.xml、ids.xml复制到了<strong>intermediates/res/merged/${flavor}/${buildType}</strong>这个目录*(该目录是打包编译资源时生成的临时目录)*。那么我们自己手动复制这些文件到<strong>intermediates/res/merged/${flavor}/${buildType}</strong>目录中，是不是就可以让高版本的gradle插件支持public.xml、ids.xml了呢？</p>
+
+<p>代码如下：</p>
+
+<pre><code class="language-groovy">// 获取task名称
+def mergeResourcesName = &quot;merge${flavor.capitalize()}${buildType.capitalize()}Resources&quot;.toString();
+def mergeResourceTask = project.tasks.getByName(mergeResourcesName)
+mergeResourceTask.doLast {
+	// 复制public.xml
+	project.copy {
+		int i = 0;
+		from(project.android.sourceSets.main.res.srcDirs) {
+		    include 'values/public.xml'
+		    rename 'public.xml', (i++ == 0 ? &quot;public.xml&quot; : &quot;public_${i}.xml&quot;)
+		}
+		
+		into(task.outputDir)
+	}
+
+	// 复制ids.xml
+	project.copy {
+		int i = 0;
+		from(project.android.sourceSets.main.res.srcDirs) {
+			include 'values/ids.xml'
+			rename 'ids.xml', (i++ == 0 ? &quot;ids.xml&quot; : &quot;ids_${i}.xml&quot;)
+		}
+		
+		into(task.outputDir)
+	}
+
+}
+</code></pre>
+
+<p>添加如上代码之后，重新编译工程，在合并资源时出现了资源重复定义错误，由此可以得出是复制public.xml和ids.xml到打包产生的临时目录导致的。</p>
+
+<h2 id="6-解决public-xml与values-xml中的资源重复定义">6. 解决public.xml与values.xml中的资源重复定义</h2>
+
+<p>从错误信息上面可以知道，是因为public.xml和values.xml出现了相同的元素导致；所以简单粗暴的将public.xml和values.xml中相同的元素剔除是不是就能够解决这个问题了呢？</p>
+
+<p>我们在mergeResourceTask.doLast{}复制完public.xml和ids.xml后，解析并对比public.xml和values.xml文件，然后剔除values.xml中与public.xml中相同的元素，大致代码如下：</p>
+
+<pre><code class="language-groovy">def valuesDir = new File(task.outputDir, 'values');
+def publicResSet = [];
+
+// 获取public.xml中的元素
+valuesDir.eachFile { f -&gt;
+    if (f.name.startsWith('public') &amp;&amp; f.name.endsWith('.xml')) {
+        def publicNode = new XmlParser().parse(f);
+        publicNode.each { node -&gt;
+            def name = node.attribute('name').toString();
+            def type = node.attribute('type').toString()
+            publicResSet.add(new PublicXmlRes(name, type));
+        }
+    }
+}
+
+// 剔除values.xml中与public.xml相同的元素。
+def valuesXmlFile = new File(task.outputDir, 'values/values.xml');
+def valuesNode = new XmlParser().parse(valuesXmlFile);
+def noIdNode = new Node(null, 'resources');
+valuesNode.each {
+    if ('item'.equals(it.name())) {
+        def name = it.attribute('name').toString();
+        def type = it.attribute('type').toString();
+        def publicRes = new PublicXmlRes(name, type);
+        if (publicResSet.contains(publicRes)) {
+            println &quot;skip public res: ${publicRes}&quot;
+            return;
+        } else {
+            println &quot;not skip public res: ${publicRes}&quot;
+        }
+    }
+
+    noIdNode.append(it);
+}
+
+// 使用剔除相同元素的values.xml覆盖原来的values.xml文件;
+def out = new PrintWriter(new FileWriter(valuesXmlFile));
+out &lt;&lt; '&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;\n';
+XmlNodePrinter xmlNodePrinter = new XmlNodePrinter(out);
+xmlNodePrinter.with {
+    preserveWhitespace = true;
+    expandEmptyElements = false;
+}
+xmlNodePrinter.print(noIdNode)
+out.flush()
+IOGroovyMethods.closeWithWarning(out)
+</code></pre>
+
+<p>至此，整个项目就可以用Instant-Run跑起来了。。。</p>
+
+<h2 id="7-兼容multidex">7. 兼容Multidex</h2>
+
+<h3 id="7-1-transform-api之前">7.1 Transform Api之前</h3>
+
+<p>在Transform Api出现之前，大家拆分dex时，一般都是获取dex任务，然后给dex添加参数，来实现干扰multidex，具体代码大致如下：</p>
+
+<pre><code class="language-groovy">project.tasks.matching {
+    it.name.startsWith('dex')
+}.each { dx -&gt;
+    if (dx.additionalParameters == null) {
+        dx.additionalParameters = []
+    }
+    dx.additionalParameters += '--multi-dex';
+    // dx.additionalParameters += '--minimal-main-dex';
+    dx.additionalParameters += '--set-max-idx-number=55000';
+}
+</code></pre>
+
+<p>然后在生成manifest_keep.txt文件后，修改manifest_keep.txt文件，来达到拆分multidex，具体代码如下：</p>
+
+<pre><code class="language-groovy">def multidexTaskNames = [];
+
+afterEvaluate {
+    android.applicationVariants.all { variant -&gt;
+        def flavorName = variant.flavorName == null ? &quot;&quot; : variant.flavorName;
+        def buildType = variant.buildType.name == null ? &quot;&quot; : variant.buildType.name;
+        def multidexTaskName = &quot;collect${flavorName.capitalize()}${buildType.capitalize()}MultiDexComponents&quot;.toString();
+        multidexTaskNames.add(multidexTaskName);
+    }
+}
+
+gradle.taskGraph.beforeTask { Task multiDexTask -&gt;
+    if (!multidexTaskNames.contains(multiDexTask.name)) {
+        return;
+    }
+
+    println &quot;multidexTaskName=${multiDexTask.name}; multiDexTask.outputFile=${multiDexTask.outputFile}&quot;
+    multiDexTask.doLast {
+		File manifestKeepFile = multiDexTask.outputFile;
+		// 修改manifestKeepFile文件，将不需要的类从该文件中删除；
+		// 来达到mutidex分包的目的.
+    }
+}
+</code></pre>
+
+<h3 id="7-2-transform-api之后">7.2 Transform Api之后</h3>
+
+<p>当有了Transform Api之后，给dex任务添加dx.additionalParameters参数就无效了，但是*collect MultiDexComponents*仍然有效，所以只需要找到如何添加dx参数就好。分析gradle插件可以发现，在Transform Api中使用DexTransform来将jar转换为dex，并且在DexTransform最终由AndroidBuilder调用dx生成dex文件。</p>
+
+<p>其中DexTransform在*transform*方法中调用androidBuilder的*convertByteCode*方法，代码如下：</p>
+
+<pre><code class="language-groovy">
+public void transform(TransformInvocation transformInvocation) throws TransformException, IOException, InterruptedException {
+	// 忽略....
+ 	this.androidBuilder.convertByteCode(outputs2, outputDir3, this.multiDex, this.mainDexListFile, this.dexOptions, (List)null, false, true, outputHandler1);
+ 	// 忽略....
+}
+
+</code></pre>
+
+<p>通过查看AndroidBuilder的*convertByteCode*方法签名如下：</p>
+
+<pre><code class="language-groovy">void convertByteCode(Collection&lt;File&gt; inputs, File outDexFolder, boolean multidex, File mainDexList, DexOptions dexOptions, List&lt;String&gt; additionalParameters, boolean incremental, boolean optimize, ProcessOutputHandler processOutputHandler) throws IOException, InterruptedException, ProcessException {...}
+</code></pre>
+
+<p>对比以上两个代码片段，我们发现在*transform*方法中调用*convertByteCode*方法，直接将<strong>additionalParameters</strong>参数传入了null，所以只需要在调用*convertByteCode*方法时，传入自己的<strong>additionalParameters</strong>，就可以实现和以前一样的功能，那么如何实现呢？</p>
+
+<p>我们的解决方案是，在执行DexTransform前替换DexTransform的<strong>androidBuilder</strong>字段，然后在调用*convertByteCode*方法前，添加dx参数，大概代码如下：</p>
+
+<pre><code class="language-groovy">
+// 找到DexTransform
+project.tasks.matching {
+    it instanceof TransformTask
+}.each { TransformTask transformTask -&gt;
+    Transform transform = transformTask.transform;
+    if (transform.name.equals('dex')) {
+        DexTransform dexTransform = (DexTransform) transform;
+        if (dexTransform.multiDex) {
+            // wrapper androidBuilder and add dex paramters.
+            replaceFieldAndroidBuilder(dexTransform);
+        }
+    }
+}
+
+// 替换androidBuilder字段。
+private
+static void replaceFieldAndroidBuilder(DexTransform dexTransform) {
+    def fieldAndroidBuilder = DexTransform.class.getDeclaredField('androidBuilder');
+    fieldAndroidBuilder.setAccessible(true);
+
+    AndroidBuilder androidBuilder = dexTransform.androidBuilder;
+    fieldAndroidBuilder.set(dexTransform, AndroidBuilderWrapper.wrapperAndroidBuilder(androidBuilder));
+}
+
+// 自定义androidBuidler.
+private static class AndroidBuilderWrapper extends AndroidBuilder {
+
+    public
+    static AndroidBuilder wrapperAndroidBuilder(AndroidBuilder androidBuilder) {
+        return new AndroidBuilderWrapper(androidBuilder);
+    }
+
+    AndroidBuilderWrapper(AndroidBuilder androidBuilder) {
+        super(androidBuilder.mProjectId, androidBuilder.mCreatedBy, androidBuilder.getProcessExecutor(), androidBuilder.mJavaProcessExecutor, androidBuilder.getErrorReporter(), androidBuilder.getLogger(), androidBuilder.mVerboseExec);
+        setTargetInfo(androidBuilder.sdkInfo, androidBuilder.targetInfo, androidBuilder.mLibraryRequests);
+    }
+
+    @Override
+    void convertByteCode(Collection&lt;File&gt; inputs, File outDexFolder, boolean multidex, File mainDexList, DexOptions dexOptions, List&lt;String&gt; additionalParameters, boolean incremental, boolean optimize, ProcessOutputHandler processOutputHandler) throws IOException, InterruptedException, ProcessException {
+        println &quot;AndroidBuilderWrapper invoke convertByteCode&quot;;
+        // 添加dx参数.
+        if (additionalParameters == null) {
+            additionalParameters = new ArrayList&lt;String&gt;();
+        }
+        dx.additionalParameters += '--multi-dex';
+    	// dx.additionalParameters += '--minimal-main-dex';
+    	dx.additionalParameters += '--set-max-idx-number=55000';        
+        println &quot;AndroidBuilderWrapper invoke convertByteCode, additionalParameters=${additionalParameters}&quot;;
+        super.convertByteCode(inputs, outDexFolder, multidex, mainDexList, dexOptions, additionalParameters, incremental, optimize, processOutputHandler)
+    }
+}
+</code></pre>
+
+<h2 id="8-参考">8. 参考</h2>
+
+<ol>
+<li><a href="http://tools.android.com/tech-docs/new-build-system/user-guide">New Build System</a></li>
+<li><a href="http://tools.android.com/tech-docs/new-build-system/transform-api">Transform Api</a></li>
+<li><a href="https://github.com/ceabie/AndroidPublicXmlCompat/blob/master/app/public-xml.gradle">AndroidPublicXmlCompat</a></li>
+</ol>
+</div></article>
+					
+						<div class="share">
+	<div class="addthis_toolbox addthis_default_style ">
+	
+	<a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+	
+	
+	<a class="addthis_button_tweet"></a>
+	
+	
+	<a class="addthis_button_google_plusone" g:plusone:size=''></a>
+	
+	
+	</div>
+	
+  	<script type="text/javascript" src='http://s7.addthis.com/js/250/addthis_widget.js#pubid='></script>
+  	
+</div>
+
+					
+					
+					<section id="comment">
+					    <h1 class="title">Comments</h1>
+					    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+					</section>
+					
+					
+
+<script type="text/javascript">
+    
+    var disqus_shortname = 'coofee-github-io';
+
+    
+    
+
+    
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+    
+</script>
+
+
+				    </div>
+				</div>
+			</div>
+			<footer id="footer" class="inner">Copyright &copy; 2016
+
+    Coofee
+
+Design credit: <a href="http://shashankmehta.in/archive/2012/greyshade.html">Shashank Mehta</a>
+<script src="http://coofee.github.io/js/slash.js"></script>
+<script src="http://coofee.github.io/js/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+	$('.fancybox').fancybox();
+})(jQuery);
+</script></footer>
+		</div>
+	</div>
+	
+</body>
+</html>

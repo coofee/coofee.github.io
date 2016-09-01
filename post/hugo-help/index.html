@@ -104,14 +104,22 @@
 
 <h1 id="hugo">Hugo</h1>
 
-<h2 id="1-1-发布到本地预览网站">1.1 发布到本地预览网站</h2>
+<h2 id="1-1-创建文件">1.1 创建文件</h2>
+
+<pre><code class="language-bash">
+# 切换到博客目录
+$ hugo new post/xxxxx.md
+
+</code></pre>
+
+<h2 id="1-2-发布到本地预览网站">1.2 发布到本地预览网站</h2>
 
 <pre><code class="language-bash">
 $ hugo server --theme=greyshade --buildDrafts --watch
 
 </code></pre>
 
-<h2 id="1-2-发布网站到github">1.2 发布网站到github</h2>
+<h2 id="1-3-发布网站到github">1.3 发布网站到github</h2>
 
 <pre><code class="language-bash">
 $ hugo  --theme=greyshade --buildDrafts
