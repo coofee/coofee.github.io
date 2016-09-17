@@ -1,0 +1,498 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+      <title>Bspatch on Simple... </title>
+      <generator uri="https://gohugo.io">Hugo</generator>
+    <link>http://coofee.github.io/tags/bspatch/</link>
+    <language>en-us</language>
+    <author>Coofee</author>
+    
+    <updated>Sat, 17 Sep 2016 22:01:24 CST</updated>
+    
+    <item>
+      <title>android jni bspatch</title>
+      <link>http://coofee.github.io/post/jni-bspatch/</link>
+      <pubDate>Sat, 17 Sep 2016 22:01:24 CST</pubDate>
+      <author>Coofee</author>
+      <guid>http://coofee.github.io/post/jni-bspatch/</guid>
+      <description>
+
+&lt;p&gt;[TOC]&lt;/p&gt;
+
+&lt;h2 id=&#34;1-下载并配置ndk&#34;&gt;1. 下载并配置NDK:&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://developer.android.com/ndk/downloads/index.html&#34;&gt;https://developer.android.com/ndk/downloads/index.html&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;2-编译bsdiff&#34;&gt;2. 编译Bsdiff&lt;/h2&gt;
+
+&lt;h3 id=&#34;2-1-编写java类-创建native方法&#34;&gt;2.1 编写java类，创建native方法&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code&gt;```java
+package com.commons.utils;
+
+public class Bspatch {
+
+    static {
+        System.loadLibrary(&amp;quot;bspatch&amp;quot;);
+    }
+
+    public static native int applyPatch(String oldFile, String newFile, String patchFile);
+
+}
+```
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;2-2-生成-h文件&#34;&gt;2.2 生成.h文件&lt;/h3&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;使用&lt;strong&gt;javac&lt;/strong&gt;编写Bspatch或者在ide里面编译，这里我在android studio中编写并执行gradle的&lt;strong&gt;compileDebugJavaWithJavac&lt;/strong&gt;任务进行编译，编译完成后，切换到classes目录。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;使用javah生成.h文件&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;// 切换到编译好的类目录
+cd app/build/intermediates/classes
+// 生成.h文件
+javah -d h -classpath debug com.commons.utils.Bspatch
+    
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&#34;2-3-编译c-c-代码&#34;&gt;2.3 编译c/c++代码.&lt;/h3&gt;
+
+&lt;ol&gt;
+&lt;li&gt;复制生成的.h文件到c/c++文件目录.&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;在存放c/c++代码的目录中添加Android.mk、Application.mk文件。
+其中Android.mk用于指定要编译的类，模块名称等；
+Application.mk用于指定要生成特定abi类型的so文件，如：x86，armeabi等。&lt;/p&gt;
+
+&lt;p&gt;目录结构如下：&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;ul&gt;
+&lt;li&gt;app
+
+&lt;ul&gt;
+&lt;li&gt;build&lt;/li&gt;
+&lt;li&gt;jni
+
+&lt;ul&gt;
+&lt;li&gt;bspatch&lt;/li&gt;
+&lt;li&gt;bzip2&lt;/li&gt;
+&lt;li&gt;Android.mk&lt;/li&gt;
+&lt;li&gt;Application.mk&lt;/li&gt;
+&lt;li&gt;com_commons_utils_Bspatch.c&lt;/li&gt;
+&lt;li&gt;com_commons_utils_Bspatch.h&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;libs&lt;/li&gt;
+&lt;li&gt;src&lt;/li&gt;
+&lt;li&gt;build.gradle&lt;/li&gt;
+&lt;li&gt;proguard-rules.pro
+&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Android.mk内容如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-make&#34;&gt;LOCAL_PATH := $(call my-dir)
+    
+include $(CLEAR_VARS)
+    
+# 指定模块名称
+LOCAL_MODULE    := bspatch
+# 添加源码
+LOCAL_SRC_FILES := com_commons_utils_BsPatch.c
+    
+# for logging
+LOCAL_LDLIBS    := -lz -llog
+    
+include $(BUILD_SHARED_LIBRARY)
+    
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Application.mk&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;#表示生成全部abi的so
+APP_ABI := all
+    
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;切换到jni目录，手动编译native代码。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ cd app/jni
+$ ndk-build
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&#34;3-修改bspatch代码&#34;&gt;3. 修改bspatch代码&lt;/h2&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;为了调用简单，这里直接修改了bspatch的main函数为patch函数，然后在jni函数中直接调用patch函数进行合并。&lt;/p&gt;
+
+&lt;p&gt;```c
+#include &lt;android/log.h&gt;&lt;/p&gt;
+
+&lt;p&gt;#include &amp;ldquo;bspatch/bspatch.c&amp;rdquo;&lt;/p&gt;
+
+&lt;p&gt;#include &amp;ldquo;com_commons_utils_Bspatch.h&amp;rdquo;&lt;/p&gt;
+
+&lt;p&gt;/*&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Class:     com_commons_utils_Bspatch&lt;/li&gt;
+&lt;li&gt;Method:    applyPatch&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I
+*/
+JNIEXPORT jint JNICALL Java_com_commons_utils_Bspatch_applyPatch
+    (JNIEnv *env, jobject obj, jstring oldFile, jstring newFile, jstring patchFile) {&lt;/p&gt;
+
+&lt;p&gt;int ret;
+char *ch[4];
+ch[0] = &amp;ldquo;bspatch&amp;rdquo;;
+ch[1] = (char *) ((*env)-&amp;gt;GetStringUTFChars(env, oldFile, 0));
+ch[2] = (char *) ((*env)-&amp;gt;GetStringUTFChars(env, newFile, 0));
+ch[3] = (char *) ((*env)-&amp;gt;GetStringUTFChars(env, patchFile, 0));&lt;/p&gt;
+
+&lt;p&gt;__android_log_print(ANDROID_LOG_INFO, &amp;ldquo;bspatch&amp;rdquo;, &amp;ldquo;oldFile = %s &amp;ldquo;, ch[1]);
+__android_log_print(ANDROID_LOG_INFO, &amp;ldquo;bspatch&amp;rdquo;, &amp;ldquo;newFile = %s &amp;ldquo;, ch[2]);
+__android_log_print(ANDROID_LOG_INFO, &amp;ldquo;bspatch&amp;rdquo;, &amp;ldquo;patchFile = %s &amp;ldquo;, ch[3]);&lt;/p&gt;
+
+&lt;p&gt;ret = patch(4, ch);
+__android_log_print(ANDROID_LOG_INFO, &amp;ldquo;bspatch&amp;rdquo;, &amp;ldquo;applypatch result = %d &amp;ldquo;, ret);&lt;/p&gt;
+
+&lt;p&gt;(*env)-&amp;gt;ReleaseStringUTFChars(env, oldFile, ch[1]);
+(*env)-&amp;gt;ReleaseStringUTFChars(env, newFile, ch[2]);
+(*env)-&amp;gt;ReleaseStringUTFChars(env, patchFile, ch[3]);
+return ret;
+}&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;```&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;另由于在bspatch的代码中使用了err、errx函数，会导致出错时直接退出进程。为了在app中调用bspatch时不出现这种情况，所以使用自定义的err、errx函数替换系统err、errx函数，同时以返回值确定是否合并成功。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-c&#34;&gt;#include &amp;lt;stdlib.h&amp;gt;
+#include &amp;lt;stdio.h&amp;gt;
+#include &amp;lt;string.h&amp;gt;
+#include &amp;lt;stdarg.h&amp;gt;
+// #include &amp;lt;err.h&amp;gt;
+#include &amp;lt;unistd.h&amp;gt;
+#include &amp;lt;fcntl.h&amp;gt;
+#include &amp;lt;android/log.h&amp;gt;
+#include &amp;lt;jni.h&amp;gt;
+    
+#include &amp;quot;../bzip2/bzlib.c&amp;quot;
+#include &amp;quot;../bzip2/crctable.c&amp;quot;
+#include &amp;quot;../bzip2/compress.c&amp;quot;
+#include &amp;quot;../bzip2/decompress.c&amp;quot;
+#include &amp;quot;../bzip2/randtable.c&amp;quot;
+#include &amp;quot;../bzip2/blocksort.c&amp;quot;
+#include &amp;quot;../bzip2/huffman.c&amp;quot;
+    
+#include &amp;lt;android/log.h&amp;gt;
+    
+// #define vprintf(...) __android_log_print(ANDROID_LOG_DEBUG, &amp;quot;bspatch&amp;quot;, __VA_ARGS__);
+    
+static int err(int retVal, char* fmt, ...) {
+    va_list arglist;
+    va_start(arglist, fmt);
+    // vprintf(fmt, arglist);
+    __android_log_print(ANDROID_LOG_DEBUG, &amp;quot;bspatch&amp;quot;, fmt, arglist);
+    va_end(arglist);
+    return retVal;
+}
+    
+static int errx(int retVal, char* fmt, ...) {
+    va_list arglist;
+    va_start(arglist, fmt);
+    // vprintf(fmt, arglist);
+    __android_log_print(ANDROID_LOG_DEBUG, &amp;quot;bspatch&amp;quot;, fmt, arglist);
+    va_end(arglist);
+    return retVal;
+}
+    
+static void cleanup(FILE* f, FILE*  cpf, FILE*  dpf, FILE*  epf, 
+    BZFILE* cpfbz2, BZFILE* dpfbz2, BZFILE* epfbz2, 
+    u_char* old, u_char* new) {
+        
+    // close file and then free;
+    if (f != NULL) {
+        fclose(f);
+        free(f);
+    }
+    
+    if (cpf != NULL) {
+        fclose(cpf);
+        free(cpf);
+    }
+    
+    if (dpf != NULL) {
+        fclose(dpf);
+        free(dpf);
+    }
+    
+    if (epf != NULL) {
+        fclose(epf);
+        free(epf);
+    }
+    
+    if (cpfbz2 != NULL) {
+        BZ2_bzReadClose(NULL, cpfbz2);
+    }
+        
+    if (dpfbz2 != NULL) {
+        BZ2_bzReadClose(NULL, dpfbz2);
+    }
+        
+    if (epfbz2 != NULL) {
+        BZ2_bzReadClose(NULL, epfbz2);
+    }
+    
+    if (old != NULL) {
+        free(old);
+    }
+    
+    if (new != NULL) {
+        free(new);
+    }
+}
+    
+static off_t offtin(u_char *buf) {
+    off_t y;
+    
+    y = buf[7] &amp;amp; 0x7F;
+    y = y * 256;
+    y += buf[6];
+    y = y * 256;
+    y += buf[5];
+    y = y * 256;
+    y += buf[4];
+    y = y * 256;
+    y += buf[3];
+    y = y * 256;
+    y += buf[2];
+    y = y * 256;
+    y += buf[1];
+    y = y * 256;
+    y += buf[0];
+    
+    if (buf[7] &amp;amp; 0x80)
+        y = -y;
+    
+    return y;
+}
+    
+static int patch(int argc, char *argv[]) {
+    FILE *f, *cpf, *dpf, *epf;
+    BZFILE *cpfbz2, *dpfbz2, *epfbz2;
+    int cbz2err, dbz2err, ebz2err;
+    int fd;
+    ssize_t oldsize, newsize;
+    ssize_t bzctrllen, bzdatalen;
+    u_char header[32], buf[8];
+    u_char *old, *new;
+    off_t oldpos, newpos;
+    off_t ctrl[3];
+    off_t lenread;
+    off_t i;
+    
+    if (argc != 4) {
+        cleanup(f, cpf, dpf, epf, cpfbz2, dpfbz2, epfbz2, old, new);
+        return errx(1, &amp;quot;usage: %s oldfile newfile patchfile\n&amp;quot;, argv[0]);
+    }
+    
+    /* Open patch file */
+    if ((f = fopen(argv[3], &amp;quot;r&amp;quot;)) == NULL) {
+        cleanup(f, cpf, dpf, epf, cpfbz2, dpfbz2, epfbz2, old, new);
+        return err(1, &amp;quot;fopen(%s)&amp;quot;, argv[3]);
+    }
+            
+    
+    /*
+     File format:
+     0  8   &amp;quot;BSDIFF40&amp;quot;
+     8  8   X
+     16 8   Y
+     24 8   sizeof(newfile)
+     32 X   bzip2(control block)
+     32+X   Y   bzip2(diff block)
+     32+X+Y ??? bzip2(extra block)
+     with control block a set of triples (x,y,z) meaning &amp;quot;add x bytes
+     from oldfile to x bytes from the diff block; copy y bytes from the
+     extra block; seek forwards in oldfile by z bytes&amp;quot;.
+     */
+    
+    /* Read header */
+    if (fread(header, 1, 32, f) &amp;lt; 32) {
+        if (feof(f)) {
+            errx(1, &amp;quot;Corrupt patch\n&amp;quot;);
+        }
+    
+        cleanup(f, cpf, dpf, epf, cpfbz2, dpfbz2, epfbz2, old, new);
+        return err(1, &amp;quot;fread(%s)&amp;quot;, argv[3]);
+    }
+    
+    /* Check for appropriate magic */
+    if (memcmp(header, &amp;quot;BSDIFF40&amp;quot;, 8) != 0) {
+        cleanup(f, cpf, dpf, epf, cpfbz2, dpfbz2, epfbz2, old, new);
+        return errx(1, &amp;quot;Corrupt patch\n&amp;quot;);
+    }
+    
+    /* Read lengths from header */
+    bzctrllen = offtin(header + 8);
+    bzdatalen = offtin(header + 16);
+    newsize = offtin(header + 24);
+    if ((bzctrllen &amp;lt; 0) || (bzdatalen &amp;lt; 0) || (newsize &amp;lt; 0)) {
+        cleanup(f, cpf, dpf, epf, cpfbz2, dpfbz2, epfbz2, old, new);
+        return errx(1, &amp;quot;Corrupt patch\n&amp;quot;);
+    }
+    
+    /* Close patch file and re-open it via libbzip2 at the right places */
+    if (fclose(f)) {
+        cleanup(f, cpf, dpf, epf, cpfbz2, dpfbz2, epfbz2, old, new);
+        return err(1, &amp;quot;fclose(%s)&amp;quot;, argv[3]);
+    }
+            
+    if ((cpf = fopen(argv[3], &amp;quot;r&amp;quot;)) == NULL) {
+        cleanup(f, cpf, dpf, epf, cpfbz2, dpfbz2, epfbz2, old, new);
+        return err(1, &amp;quot;fopen(%s)&amp;quot;, argv[3]);
+    }
+    
+    if (fseeko(cpf, 32, SEEK_SET)) {
+        cleanup(f, cpf, dpf, epf, cpfbz2, dpfbz2, epfbz2, old, new);
+        return err(1, &amp;quot;fseeko(%s, %lld)&amp;quot;, argv[3], (long long) 32);
+    }
+    
+    if ((cpfbz2 = BZ2_bzReadOpen(&amp;amp;cbz2err, cpf, 0, 0, NULL, 0)) == NULL) {
+        cleanup(f, cpf, dpf, epf, cpfbz2, dpfbz2, epfbz2, old, new);
+        return errx(1, &amp;quot;BZ2_bzReadOpen, bz2err = %d&amp;quot;, cbz2err);
+    }
+    
+    if ((dpf = fopen(argv[3], &amp;quot;r&amp;quot;)) == NULL) {
+        cleanup(f, cpf, dpf, epf, cpfbz2, dpfbz2, epfbz2, old, new);
+        return err(1, &amp;quot;fopen(%s)&amp;quot;, argv[3]);
+    }
+    if (fseeko(dpf, 32 + bzctrllen, SEEK_SET)) {
+        cleanup(f, cpf, dpf, epf, cpfbz2, dpfbz2, epfbz2, old, new);
+        return err(1, &amp;quot;fseeko(%s, %lld)&amp;quot;, argv[3], (long long) (32 + bzctrllen));
+    }
+    if ((dpfbz2 = BZ2_bzReadOpen(&amp;amp;dbz2err, dpf, 0, 0, NULL, 0)) == NULL) {
+        cleanup(f, cpf, dpf, epf, cpfbz2, dpfbz2, epfbz2, old, new);
+        return errx(1, &amp;quot;BZ2_bzReadOpen, bz2err = %d&amp;quot;, dbz2err);
+    }
+    if ((epf = fopen(argv[3], &amp;quot;r&amp;quot;)) == NULL) {
+        cleanup(f, cpf, dpf, epf, cpfbz2, dpfbz2, epfbz2, old, new);
+        return err(1, &amp;quot;fopen(%s)&amp;quot;, argv[3]);
+    }
+    if (fseeko(epf, 32 + bzctrllen + bzdatalen, SEEK_SET)) {
+        cleanup(f, cpf, dpf, epf, cpfbz2, dpfbz2, epfbz2, old, new);
+        return err(1, &amp;quot;fseeko(%s, %lld)&amp;quot;, argv[3],
+            (long long) (32 + bzctrllen + bzdatalen));
+    }
+    if ((epfbz2 = BZ2_bzReadOpen(&amp;amp;ebz2err, epf, 0, 0, NULL, 0)) == NULL) {
+        cleanup(f, cpf, dpf, epf, cpfbz2, dpfbz2, epfbz2, old, new);
+        return errx(1, &amp;quot;BZ2_bzReadOpen, bz2err = %d&amp;quot;, ebz2err);
+    }
+    
+    if (((fd = open(argv[1], O_RDONLY, 0)) &amp;lt; 0)
+        || ((oldsize = lseek(fd, 0, SEEK_END)) == -1)
+        || ((old = malloc(oldsize + 1)) == NULL)
+        || (lseek(fd, 0, SEEK_SET) != 0)
+        || (read(fd, old, oldsize) != oldsize) || (close(fd) == -1)) {
+            
+        cleanup(f, cpf, dpf, epf, cpfbz2, dpfbz2, epfbz2, old, new);
+        return err(1, &amp;quot;%s&amp;quot;, argv[1]);
+    }
+            
+    if ((new = malloc(newsize + 1)) == NULL) {
+        cleanup(f, cpf, dpf, epf, cpfbz2, dpfbz2, epfbz2, old, new);
+        return err(1, NULL);
+    }
+    
+    oldpos = 0;
+    newpos = 0;
+    while (newpos &amp;lt; newsize) {
+        /* Read control data */
+        for (i = 0; i &amp;lt;= 2; i++) {
+            lenread = BZ2_bzRead(&amp;amp;cbz2err, cpfbz2, buf, 8);
+            if ((lenread &amp;lt; 8)
+                || ((cbz2err != BZ_OK) &amp;amp;&amp;amp; (cbz2err != BZ_STREAM_END))) {
+                    cleanup(f, cpf, dpf, epf, cpfbz2, dpfbz2, epfbz2, old, new);
+                    return errx(1, &amp;quot;Corrupt patch\n&amp;quot;);
+                }
+            ctrl[i] = offtin(buf);
+        };
+    
+        /* Sanity-check */
+        if (newpos + ctrl[0] &amp;gt; newsize) {
+            cleanup(f, cpf, dpf, epf, cpfbz2, dpfbz2, epfbz2, old, new);
+            return errx(1, &amp;quot;Corrupt patch\n&amp;quot;);
+        }
+    
+        /* Read diff string */
+        lenread = BZ2_bzRead(&amp;amp;dbz2err, dpfbz2, new + newpos, ctrl[0]);
+        if ((lenread &amp;lt; ctrl[0])
+            || ((dbz2err != BZ_OK) &amp;amp;&amp;amp; (dbz2err != BZ_STREAM_END))) {
+            cleanup(f, cpf, dpf, epf, cpfbz2, dpfbz2, epfbz2, old, new);
+            return errx(1, &amp;quot;Corrupt patch\n&amp;quot;);
+        }
+    
+        /* Add old data to diff string */
+        for (i = 0; i &amp;lt; ctrl[0]; i++)
+            if ((oldpos + i &amp;gt;= 0) &amp;amp;&amp;amp; (oldpos + i &amp;lt; oldsize))
+                new[newpos + i] += old[oldpos + i];
+    
+        /* Adjust pointers */
+        newpos += ctrl[0];
+        oldpos += ctrl[0];
+    
+        /* Sanity-check */
+        if (newpos + ctrl[1] &amp;gt; newsize) {
+            cleanup(f, cpf, dpf, epf, cpfbz2, dpfbz2, epfbz2, old, new);
+            return errx(1, &amp;quot;Corrupt patch\n&amp;quot;);
+        }
+    
+        /* Read extra string */
+        lenread = BZ2_bzRead(&amp;amp;ebz2err, epfbz2, new + newpos, ctrl[1]);
+        if ((lenread &amp;lt; ctrl[1])
+            || ((ebz2err != BZ_OK) &amp;amp;&amp;amp; (ebz2err != BZ_STREAM_END))) {
+            cleanup(f, cpf, dpf, epf, cpfbz2, dpfbz2, epfbz2, old, new);
+            return errx(1, &amp;quot;Corrupt patch\n&amp;quot;);
+        }
+    
+        /* Adjust pointers */
+        newpos += ctrl[1];
+        oldpos += ctrl[2];
+    };
+    
+    /* Clean up the bzip2 reads */
+    BZ2_bzReadClose(&amp;amp;cbz2err, cpfbz2);
+    BZ2_bzReadClose(&amp;amp;dbz2err, dpfbz2);
+    BZ2_bzReadClose(&amp;amp;ebz2err, epfbz2);
+    if (fclose(cpf) || fclose(dpf) || fclose(epf)) {
+        cleanup(f, cpf, dpf, epf, cpfbz2, dpfbz2, epfbz2, old, new);
+        return err(1, &amp;quot;fclose(%s)&amp;quot;, argv[3]);
+    }
+    
+    /* Write the new file */
+    if (((fd = open(argv[2], O_CREAT | O_TRUNC | O_WRONLY, 0666)) &amp;lt; 0)
+        || (write(fd, new, newsize) != newsize) || (close(fd) == -1)) {
+        cleanup(f, cpf, dpf, epf, cpfbz2, dpfbz2, epfbz2, old, new);
+        return err(1, &amp;quot;%s&amp;quot;, argv[2]);
+    }
+    
+    free(new);
+    free(old);
+    
+    return 0;
+}
+    
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

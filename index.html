@@ -103,6 +103,24 @@
 					
 				        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
     <div class="meta">
+		<div class="date"><time datetime='Sat, Sep 17, 2016' data-updated="true" itemprop="datePublished">Sat, Sep 17, 2016</time>
+</div>
+		<div class="tags">
+</div>
+		
+			<span class="comments"><a href="http://coofee.github.io/post/jni-bspatch/#disqus_thread">Comments</a></span>
+		
+	</div>
+	<h1 class="title" itemprop="name"><a href="http://coofee.github.io/post/jni-bspatch/" itemprop="url">android jni bspatch</a></h1>
+	<div class="entry-content" itemprop="articleBody">
+		[TOC] 1. 下载并配置NDK: https://developer.android.com/ndk/downloads/index.html 2. 编译Bsdiff 2.1 编写java类，创建native方法 ```java package com.commons.utils; public class Bspatch { static { System.loadLibrary(&quot;bspatch&quot;); } public static native int applyPatch(String oldFile, String newFile, String patchFile); } ``` 2.2 生成.h文件 使用javac编写Bspatch或者在ide里面编译，这里我在android studio中编写并执行gradle的compileDebugJavaWithJavac任务进行编译，编译完成后，切换到classes目录。 使用javah生成.h文件 // 切换到编译好的类目录 cd app/build/intermediates/classes // 生成.h文件 javah -d h -classpath debug com.commons.utils.Bspatch 2.3 编译c/c++代码. 复制生成的.h文件到c/c++文件目录. 在存放c/c++代码的目录中添加Android.mk、Application.mk文件。 其中Android.mk用于指定要编译的类，模块名称等； Application.mk用于指定要生成特定abi类型的so文件，如：x86，armeabi等。 目录结构如下： app build jni bspatch bzip2 Android.mk Application.mk com_commons_utils_Bspatch.c com_commons_utils_Bspatch.h libs src build.gradle proguard-rules.pro Android.mk内容如下： LOCAL_PATH := $(call my-dir) include $(CLEAR_VARS) # 指定模块名称 LOCAL_MODULE := bspatch # 添加源码 LOCAL_SRC_FILES := com_commons_utils_BsPatch.c # for logging LOCAL_LDLIBS := -lz -llog include $(BUILD_SHARED_LIBRARY) Application.mk #表示生成全部abi的so APP_ABI := all 切换到jni目录，手动编译native代码。 $ cd app/jni $ ndk-build 3.
+		<a href="http://coofee.github.io/post/jni-bspatch/" class="more-link">Read on →</a>
+	</div>
+</article>
+
+				    
+				        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+    <div class="meta">
 		<div class="date"><time datetime='Thu, Sep 1, 2016' data-updated="true" itemprop="datePublished">Thu, Sep 1, 2016</time>
 </div>
 		<div class="tags">
