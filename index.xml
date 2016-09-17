@@ -27,19 +27,17 @@
 
 &lt;h3 id=&#34;2-1-编写java类-创建native方法&#34;&gt;2.1 编写java类，创建native方法&lt;/h3&gt;
 
-&lt;pre&gt;&lt;code&gt;```java
-package com.commons.utils;
-
+&lt;pre&gt;&lt;code class=&#34;language-java&#34;&gt;package com.commons.utils;
+	
 public class Bspatch {
-
+	
     static {
         System.loadLibrary(&amp;quot;bspatch&amp;quot;);
     }
-
+	
     public static native int applyPatch(String oldFile, String newFile, String patchFile);
-
+	
 }
-```
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;h3 id=&#34;2-2-生成-h文件&#34;&gt;2.2 生成.h文件&lt;/h3&gt;
@@ -47,24 +45,24 @@ public class Bspatch {
 &lt;ol&gt;
 &lt;li&gt;&lt;p&gt;使用&lt;strong&gt;javac&lt;/strong&gt;编写Bspatch或者在ide里面编译，这里我在android studio中编写并执行gradle的&lt;strong&gt;compileDebugJavaWithJavac&lt;/strong&gt;任务进行编译，编译完成后，切换到classes目录。&lt;/p&gt;&lt;/li&gt;
 
-&lt;li&gt;&lt;p&gt;使用javah生成.h文件&lt;/p&gt;
+&lt;li&gt;&lt;p&gt;使用javah生成.h文件&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;// 切换到编译好的类目录
 cd app/build/intermediates/classes
 // 生成.h文件
 javah -d h -classpath debug com.commons.utils.Bspatch
-    
-&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
-&lt;/ol&gt;
+	
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;h3 id=&#34;2-3-编译c-c-代码&#34;&gt;2.3 编译c/c++代码.&lt;/h3&gt;
 
 &lt;ol&gt;
 &lt;li&gt;复制生成的.h文件到c/c++文件目录.&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;在存放c/c++代码的目录中添加Android.mk、Application.mk文件。
+&lt;li&gt;在存放c/c++代码的目录中添加Android.mk、Application.mk文件。
 其中Android.mk用于指定要编译的类，模块名称等；
-Application.mk用于指定要生成特定abi类型的so文件，如：x86，armeabi等。&lt;/p&gt;
+Application.mk用于指定要生成特定abi类型的so文件，如：x86，armeabi等。&lt;/li&gt;
+&lt;/ol&gt;
 
 &lt;p&gt;目录结构如下：&lt;/p&gt;
 
@@ -91,89 +89,97 @@ Application.mk用于指定要生成特定abi类型的so文件，如：x86，arme
 &lt;br /&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;/blockquote&gt;&lt;/li&gt;
+&lt;/blockquote&gt;
 
-&lt;li&gt;&lt;p&gt;Android.mk内容如下：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Android.mk内容如下：&lt;/li&gt;
+&lt;/ol&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-make&#34;&gt;LOCAL_PATH := $(call my-dir)
-    
+	
 include $(CLEAR_VARS)
-    
+	
 # 指定模块名称
 LOCAL_MODULE    := bspatch
 # 添加源码
 LOCAL_SRC_FILES := com_commons_utils_BsPatch.c
-    
+	
 # for logging
 LOCAL_LDLIBS    := -lz -llog
-    
+	
 include $(BUILD_SHARED_LIBRARY)
-    
-&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+	
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;li&gt;&lt;p&gt;Application.mk&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Application.mk&lt;/li&gt;
+&lt;/ol&gt;
 
 &lt;pre&gt;&lt;code&gt;#表示生成全部abi的so
 APP_ABI := all
-    
-&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+	
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;li&gt;&lt;p&gt;切换到jni目录，手动编译native代码。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;切换到jni目录，手动编译native代码。&lt;/li&gt;
+&lt;/ol&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ cd app/jni
 $ ndk-build
-&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
-&lt;/ol&gt;
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;h2 id=&#34;3-修改bspatch代码&#34;&gt;3. 修改bspatch代码&lt;/h2&gt;
 
 &lt;ol&gt;
-&lt;li&gt;&lt;p&gt;为了调用简单，这里直接修改了bspatch的main函数为patch函数，然后在jni函数中直接调用patch函数进行合并。&lt;/p&gt;
+&lt;li&gt;为了调用简单，这里直接修改了bspatch的main函数为patch函数，然后在jni函数中直接调用patch函数进行合并。
+&lt;br /&gt;&lt;/li&gt;
+&lt;/ol&gt;
 
-&lt;p&gt;```c
-#include &lt;android/log.h&gt;&lt;/p&gt;
-
-&lt;p&gt;#include &amp;ldquo;bspatch/bspatch.c&amp;rdquo;&lt;/p&gt;
-
-&lt;p&gt;#include &amp;ldquo;com_commons_utils_Bspatch.h&amp;rdquo;&lt;/p&gt;
-
-&lt;p&gt;/*&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;Class:     com_commons_utils_Bspatch&lt;/li&gt;
-&lt;li&gt;Method:    applyPatch&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I
-*/
+&lt;pre&gt;&lt;code class=&#34;language-c&#34;&gt;	
+#include &amp;lt;android/log.h&amp;gt;
+	
+#include &amp;quot;bspatch/bspatch.c&amp;quot;
+	
+#include &amp;quot;com_commons_utils_Bspatch.h&amp;quot;
+	
+	
+	
+/*
+ * Class:     com_commons_utils_Bspatch
+ * Method:    applyPatch
+ * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I
+ */
 JNIEXPORT jint JNICALL Java_com_commons_utils_Bspatch_applyPatch
-    (JNIEnv *env, jobject obj, jstring oldFile, jstring newFile, jstring patchFile) {&lt;/p&gt;
+        (JNIEnv *env, jobject obj, jstring oldFile, jstring newFile, jstring patchFile) {
+	
+    int ret;
+    char *ch[4];
+    ch[0] = &amp;quot;bspatch&amp;quot;;
+    ch[1] = (char *) ((*env)-&amp;gt;GetStringUTFChars(env, oldFile, 0));
+    ch[2] = (char *) ((*env)-&amp;gt;GetStringUTFChars(env, newFile, 0));
+    ch[3] = (char *) ((*env)-&amp;gt;GetStringUTFChars(env, patchFile, 0));
+	
+    __android_log_print(ANDROID_LOG_INFO, &amp;quot;bspatch&amp;quot;, &amp;quot;oldFile = %s &amp;quot;, ch[1]);
+    __android_log_print(ANDROID_LOG_INFO, &amp;quot;bspatch&amp;quot;, &amp;quot;newFile = %s &amp;quot;, ch[2]);
+    __android_log_print(ANDROID_LOG_INFO, &amp;quot;bspatch&amp;quot;, &amp;quot;patchFile = %s &amp;quot;, ch[3]);
+	
+    ret = patch(4, ch);
+    __android_log_print(ANDROID_LOG_INFO, &amp;quot;bspatch&amp;quot;, &amp;quot;applypatch result = %d &amp;quot;, ret);
+	
+    (*env)-&amp;gt;ReleaseStringUTFChars(env, oldFile, ch[1]);
+    (*env)-&amp;gt;ReleaseStringUTFChars(env, newFile, ch[2]);
+    (*env)-&amp;gt;ReleaseStringUTFChars(env, patchFile, ch[3]);
+    return ret;
+}
+	
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;int ret;
-char *ch[4];
-ch[0] = &amp;ldquo;bspatch&amp;rdquo;;
-ch[1] = (char *) ((*env)-&amp;gt;GetStringUTFChars(env, oldFile, 0));
-ch[2] = (char *) ((*env)-&amp;gt;GetStringUTFChars(env, newFile, 0));
-ch[3] = (char *) ((*env)-&amp;gt;GetStringUTFChars(env, patchFile, 0));&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;另由于在bspatch的代码中使用了err、errx函数，会导致出错时直接退出进程。为了在app中调用bspatch时不出现这种情况，所以使用自定义的err、errx函数替换系统err、errx函数，同时以返回值确定是否合并成功。&lt;/li&gt;
+&lt;/ol&gt;
 
-&lt;p&gt;__android_log_print(ANDROID_LOG_INFO, &amp;ldquo;bspatch&amp;rdquo;, &amp;ldquo;oldFile = %s &amp;ldquo;, ch[1]);
-__android_log_print(ANDROID_LOG_INFO, &amp;ldquo;bspatch&amp;rdquo;, &amp;ldquo;newFile = %s &amp;ldquo;, ch[2]);
-__android_log_print(ANDROID_LOG_INFO, &amp;ldquo;bspatch&amp;rdquo;, &amp;ldquo;patchFile = %s &amp;ldquo;, ch[3]);&lt;/p&gt;
-
-&lt;p&gt;ret = patch(4, ch);
-__android_log_print(ANDROID_LOG_INFO, &amp;ldquo;bspatch&amp;rdquo;, &amp;ldquo;applypatch result = %d &amp;ldquo;, ret);&lt;/p&gt;
-
-&lt;p&gt;(*env)-&amp;gt;ReleaseStringUTFChars(env, oldFile, ch[1]);
-(*env)-&amp;gt;ReleaseStringUTFChars(env, newFile, ch[2]);
-(*env)-&amp;gt;ReleaseStringUTFChars(env, patchFile, ch[3]);
-return ret;
-}&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;```&lt;/p&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;另由于在bspatch的代码中使用了err、errx函数，会导致出错时直接退出进程。为了在app中调用bspatch时不出现这种情况，所以使用自定义的err、errx函数替换系统err、errx函数，同时以返回值确定是否合并成功。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-c&#34;&gt;#include &amp;lt;stdlib.h&amp;gt;
+&lt;pre&gt;&lt;code class=&#34;language-c&#34;&gt;    
+#include &amp;lt;stdlib.h&amp;gt;
 #include &amp;lt;stdio.h&amp;gt;
 #include &amp;lt;string.h&amp;gt;
 #include &amp;lt;stdarg.h&amp;gt;
@@ -216,7 +222,7 @@ static int errx(int retVal, char* fmt, ...) {
 static void cleanup(FILE* f, FILE*  cpf, FILE*  dpf, FILE*  epf, 
     BZFILE* cpfbz2, BZFILE* dpfbz2, BZFILE* epfbz2, 
     u_char* old, u_char* new) {
-        
+    
     // close file and then free;
     if (f != NULL) {
         fclose(f);
@@ -241,11 +247,11 @@ static void cleanup(FILE* f, FILE*  cpf, FILE*  dpf, FILE*  epf,
     if (cpfbz2 != NULL) {
         BZ2_bzReadClose(NULL, cpfbz2);
     }
-        
+    
     if (dpfbz2 != NULL) {
         BZ2_bzReadClose(NULL, dpfbz2);
     }
-        
+    
     if (epfbz2 != NULL) {
         BZ2_bzReadClose(NULL, epfbz2);
     }
@@ -308,7 +314,7 @@ static int patch(int argc, char *argv[]) {
         cleanup(f, cpf, dpf, epf, cpfbz2, dpfbz2, epfbz2, old, new);
         return err(1, &amp;quot;fopen(%s)&amp;quot;, argv[3]);
     }
-            
+        
     
     /*
      File format:
@@ -354,7 +360,7 @@ static int patch(int argc, char *argv[]) {
         cleanup(f, cpf, dpf, epf, cpfbz2, dpfbz2, epfbz2, old, new);
         return err(1, &amp;quot;fclose(%s)&amp;quot;, argv[3]);
     }
-            
+        
     if ((cpf = fopen(argv[3], &amp;quot;r&amp;quot;)) == NULL) {
         cleanup(f, cpf, dpf, epf, cpfbz2, dpfbz2, epfbz2, old, new);
         return err(1, &amp;quot;fopen(%s)&amp;quot;, argv[3]);
@@ -401,11 +407,11 @@ static int patch(int argc, char *argv[]) {
         || ((old = malloc(oldsize + 1)) == NULL)
         || (lseek(fd, 0, SEEK_SET) != 0)
         || (read(fd, old, oldsize) != oldsize) || (close(fd) == -1)) {
-            
+        
         cleanup(f, cpf, dpf, epf, cpfbz2, dpfbz2, epfbz2, old, new);
         return err(1, &amp;quot;%s&amp;quot;, argv[1]);
     }
-            
+        
     if ((new = malloc(newsize + 1)) == NULL) {
         cleanup(f, cpf, dpf, epf, cpfbz2, dpfbz2, epfbz2, old, new);
         return err(1, NULL);
@@ -489,8 +495,7 @@ static int patch(int argc, char *argv[]) {
     return 0;
 }
     
-&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
-&lt;/ol&gt;
+&lt;/code&gt;&lt;/pre&gt;
 </description>
     </item>
     
