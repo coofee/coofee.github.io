@@ -7,7 +7,37 @@
     <language>en-us</language>
     <author>Coofee</author>
     
-    <updated>Sat, 17 Sep 2016 22:01:24 CST</updated>
+    <updated>Fri, 30 Sep 2016 17:11:19 CST</updated>
+    
+    <item>
+      <title>常用命令</title>
+      <link>http://coofee.github.io/post/tools/</link>
+      <pubDate>Fri, 30 Sep 2016 17:11:19 CST</pubDate>
+      <author>Coofee</author>
+      <guid>http://coofee.github.io/post/tools/</guid>
+      <description>
+
+&lt;h1 id=&#34;1-golang跨平台编译&#34;&gt;1. golang跨平台编译&lt;/h1&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;// 如：
+env GOOS=linux GOARCH=amd64 go build  *.go
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1 id=&#34;2-ssh&#34;&gt;2. ssh&lt;/h1&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;ssh -p port username@host
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1 id=&#34;3-scp&#34;&gt;3. scp&lt;/h1&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;scp -P port local_file  username@host:remote_file
+
+scp -P port -r local_dir  username@host:remote_dir
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1 id=&#34;4-git&#34;&gt;4. git&lt;/h1&gt;
+</description>
+    </item>
     
     <item>
       <title>android jni bspatch</title>

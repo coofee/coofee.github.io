@@ -4,8 +4,8 @@
 
 <head>
 	<meta charset="utf-8">
-	<title>如何科学上网 - Simple...</title>
-	<meta name="author" content="map[email:coffeerene.zhao@gmail.com name:Coofee]">
+	<title>常用命令 - Simple...</title>
+	<meta name="author" content="map[name:Coofee email:coffeerene.zhao@gmail.com]">
 
 	
 	
@@ -19,7 +19,7 @@
     
 	<link href='/index.xml' rel="alternate" title="Simple..." type="application/atom+xml">
 	
-	<link rel="canonical" href="http://coofee.github.io/post/%E5%A6%82%E4%BD%95%E7%A7%91%E5%AD%A6%E4%B8%8A%E7%BD%91/">
+	<link rel="canonical" href="http://coofee.github.io/post/tools/">
 	<link href="http://coofee.github.io/favicon.png" rel="shortcut icon">
 	<link href="http://coofee.github.io/css/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
 	<link href="http://coofee.github.io/css/font-awesome.min.css" media="screen, projection" rel="stylesheet" type="text/css">
@@ -99,71 +99,28 @@
 				<div id="content" class="inner">
 					<div itemscope itemtype="http://schema.org/Blog">
 					<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
-    <h1 class="title" itemprop="name">如何科学上网</h1>
+    <h1 class="title" itemprop="name">常用命令</h1>
 	<div class="entry-content" itemprop="articleBody">
 
-<h2 id="1-如何使用shadowsocks代理访问网络">1. 如何使用shadowsocks代理访问网络？</h2>
+<h1 id="1-golang跨平台编译">1. golang跨平台编译</h1>
 
-<ul>
-<li>购买代理服务器，安装shadowsocks。</li>
-<li>本机安装shadowsocks-gui，然后添加代理服务器上shadowsocks的配置，此时shadowsocks会在本机上面开启一个socks代理，其默认端口是: 1080。</li>
-<li>打开shadowsocks，勾选代理服务器，同时勾选shadowsocks-gui的全局模式或者自动代理模式，然后在浏览器上面选择使用系统代理即可正常访问google。</li>
-</ul>
+<pre><code class="language-bash">// 如：
+env GOOS=linux GOARCH=amd64 go build  *.go
+</code></pre>
 
-<h2 id="2-如何在mac的terminal中使用socks代理">2. 如何在mac的Terminal中使用socks代理？</h2>
+<h1 id="2-ssh">2. ssh</h1>
 
-<ul>
-<li>使用homebrew安装proxychains4-ng</li>
+<pre><code class="language-bash">ssh -p port username@host
+</code></pre>
 
-<li><p>创建<code>~/.proxychains/proxychains.conf</code>文件，文件内容如下。</p>
+<h1 id="3-scp">3. scp</h1>
 
-<pre><code>strict_chain
-proxy_dns
-remote_dns_subnet 224
-tcp_read_time_out 15000
-tcp_connect_time_out 8000
-localnet 127.0.0.0/255.0.0.0
-quiet_mode
+<pre><code class="language-bash">scp -P port local_file  username@host:remote_file
 
-[ProxyList]
-socks5  127.0.0.1 1080
-</code></pre></li>
+scp -P port -r local_dir  username@host:remote_dir
+</code></pre>
 
-<li><p>在Terminal中，使用<code>proxychains4 [cmd]</code>就可以使用代理服务器了。如：</p></li>
-</ul>
-
-<p><code>~$ proxychains4 brew update</code></p>
-
-<ul>
-<li>对于mac osx 10.11，由于apple新增了sip模式，需要进入到Recovery模式(<strong>cmmand+R</strong>)，然后在terminal中执行<code>csrutil enable --without debug</code>命令，然后重启电脑，即可正常使用proxychains4-ng。</li>
-</ul>
-
-<h2 id="3-如何让socks代理支持http代理">3. 如何让socks代理支持http代理？</h2>
-
-<ul>
-<li>安装polipo：<code>brew install polipo</code></li>
-<li>查看配置参数：<code>polipo -v</code></li>
-<li>启动http代理：<code>polipo socksParentProxy=localhost:1080</code>，其默认端口是8123。</li>
-<li>此时其他应该程序就可以设置polipo的http代理：<code>localhost:8123</code></li>
-</ul>
-
-<h2 id="4-如何在terminal中使用http代理">4. 如何在Terminal中使用Http代理？</h2>
-
-<ul>
-<li><p>在<code>~/.bash_profile</code>文件中添加以下代码，然后执行<code>source ~/.bash_profile</code>。</p>
-
-<pre><code class="language-bash">alias gaproxy='export http_proxy=127.0.0.1:8123 https_proxy=127.0.0.1:8123'
-alias noproxy='unset http_proxy https_proxy'
-</code></pre></li>
-
-<li><p>当使用http代理时，执行gaproxy，然后执行其他命令即可。如：</p>
-
-<pre><code class="language-bash">~$ gaproxy
-~$ curl www.google.com
-</code></pre></li>
-
-<li><p>不使用时，可以直接执行noproxy。</p></li>
-</ul>
+<h1 id="4-git">4. git</h1>
 </div></article>
 					
 						<div class="share">
