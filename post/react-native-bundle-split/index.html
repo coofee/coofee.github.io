@@ -1,0 +1,301 @@
+<!DOCTYPE HTML>
+
+<html lang="en-us">
+
+<head>
+	<meta charset="utf-8">
+	<title>React Native Bundle Split - Simple...</title>
+	<meta name="author" content="map[name:Coofee email:coffeerene.zhao@gmail.com]">
+
+	
+	
+	<meta name="description" content="">
+	
+
+	
+	<meta name="HandheldFriendly" content="True">
+	<meta name="MobileOptimized" content="320">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+    
+	<link href='/index.xml' rel="alternate" title="Simple..." type="application/atom+xml">
+	
+	<link rel="canonical" href="http://coofee.github.io/post/react-native-bundle-split/">
+	<link href="http://coofee.github.io/favicon.png" rel="shortcut icon">
+	<link href="http://coofee.github.io/css/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<link href="http://coofee.github.io/css/font-awesome.min.css" media="screen, projection" rel="stylesheet" type="text/css">
+	
+	<link href='http://fonts.googleapis.com/css?family=Nunito:400,300,700' rel='stylesheet' type='text/css'>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+
+	
+	<link href="http://coofee.github.io/css/prism.css" rel="stylesheet" />
+	<script src="http://coofee.github.io/js/prism.js"></script>
+
+	
+  
+
+</head>
+
+
+<body>
+	<div class="container">
+		<div class="left-col">
+			<div class="intrude-less">
+			<header id="header" class="inner"><div class="profilepic">
+	
+	
+	<script src="http://coofee.github.io/js/md5.js"></script>
+	<script type="text/javascript">
+		$(function(){
+			$('.profilepic').append("<img src='http://www.gravatar.com/avatar/" + MD5('coffeerene.zhao@gmail.com') + "?s=160' alt='Profile Picture' style='width: 160px;' />");
+		});
+	</script>
+	
+	
+</div>
+
+<nav id="main-nav"><ul class="main">
+    <li><a href="/">Blog</a></li>
+    <li><a href="/post/about">About</a></li>
+    <li><a href="/post/">Archives</a></li>
+</ul>
+
+<section class="aboutme">
+  <p>
+    Less is more
+  </p>
+</section>
+</nav>
+<nav id="sub-nav">
+	<div class="social">
+		
+			<a class="email" href='mailto:coffeerene.zhao@gmail.com' title="Email">Email</a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+    	
+    	
+			<a class="rss" href='/index.xml' title="RSS">RSS</a>
+		
+	</div>
+</nav>
+</header>
+			</div>
+		</div>
+		<div class="mid-col">
+			
+			<div class="mid-col-container">
+				<div id="content" class="inner">
+					<div itemscope itemtype="http://schema.org/Blog">
+					<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+    <h1 class="title" itemprop="name">React Native Bundle Split</h1>
+	<div class="entry-content" itemprop="articleBody">
+
+<p>使用<a href="https://github.com/react-component/rn-packager">rn-packager</a>拆分react-native的jsbundle(core.android.bundle + business.android.bundle)，然后在程序启动时分步加载拆分后的bundle，以达到热更新目的。</p>
+
+<h1 id="0x00-分步加载jsbundle">0x00 分步加载jsbundle</h1>
+
+<p>将rn-packager打包生成的jsbundle+图片资源统一放到assets目录中，应用程序启动时，复制到files目录，只要保持目录结构不变，js就可以正常访问图片资源。故而，如果需要热更新jsbundle和图片资源时，只需要直接更新files目录中的图片和jsbundle文件即可，具体可以看<a href="https://github.com/facebook/react-native/pull/10804">packager-bundle-split</a>。</p>
+
+<ul>
+<li>加载core.android.bundle</li>
+</ul>
+
+<pre><code class="language-java">ReactInstanceManagerBuilder builder = ReactInstanceManager.builder()
+      .setApplication(mApplication)
+      .setJSMainModuleName(getJSMainModuleName())
+      .setUseDeveloperSupport(getUseDeveloperSupport())
+      .setRedBoxHandler(getRedBoxHandler())
+      .setUIImplementationProvider(getUIImplementationProvider())
+      .setInitialLifecycleState(LifecycleState.BEFORE_CREATE);
+
+    for (ReactPackage reactPackage : getPackages()) {
+      builder.addPackage(reactPackage);
+    }
+
+    String jsBundleFile = getJSBundleFile();
+    if (jsBundleFile != null) {
+      builder.setJSBundleFile(jsBundleFile);
+    } else {
+      builder.setBundleAssetName(Assertions.assertNotNull(getBundleAssetName()));
+    }
+
+    File coreBundleFile = new File(mApplication.getFilesDir(), &quot;rn/core.android.bundle&quot;);
+    if (!coreBundleFile.exists()) {
+      Log.e(&quot;ReactNativeHost&quot;, &quot;copy assets://core.android.bundle to &quot; + coreBundleFile);
+      AssetsUtils.copyFile(mApplication, &quot;core.android.bundle&quot;, coreBundleFile.getAbsolutePath());
+    }
+    // 加载core.android.bundle
+    builder.setJSBundleLoader(JSBundleLoader.createFileLoader(coreBundleFile.getAbsolutePath()));
+    Log.e(&quot;ReactNativeHost&quot;, &quot;set core bundle&quot;);
+    return builder.build();
+</code></pre>
+
+<ul>
+<li>加载business.android.bundle</li>
+</ul>
+
+<pre><code class="language-java">  public void loadBussinessBundle(final File bundleFile) {
+    if (mMethod_LoadScriptFile == null) {
+      try {
+        mMethod_LoadScriptFile = com.facebook.react.cxxbridge.CatalystInstanceImpl.class.getDeclaredMethod(&quot;loadScriptFromFile&quot;, new Class[]{String.class, String.class});
+        mMethod_LoadScriptFile.setAccessible(true);
+      } catch (NoSuchMethodException e) {
+        Log.e(&quot;ReactNativeHost&quot;, &quot;cannot found method: CatalystInstanceImpl.loadScriptFromFile(String, String)&quot;, e);
+        return;
+      }
+    }
+
+    CatalystInstance catalystInstance = mReactContext.getCatalystInstance();
+    String businessBundlePath = bundleFile.getAbsolutePath();
+    Log.e(&quot;ReactNativeHost&quot;, &quot;loadBussinessBundle &quot; + businessBundlePath + &quot;...&quot;);
+    try {
+      mMethod_LoadScriptFile.invoke(catalystInstance, businessBundlePath, businessBundlePath);
+      Log.e(&quot;ReactNativeHost&quot;, &quot;loadBussinessBundle &quot; + businessBundlePath + &quot; done.&quot;);
+    } catch (Throwable e) {
+      Log.e(&quot;ReactNativeHost&quot;, &quot;loadBussinessBundle &quot; + businessBundlePath + &quot; error.&quot;);
+      Log.e(&quot;ReactNativeHost&quot;, &quot;error invoke method: CatalystInstanceImpl.loadScriptFromFile(String, String)&quot;, e);
+    }
+  }
+</code></pre>
+
+<ul>
+<li>热更新jsbundle/图片
+假设从assets复制到files目录后，rn目录结构如下:</li>
+</ul>
+
+<pre><code>files
+|--rn
+  |--core.android.bundle
+  |--business.android.bundle
+  |--drawable-mdpi/image_liking.png
+</code></pre>
+
+<p>同时使用<code>require</code>的方式加载图片，</p>
+
+<pre><code class="language-javascript">&lt;Image source={require('./image/liking.png')}/&gt;
+</code></pre>
+
+<p>如果需要热更新business.android.bundle或者image_liking.png，直接从服务器下载然后替换files/rn目录对应的资源，然后<code>recreateReactContextInBackground()</code>重新加载即可。</p>
+
+<ul>
+<li><a href="https://github.com/coofee/TestBundleSplit">源代码</a></li>
+</ul>
+
+<h1 id="0x01-如何运行">0x01 如何运行?</h1>
+
+<pre><code class="language-bash"># 1. clone代码
+git clone https://github.com/coofee/TestBundleSplit
+
+# 2. 安装rn-packager依赖
+cd rn-packager
+npm install
+
+# 3. 安装tests例子依赖
+cd tests
+npm install
+
+# 4. 生成core.android.bundle and core.android.manifest.json
+node ../bin/rnpackager bundle --entry-file node_modules/react-native/Libraries/react-native/react-native.js --bundle-output assets/core.android.bundle --platform android --dev false --assets-dest assets --manifest-output assets/core.android.manifest.json
+
+# 5. 使用core.android.manifest.json生成app.bundle
+node ../bin/rnpackager bundle --entry-file index.js --bundle-output assets/HelloWorldApp.android.bundle --platform android --dev false --assets-dest assets --manifest-file assets/core.android.manifest.json 
+
+# 6. 复制core.android.bundle和HelloWorldApp.android.bundle到app/src/assets.
+cp assets/core.android.bundle ../../android/app/src/main/assets/core.android.bundle
+
+cp assets/HelloWorldApp.android.bundle ../../android/app/src/main/assets/HelloWorldApp.android.bundle
+
+# 7. 安装android app
+cd ../../android
+# mac/linux执行安装app.
+./gradlew :app:installDebug
+# windows执行安装app.
+./gradlew.bat :app:installDebug
+
+</code></pre>
+
+<h1 id="0x02-libraries">0x02 Libraries</h1>
+
+<ul>
+<li><a href="https://github.com/react-component/rn-packager">rn-packager</a></li>
+<li><a href="https://github.com/facebook/react-native/Examples/UIExplorer">UIExplorer</a></li>
+</ul>
+</div></article>
+					
+						<div class="share">
+	<div class="addthis_toolbox addthis_default_style ">
+	
+	<a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+	
+	
+	<a class="addthis_button_tweet"></a>
+	
+	
+	<a class="addthis_button_google_plusone" g:plusone:size=''></a>
+	
+	
+	</div>
+	
+  	<script type="text/javascript" src='http://s7.addthis.com/js/250/addthis_widget.js#pubid='></script>
+  	
+</div>
+
+					
+					
+					<section id="comment">
+					    <h1 class="title">Comments</h1>
+					    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+					</section>
+					
+					
+
+<script type="text/javascript">
+    
+    var disqus_shortname = 'coofee-github-io';
+
+    
+    
+
+    
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+    
+</script>
+
+
+				    </div>
+				</div>
+			</div>
+			<footer id="footer" class="inner">Copyright &copy; 2017
+
+    Coofee
+
+Design credit: <a href="http://shashankmehta.in/archive/2012/greyshade.html">Shashank Mehta</a>
+<script src="http://coofee.github.io/js/slash.js"></script>
+<script src="http://coofee.github.io/js/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+	$('.fancybox').fancybox();
+})(jQuery);
+</script></footer>
+		</div>
+	</div>
+	
+</body>
+</html>
