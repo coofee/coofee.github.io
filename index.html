@@ -103,6 +103,32 @@
 					
 				        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
     <div class="meta">
+		<div class="date"><time datetime='Thu, Jun 29, 2017' data-updated="true" itemprop="datePublished">Thu, Jun 29, 2017</time>
+</div>
+		<div class="tags">
+
+
+	
+	
+	    <a href="http://coofee.github.io/categories/react-native"> react-native </a>
+	
+
+
+</div>
+		
+			<span class="comments"><a href="http://coofee.github.io/post/android-fetch-add-custom-cookie/#disqus_thread">Comments</a></span>
+		
+	</div>
+	<h1 class="title" itemprop="name"><a href="http://coofee.github.io/post/android-fetch-add-custom-cookie/" itemprop="url">android fetch add custom cookie</a></h1>
+	<div class="entry-content" itemprop="articleBody">
+		[TOC] 0x00 为React Native的网络请求添加公共Cookie 本文分析基于React Native 0.44版本分析。 由于我们在使用React Native编写应用时，内部的网络请求均使用了fetch函数，所以下面我们主要分析一下fetch函数的整个调用流程。 0x01 Fetch追根溯源 从React Native的源代码我们可以知道fetch函数最终也是由native端的NetworkingModule.java（Android）或RCTNetworking.mm（iOS）实现。 1. 其调用流程如下 2. 代码分析如下 1. 将fetch函数添加到全局变量 在react-native/Libraries/Core/InitializeCore.js的全部变量global中定义了fetch函数。 // Set up XHR // The native XMLHttpRequest in Chrome dev tools is CORS aware and won't // let you fetch anything from the internet defineProperty(global, 'XMLHttpRequest', () =&gt; require('XMLHttpRequest')); defineProperty(global, 'FormData', () =&gt; require('FormData')); defineProperty(global, 'fetch', () =&gt; require('fetch').fetch); defineProperty(global, 'Headers', () =&gt; require('fetch').Headers); defineProperty(global, 'Request', () =&gt; require('fetch').Request); defineProperty(global, 'Response', () =&gt; require('fetch').Response); defineProperty(global, 'WebSocket', () =&gt; require('WebSocket')); 2.
+		<a href="http://coofee.github.io/post/android-fetch-add-custom-cookie/" class="more-link">Read on →</a>
+	</div>
+</article>
+
+				    
+				        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+    <div class="meta">
 		<div class="date"><time datetime='Thu, May 18, 2017' data-updated="true" itemprop="datePublished">Thu, May 18, 2017</time>
 </div>
 		<div class="tags">
@@ -185,8 +211,8 @@
 	</div>
 	<h1 class="title" itemprop="name"><a href="http://coofee.github.io/post/hugo-help/" itemprop="url">hugo help</a></h1>
 	<div class="entry-content" itemprop="articleBody">
-		Hugo 1.1 创建文件 # 切换到博客目录 $ hugo new post/xxxxx.md 1.2 发布到本地预览网站 $ hugo server --theme=greyshade --buildDrafts --watch 1.3 发布网站到github $ hugo --theme=greyshade --buildDrafts $ cd public $ git add * $ git commit -a -m 'add all' $ git push origin master
-		
+		Hugo 1.1 创建文件 # 切换到博客目录 $ hugo new post/xxxxx.md 1.2 发布到本地预览网站 $ hugo server --theme=greyshade --buildDrafts --watch 1.3 发布网站到github $ hugo --theme=greyshade --buildDrafts $ cd public $ git add * $ git commit -a -m 'add all' $ git push origin master 1.4 添加图片到文件 The images should be put in the static folder, which will be copied to the root of the website (so their url is www.example.com/image.png) by Hugo.
+		<a href="http://coofee.github.io/post/hugo-help/" class="more-link">Read on →</a>
 	</div>
 </article>
 

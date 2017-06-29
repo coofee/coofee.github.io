@@ -44,6 +44,24 @@ $ git commit -a -m &#39;add all&#39;
 $ git push origin master
 
 &lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;1-4-添加图片到文件&#34;&gt;1.4 添加图片到文件&lt;/h2&gt;
+
+&lt;p&gt;The images should be put in the static folder, which will be copied to the root of the website (so their url is www.example.com/image.png) by Hugo.&lt;/p&gt;
+
+&lt;p&gt;所以在static目录中创建文件夹，然后在markdown中直接引用即可。&lt;/p&gt;
+
+&lt;p&gt;例子如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;static
+└── android-fetch-add-custom-cookie
+    └── react-native-fetch-0.44.png
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;在markdown中则需要如下方式引用:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;![](android-fetch-add-custom-cookie/react-native-fetch-0.44.png)
+&lt;/code&gt;&lt;/pre&gt;
 </description>
     </item>
     

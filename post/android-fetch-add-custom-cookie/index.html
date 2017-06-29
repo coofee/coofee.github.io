@@ -1,0 +1,576 @@
+<!DOCTYPE HTML>
+
+<html lang="en-us">
+
+<head>
+	<meta charset="utf-8">
+	<title>android fetch add custom cookie - Simple...</title>
+	<meta name="author" content="map[name:Coofee email:coffeerene.zhao@gmail.com]">
+
+	
+	
+	<meta name="description" content="">
+	
+
+	
+	<meta name="HandheldFriendly" content="True">
+	<meta name="MobileOptimized" content="320">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+    
+	<link href='/index.xml' rel="alternate" title="Simple..." type="application/atom+xml">
+	
+	<link rel="canonical" href="http://coofee.github.io/post/android-fetch-add-custom-cookie/">
+	<link href="http://coofee.github.io/favicon.png" rel="shortcut icon">
+	<link href="http://coofee.github.io/css/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<link href="http://coofee.github.io/css/font-awesome.min.css" media="screen, projection" rel="stylesheet" type="text/css">
+	
+	<link href='http://fonts.googleapis.com/css?family=Nunito:400,300,700' rel='stylesheet' type='text/css'>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+
+	
+	<link href="http://coofee.github.io/css/prism.css" rel="stylesheet" />
+	<script src="http://coofee.github.io/js/prism.js"></script>
+
+	
+  
+
+</head>
+
+
+<body>
+	<div class="container">
+		<div class="left-col">
+			<div class="intrude-less">
+			<header id="header" class="inner"><div class="profilepic">
+	
+	
+	<script src="http://coofee.github.io/js/md5.js"></script>
+	<script type="text/javascript">
+		$(function(){
+			$('.profilepic').append("<img src='http://www.gravatar.com/avatar/" + MD5('coffeerene.zhao@gmail.com') + "?s=160' alt='Profile Picture' style='width: 160px;' />");
+		});
+	</script>
+	
+	
+</div>
+
+<nav id="main-nav"><ul class="main">
+    <li><a href="/">Blog</a></li>
+    <li><a href="/post/about">About</a></li>
+    <li><a href="/post/">Archives</a></li>
+</ul>
+
+<section class="aboutme">
+  <p>
+    Less is more
+  </p>
+</section>
+</nav>
+<nav id="sub-nav">
+	<div class="social">
+		
+			<a class="email" href='mailto:coffeerene.zhao@gmail.com' title="Email">Email</a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+    	
+    	
+			<a class="rss" href='/index.xml' title="RSS">RSS</a>
+		
+	</div>
+</nav>
+</header>
+			</div>
+		</div>
+		<div class="mid-col">
+			
+			<div class="mid-col-container">
+				<div id="content" class="inner">
+					<div itemscope itemtype="http://schema.org/Blog">
+					<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+    <h1 class="title" itemprop="name">android fetch add custom cookie</h1>
+	<div class="entry-content" itemprop="articleBody">
+
+<p>[TOC]</p>
+
+<h1 id="0x00-为react-native的网络请求添加公共cookie">0x00 为React Native的网络请求添加公共Cookie</h1>
+
+<p>本文分析基于React Native <strong>0.44</strong>版本分析。</p>
+
+<p>由于我们在使用React Native编写应用时，内部的网络请求均使用了<code>fetch</code>函数，所以下面我们主要分析一下<code>fetch</code>函数的整个调用流程。</p>
+
+<h1 id="0x01-fetch追根溯源">0x01 Fetch追根溯源</h1>
+
+<p>从React Native的源代码我们可以知道fetch函数最终也是由native端的<code>NetworkingModule.java</code>（Android）或<code>RCTNetworking.mm</code>（iOS）实现。</p>
+
+<h2 id="1-其调用流程如下">1. 其调用流程如下</h2>
+
+<p><img src="/android-fetch-add-custom-cookie/react-native-fetch-0.44.png" alt="" /></p>
+
+<h2 id="2-代码分析如下">2. 代码分析如下</h2>
+
+<h3 id="1-将fetch函数添加到全局变量">1. 将fetch函数添加到全局变量</h3>
+
+<p>在<code>react-native/Libraries/Core/InitializeCore.js</code>的全部变量<code>global</code>中定义了<code>fetch</code>函数。</p>
+
+<pre><code class="language-javascript">// Set up XHR
+// The native XMLHttpRequest in Chrome dev tools is CORS aware and won't
+// let you fetch anything from the internet
+defineProperty(global, 'XMLHttpRequest', () =&gt; require('XMLHttpRequest'));
+defineProperty(global, 'FormData', () =&gt; require('FormData'));
+
+defineProperty(global, 'fetch', () =&gt; require('fetch').fetch);
+defineProperty(global, 'Headers', () =&gt; require('fetch').Headers);
+defineProperty(global, 'Request', () =&gt; require('fetch').Request);
+defineProperty(global, 'Response', () =&gt; require('fetch').Response);
+defineProperty(global, 'WebSocket', () =&gt; require('WebSocket'));
+
+</code></pre>
+
+<h3 id="2-fetch函数的具体实现">2. fetch函数的具体实现</h3>
+
+<p>扒取<code>fetch</code>的源代码，我们可以发现<code>fetch</code>是由<code>XMLHttpRequest</code>实现，并调用<code>XMLHttpRequest.send()</code>函数发起请求。</p>
+
+<p>同时react native将<code>fetch</code>的<code>credentials:'include'</code>属性转变成了<code>XMLHttpRequest</code>的<code>withCredentials</code>属性，所以下一步，我们只需要关注<code>XMLHttpRequest</code>中<code>withCredentials</code>如何处理即可。</p>
+
+<p><code>react-native/Libraries/Network/fetch.js</code></p>
+
+<pre><code class="language-javascript">'use strict';
+
+import 'whatwg-fetch';
+
+module.exports = {fetch, Headers, Request, Response};
+
+</code></pre>
+
+<p><code>react-native/node_modules/whatwg-fetch/fetch.js</code></p>
+
+<pre><code class="language-javascript">self.fetch = function(input, init) {
+    return new Promise(function(resolve, reject) {
+      var request = new Request(input, init)
+      var xhr = new XMLHttpRequest()
+
+      xhr.onload = function() {
+        var options = {
+          status: xhr.status,
+          statusText: xhr.statusText,
+          headers: parseHeaders(xhr.getAllResponseHeaders() || '')
+        }
+        options.url = 'responseURL' in xhr ? xhr.responseURL : options.headers.get('X-Request-URL')
+        var body = 'response' in xhr ? xhr.response : xhr.responseText
+        resolve(new Response(body, options))
+      }
+
+      xhr.onerror = function() {
+        reject(new TypeError('Network request failed'))
+      }
+
+      xhr.ontimeout = function() {
+        reject(new TypeError('Network request failed'))
+      }
+
+      xhr.open(request.method, request.url, true)
+
+      if (request.credentials === 'include') {
+        xhr.withCredentials = true
+      }
+
+      if ('responseType' in xhr &amp;&amp; support.blob) {
+        xhr.responseType = 'blob'
+      }
+
+      request.headers.forEach(function(value, name) {
+        xhr.setRequestHeader(name, value)
+      })
+
+      xhr.send(typeof request._bodyInit === 'undefined' ? null : request._bodyInit)
+    })
+  }
+</code></pre>
+
+<h3 id="3-xmlhttprequest具体实现">3. XMLHttpRequest具体实现</h3>
+
+<p>在<code>XMLHttpRequest</code>中将<code>withCredentials</code>作为参数传递给<code>RCTNetworking.sendRequest()</code>发起网络请求。</p>
+
+<p><code>react-native/Libraries/Network/XMLHttpRequest.js</code></p>
+
+<pre><code class="language-javascript">send(data: any): void {
+    if (this.readyState !== this.OPENED) {
+      throw new Error('Request has not been opened');
+    }
+    if (this._sent) {
+      throw new Error('Request has already been sent');
+    }
+    this._sent = true;
+    const incrementalEvents = this._incrementalEvents ||
+      !!this.onreadystatechange ||
+      !!this.onprogress;
+
+    this._subscriptions.push(RCTNetworking.addListener(
+      'didSendNetworkData',
+      (args) =&gt; this.__didUploadProgress(...args)
+    ));
+    this._subscriptions.push(RCTNetworking.addListener(
+      'didReceiveNetworkResponse',
+      (args) =&gt; this.__didReceiveResponse(...args)
+    ));
+    this._subscriptions.push(RCTNetworking.addListener(
+      'didReceiveNetworkData',
+      (args) =&gt; this.__didReceiveData(...args)
+    ));
+    this._subscriptions.push(RCTNetworking.addListener(
+      'didReceiveNetworkIncrementalData',
+      (args) =&gt; this.__didReceiveIncrementalData(...args)
+    ));
+    this._subscriptions.push(RCTNetworking.addListener(
+      'didReceiveNetworkDataProgress',
+      (args) =&gt; this.__didReceiveDataProgress(...args)
+    ));
+    this._subscriptions.push(RCTNetworking.addListener(
+      'didCompleteNetworkResponse',
+      (args) =&gt; this.__didCompleteResponse(...args)
+    ));
+
+    let nativeResponseType = 'text';
+    if (this._responseType === 'arraybuffer' || this._responseType === 'blob') {
+      nativeResponseType = 'base64';
+    }
+
+    invariant(this._method, 'Request method needs to be defined.');
+    invariant(this._url, 'Request URL needs to be defined.');
+    RCTNetworking.sendRequest(
+      this._method,
+      this._trackingName,
+      this._url,
+      this._headers,
+      data,
+      nativeResponseType,
+      incrementalEvents,
+      this.timeout,
+      this.__didCreateRequest.bind(this),
+      this.withCredentials
+    );
+  }
+</code></pre>
+
+<p>接下来重头戏来了，<code>RCTNetworking</code>在android和iOS两端的实现并不一致，在iOS端，发送网络请求时是包含<code>withCredentials</code>这个参数的，但是在android端<code>withCredentials</code>这个参数会被忽略（因为在<code>RCTNetworking.android.js</code>中定义<code>sendRequest</code>函数时并没有<code>withCredentials</code>这个参数，所以即使调用放传递了这个参数，也会被忽略）。</p>
+
+<p>也就是说在iOS端使用fetch发送请求时，可以通过配置属性，灵活决定是否发送cookie；而在android端则会一直发送cookie
+<a href="https://github.com/facebook/react-native/issues/14063">issue: withCredentials flag in XHRs should default to &ldquo;true&rdquo;</a>。</p>
+
+<p><code>react-native/Libraries/Network/RCTNetworking.ios.js</code></p>
+
+<pre><code class="language-javascript">  sendRequest(
+    method: string,
+    trackingName: string,
+    url: string,
+    headers: Object,
+    data: RequestBody,
+    responseType: 'text' | 'base64',
+    incrementalUpdates: boolean,
+    timeout: number,
+    callback: (requestId: number) =&gt; any,
+    withCredentials: boolean
+  ) {
+    const body = convertRequestBody(data);
+    RCTNetworkingNative.sendRequest({
+      method,
+      url,
+      data: {...body, trackingName},
+      headers,
+      responseType,
+      incrementalUpdates,
+      timeout,
+      withCredentials
+    }, callback);
+  }
+
+</code></pre>
+
+<p><code>react-native/Libraries/Network/RCTNetworking.android.js</code></p>
+
+<pre><code class="language-javascript">    sendRequest(
+    method: string,
+    trackingName: string,
+    url: string,
+    headers: Object,
+    data: RequestBody,
+    responseType: 'text' | 'base64',
+    incrementalUpdates: boolean,
+    timeout: number,
+    callback: (requestId: number) =&gt; any
+  ) {
+    const body = convertRequestBody(data);
+    if (body &amp;&amp; body.formData) {
+      body.formData = body.formData.map((part) =&gt; ({
+        ...part,
+        headers: convertHeadersMapToArray(part.headers),
+      }));
+    }
+    const requestId = generateRequestId();
+    RCTNetworkingNative.sendRequest(
+      method,
+      url,
+      requestId,
+      convertHeadersMapToArray(headers),
+      {...body, trackingName},
+      responseType,
+      incrementalUpdates,
+      timeout
+    );
+    callback(requestId);
+  }
+
+</code></pre>
+
+<h3 id="4-android端网络具体实现">4. Android端网络具体实现</h3>
+
+<p>同样，我们可以看到在<code>com.facebook.react.modules.network.NetworkingModule.java</code>中也没有<code>withCredentials</code>相关处理，故而如果要保持android和iOS两端行为一致，则必须同时修改android+javascript两端代码才可以。</p>
+
+<pre><code class="language-java">
+@Override
+public void initialize() {
+	mCookieJarContainer.setCookieJar(new JavaNetCookieJar(mCookieHandler));
+}
+
+public void sendRequest(
+  final ExecutorToken executorToken,
+  String method,
+  String url,
+  final int requestId,
+  ReadableArray headers,
+  ReadableMap data,
+  final String responseType,
+  final boolean useIncrementalUpdates,
+  int timeout) {
+  
+	Request.Builder requestBuilder = new Request.Builder().url(url);
+	
+	if (requestId != 0) {
+	  requestBuilder.tag(requestId);
+	}
+	
+	// 略...
+}
+</code></pre>
+
+<h3 id="5-ios端网络具体实现">5. iOS端网络具体实现</h3>
+
+<p>可以看到在<code>react-native/Libraries/Network/RCTNetworking.mm</code>文件中对<code>withCredentials</code>进行了单独处理。</p>
+
+<pre><code class="language-objective-c">- (RCTURLRequestCancellationBlock)buildRequest:(NSDictionary&lt;NSString *, id&gt; *)query
+                                 completionBlock:(void (^)(NSURLRequest *request))block
+{
+  RCTAssertThread(_methodQueue, @&quot;buildRequest: must be called on method queue&quot;);
+
+  NSURL *URL = [RCTConvert NSURL:query[@&quot;url&quot;]]; // this is marked as nullable in JS, but should not be null
+  NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:URL];
+  request.HTTPMethod = [RCTConvert NSString:RCTNilIfNull(query[@&quot;method&quot;])].uppercaseString ?: @&quot;GET&quot;;
+  request.allHTTPHeaderFields = [self stripNullsInRequestHeaders:[RCTConvert NSDictionary:query[@&quot;headers&quot;]]];
+  request.timeoutInterval = [RCTConvert NSTimeInterval:query[@&quot;timeout&quot;]];
+  request.HTTPShouldHandleCookies = [RCTConvert BOOL:query[@&quot;withCredentials&quot;]];
+
+  // 略...
+  
+  }];
+}
+</code></pre>
+
+<h1 id="0x02-android端添加公共cookie">0x02 Android端添加公共Cookie</h1>
+
+<p>从上面的分析，我们知道android端使用<code>NetworkingModule</code>实现网络请求，同时在<code>NetworkingModule</code>初始化的时候添加了CookieJar来处理Cookie，所以如果我们要添加Cookie，就必须从CookieJar入手。由于我们并不想修改React Native的源代码，所以可以通过在打包时修改字节码的方式来达到同样的效果，这里我们使用aspect，用自定义CookieJar替换<code>NetworkingModule</code>原始的CookieJar达到添加公共cookie的目的.</p>
+
+<p>首先，<code>NetworkingModule</code>是在<code>initialize()</code>的时候初始化的CookieJar，所以我们将该方法作为我们的切入点，大致代码如下:</p>
+
+<h2 id="1-添加aspect依赖">1. 添加aspect依赖:</h2>
+
+<pre><code class="language-groovy">dependencies {
+    classpath fileTree(dir:'plugins', include:['*.jar'])
+    //don't lost dependency
+    classpath 'org.aspectj:aspectjtools:1.8.+'
+}
+</code></pre>
+
+<h2 id="2-添加切面">2. 添加切面:</h2>
+
+<pre><code class="language-java">
+@Aspect
+public class NetworkingModuleAspect {
+
+    @Around(&quot;execution (* com.facebook.react.modules.network.NetworkingModule.initialize())&quot;)
+    public Object injectCustomCookie(ProceedingJoinPoint joinPoint) throws Throwable {
+        Object networkingModule = joinPoint.getTarget();
+
+        CookieJarContainer cookieJarContainer = (CookieJarContainer) getFieldValue(networkingModule, &quot;mCookieJarContainer&quot;);
+        CookieHandler cookieHandler = (CookieHandler) getFieldValue(networkingModule, &quot;mCookieHandler&quot;);
+
+        cookieJarContainer.setCookieJar(new JavaNetCookieJarWithCommonHeader(cookieHandler));
+
+        return null;
+    }
+
+}
+
+</code></pre>
+
+<p>自定义CookieJar，在<code>loadForRequest()</code>方法中添加公共Cookie，大致代码如下:</p>
+
+<pre><code class="language-java">
+public static final class JavaNetCookieJarWithCommonHeader implements CookieJar {
+    // 略...
+
+    @Override
+    public List&lt;Cookie&gt; loadForRequest(HttpUrl url) {
+        // The RI passes all headers. We don't have 'em, so we don't pass 'em!
+        List&lt;Cookie&gt; cookies = new ArrayList&lt;Cookie&gt;();
+
+		  // add common cookie.
+        Map&lt;String, String&gt; commonHeaders = CommonHeaderUtils.getInstance(null).get(url.toString());
+        if (commonHeaders != null &amp;&amp; !commonHeaders.isEmpty()) {
+            for (Map.Entry&lt;String, String&gt; entry : commonHeaders.entrySet()) {
+                if (entry.getKey() == null) {
+                    continue;
+                }
+
+                cookies.add(new Cookie.Builder()
+                        .name(entry.getKey())
+                        .value(entry.getValue() == null ? &quot;&quot; : entry.getValue())
+                        .domain(url.host())
+                        .build());
+            }
+        }
+
+        Map&lt;String, List&lt;String&gt;&gt; headers = Collections.emptyMap();
+        Map&lt;String, List&lt;String&gt;&gt; cookieHeaders;
+        try {
+            cookieHeaders = cookieHandler.get(url.uri(), headers);
+        } catch (IOException e) {
+            Platform.get().log(WARN, &quot;Loading cookies failed for &quot; + url.resolve(&quot;/...&quot;), e);
+            return cookies;
+        }
+
+        for (Map.Entry&lt;String, List&lt;String&gt;&gt; entry : cookieHeaders.entrySet()) {
+            String key = entry.getKey();
+            if ((&quot;Cookie&quot;.equalsIgnoreCase(key) || &quot;Cookie2&quot;.equalsIgnoreCase(key))
+                    &amp;&amp; !entry.getValue().isEmpty()) {
+                for (String header : entry.getValue()) {
+                    if (cookies == null) cookies = new ArrayList&lt;&gt;();
+                    cookies.addAll(decodeHeaderAsJavaNetCookies(url, header));
+                }
+            }
+        }
+
+        return cookies != null
+                ? Collections.unmodifiableList(cookies)
+                : Collections.&lt;Cookie&gt;emptyList();
+    }
+}
+
+</code></pre>
+
+<h2 id="3-配置aspect插件">3. 配置aspect插件:</h2>
+
+<pre><code class="language-groovy">buildscript {
+    repositories {
+        mavenLocal()
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.1.3'
+        classpath 'com.hujiang.aspectjx:gradle-android-plugin-aspectjx:1.0.10'
+
+    }
+}
+</code></pre>
+
+<p>在Application项目中配置aspect插件:</p>
+
+<pre><code class="language-groovy">apply plugin: 'android-aspectjx'
+aspectjx {
+	//includes the libs that you want to weave
+    includeJarFilter '自己切面所在的库', 'react-native'
+    
+    //excludes the libs that you don't want to weave
+	excludeJarFilter 'universal-image-loader'
+}
+</code></pre>
+
+<p>关于aspectj插件的具体配置，可以参考<a href="https://github.com/HujiangTechnology/gradle_plugin_android_aspectjx">android aspectjx plugin</a>。</p>
+</div></article>
+					
+						<div class="share">
+	<div class="addthis_toolbox addthis_default_style ">
+	
+	<a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+	
+	
+	<a class="addthis_button_tweet"></a>
+	
+	
+	<a class="addthis_button_google_plusone" g:plusone:size=''></a>
+	
+	
+	</div>
+	
+  	<script type="text/javascript" src='http://s7.addthis.com/js/250/addthis_widget.js#pubid='></script>
+  	
+</div>
+
+					
+					
+					<section id="comment">
+					    <h1 class="title">Comments</h1>
+					    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+					</section>
+					
+					
+
+<script type="text/javascript">
+    
+    var disqus_shortname = 'coofee-github-io';
+
+    
+    
+
+    
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+    
+</script>
+
+
+				    </div>
+				</div>
+			</div>
+			<footer id="footer" class="inner">Copyright &copy; 2017
+
+    Coofee
+
+Design credit: <a href="http://shashankmehta.in/archive/2012/greyshade.html">Shashank Mehta</a>
+<script src="http://coofee.github.io/js/slash.js"></script>
+<script src="http://coofee.github.io/js/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+	$('.fancybox').fancybox();
+})(jQuery);
+</script></footer>
+		</div>
+	</div>
+	
+</body>
+</html>
