@@ -7,7 +7,137 @@
     <language>en-us</language>
     <author>Coofee</author>
     
-    <updated>Sat, 17 Sep 2016 22:01:24 CST</updated>
+    <updated>Thu, 13 Jul 2017 19:52:39 CST</updated>
+    
+    <item>
+      <title>upgrade android sdk</title>
+      <link>http://coofee.github.io/post/upgrade-android-sdk-android-support-library/</link>
+      <pubDate>Thu, 13 Jul 2017 19:52:39 CST</pubDate>
+      <author>Coofee</author>
+      <guid>http://coofee.github.io/post/upgrade-android-sdk-android-support-library/</guid>
+      <description>
+
+&lt;h2 id=&#34;1-gradle-plugin-2-2-0-android-sdk-25都需要jdk-1-8&#34;&gt;1. gradle plugin 2.2.0+、android sdk 25都需要jdk 1.8。&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath &#39;com.android.tools.build:gradle:2.2.0&#39;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;在执行gradle脚本时，可以在参数中指定jdk版本，如下所示：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;gradlew clean -Dorg.gradle.java.home=/usr/java/jdk1.8
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;也可以直接在&lt;code&gt;gradle.properties&lt;/code&gt;中指定jdk版本，如下所示：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;org.gradle.java.home=/usr/java/jdk1.8
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;2-build-tools-24-0-2以上的的aapt需要将centos-6-5的glibc升级到glibc-2-14&#34;&gt;2. build-tools/24.0.2以上的的aapt需要将centOS 6.5的GLIBC升级到GLIBC_2.14。&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;[exec] /android-sdk-linux/build-tools/24.0.2/aapt: /lib64/libc.so.6: version `GLIBC_2.14&#39; not found (required by /android-sdk-linux/build-tools/24.0.2/aapt)
+[exec] /android-sdk-linux/build-tools/24.0.2/aapt: /lib64/libc.so.6: version `GLIBC_2.14&#39; not found (required by /android-sdk-linux/build-tools/24.0.2/lib64/libc++.so)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;可以使用&lt;code&gt;strings /lib64/libc.so.6 | grep GLIBC&lt;/code&gt;获取GLIBC的版本。&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;注意：build-tools使用23.0.2时则不需要升级。&lt;/em&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;3-targetsdkversion-support-library-upgrade&#34;&gt;3. targetSdkVersion &amp;amp; support library upgrade&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;targetSdkVersion=25时libssl.so已经被系统移除了，所以如果有使用openssl的需要做兼容。注: android 6.0已经使用&lt;code&gt;BoringSSL&lt;/code&gt;替换了&lt;code&gt;OpenSSL&lt;/code&gt;。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;support库升级到25.4.0时，需要使用google官方的maven仓库(&lt;a href=&#34;https://maven.google.com&#34;&gt;https://maven.google.com&lt;/a&gt;) 需要翻墙，解决方案如下:&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;allprojects {
+    repositories {
+        maven {
+            url &amp;quot;https://dl.google.com/dl/android/maven2/&amp;quot;
+        }
+        jcenter()
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;ul&gt;
+&lt;li&gt;support库升级到25.4.0时，使用&lt;code&gt;CoordinatorLayout&lt;/code&gt;控件的页面，Activity的主题必须继承&lt;code&gt;Theme.AppCompat&lt;/code&gt;，否则会直接崩溃，错误日志如下：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-java&#34;&gt;Caused by: java.lang.IllegalArgumentException: You need to use a Theme.AppCompat theme (or descendant) with the design library.
+	at android.support.design.widget.ThemeUtils.checkAppCompatTheme(ThemeUtils.java:33)
+	at android.support.design.widget.CoordinatorLayout.&amp;lt;init&amp;gt;(CoordinatorLayout.java:206)
+	at android.support.design.widget.CoordinatorLayout.&amp;lt;init&amp;gt;(CoordinatorLayout.java:200)
+	at java.lang.reflect.Constructor.newInstance0(Native Method) 
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:430) 
+	at android.view.LayoutInflater.createView(LayoutInflater.java:656) 
+	at android.view.LayoutInflater.createViewFromTag(LayoutInflater.java:798) 
+	at android.view.LayoutInflater.createViewFromTag(LayoutInflater.java:738) 
+	at android.view.LayoutInflater.inflate(LayoutInflater.java:495) 
+	at android.view.LayoutInflater.inflate(LayoutInflater.java:426) 
+	at android.view.LayoutInflater.inflate(LayoutInflater.java:377) 
+	at com.wuba.home.fragment.HomeFragment.initView(HomeFragment.java:273) 
+	at com.wuba.home.fragment.HomeFragment.onCreateView(HomeFragment.java:260) 
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;ul&gt;
+&lt;li&gt;RecyclerView在&lt;strong&gt;23.2&lt;/strong&gt;版本支持&lt;code&gt;setAutoMeasureEnabled()&lt;/code&gt;，当item布局是&lt;code&gt;match_parent&lt;/code&gt;时，这个item会占满整个RecyclerView的高度/宽度，所以当从低版本升级到高版本时需要将&lt;code&gt;match_parent&lt;/code&gt;替换为精确的宽度/高度，或者使用&lt;code&gt;wrap_content&lt;/code&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;原因如下:&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;The RecyclerView widget provides an advanced and flexible base for creating lists and grids as well as supporting animations. This release brings an exciting new feature to the LayoutManager API: auto-measurement! This allows a RecyclerView to size itself based on the size of its contents. This means that previously unavailable scenarios, such as using WRAP_CONTENT for a dimension of the RecyclerView, are now possible. You’ll find all built in LayoutManagers now support auto-measurement.&lt;/p&gt;
+
+&lt;p&gt;Due to this change, make sure to double check the layout parameters of your item views: previously ignored layout parameters (such as MATCH_PARENT in the scroll direction) will now be fully respected.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://android-developers.googleblog.com/2016/02/android-support-library-232.html&#34;&gt;详见: RecyclerView 23.2.0&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;如果布局xml非常多，修改麻烦的话，可以考虑在&lt;code&gt;Adapter.onCreateViewHolder()&lt;/code&gt;方法中直接修改itemView的属性即可，下面是一个竖直RecyclerView的样例：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-java&#34;&gt;ViewGroup.LayoutParams layoutParams = itemView.getLayoutParams();
+if (layoutParams == null) {
+    layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+    itemView.setLayoutParams(layoutParams);
+
+} else if (layoutParams.height == ViewGroup.LayoutParams.MATCH_PARENT) {
+    layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+    itemView.setLayoutParams(layoutParams);
+
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;4-可以考虑升级multidex以及其他修改&#34;&gt;4. 可以考虑升级multidex以及其他修改&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;可以考虑使用Fragment时使用&lt;code&gt;commitNow()&lt;/code&gt;方法替换&lt;code&gt;executePendingTransactions()&lt;/code&gt;。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;multidex 升级到 &lt;code&gt;1.0.2&lt;/code&gt; (暂时拉取不下来，maven都找不到这个aar，不知道是什么情况)&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+&lt;ol&gt;
+&lt;li&gt;Allows multidexing of instrumentation APK.
+Deprecates MultiDexTestRunner (AndroidJUnitRunner should be used instead).&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;Provides better protection against some bad archive extraction management of the app.&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;Fixes a bug that could lead to abandoned temporary files.&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;Provides faster installation when done in concurrent process.&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;Fixes an installation bug on API 19 and 20.&lt;br /&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://developer.android.com/topic/libraries/support-library/revisions.html#25-4-0&#34;&gt;see support-library-25.4.0&lt;/a&gt;&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>android jni bspatch</title>

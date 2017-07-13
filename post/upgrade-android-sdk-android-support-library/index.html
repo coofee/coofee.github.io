@@ -1,0 +1,290 @@
+<!DOCTYPE HTML>
+
+<html lang="en-us">
+
+<head>
+	<meta charset="utf-8">
+	<title>upgrade android sdk - Simple...</title>
+	<meta name="author" content="map[name:Coofee email:coffeerene.zhao@gmail.com]">
+
+	
+	
+	<meta name="description" content="">
+	
+
+	
+	<meta name="HandheldFriendly" content="True">
+	<meta name="MobileOptimized" content="320">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+    
+	<link href='/index.xml' rel="alternate" title="Simple..." type="application/atom+xml">
+	
+	<link rel="canonical" href="http://coofee.github.io/post/upgrade-android-sdk-android-support-library/">
+	<link href="http://coofee.github.io/favicon.png" rel="shortcut icon">
+	<link href="http://coofee.github.io/css/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<link href="http://coofee.github.io/css/font-awesome.min.css" media="screen, projection" rel="stylesheet" type="text/css">
+	
+	<link href='http://fonts.googleapis.com/css?family=Nunito:400,300,700' rel='stylesheet' type='text/css'>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+
+	
+	<link href="http://coofee.github.io/css/prism.css" rel="stylesheet" />
+	<script src="http://coofee.github.io/js/prism.js"></script>
+
+	
+  
+
+</head>
+
+
+<body>
+	<div class="container">
+		<div class="left-col">
+			<div class="intrude-less">
+			<header id="header" class="inner"><div class="profilepic">
+	
+	
+	<script src="http://coofee.github.io/js/md5.js"></script>
+	<script type="text/javascript">
+		$(function(){
+			$('.profilepic').append("<img src='http://www.gravatar.com/avatar/" + MD5('coffeerene.zhao@gmail.com') + "?s=160' alt='Profile Picture' style='width: 160px;' />");
+		});
+	</script>
+	
+	
+</div>
+
+<nav id="main-nav"><ul class="main">
+    <li><a href="/">Blog</a></li>
+    <li><a href="/post/about">About</a></li>
+    <li><a href="/post/">Archives</a></li>
+</ul>
+
+<section class="aboutme">
+  <p>
+    Less is more
+  </p>
+</section>
+</nav>
+<nav id="sub-nav">
+	<div class="social">
+		
+			<a class="email" href='mailto:coffeerene.zhao@gmail.com' title="Email">Email</a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+    	
+    	
+			<a class="rss" href='/index.xml' title="RSS">RSS</a>
+		
+	</div>
+</nav>
+</header>
+			</div>
+		</div>
+		<div class="mid-col">
+			
+			<div class="mid-col-container">
+				<div id="content" class="inner">
+					<div itemscope itemtype="http://schema.org/Blog">
+					<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+    <h1 class="title" itemprop="name">upgrade android sdk</h1>
+	<div class="entry-content" itemprop="articleBody">
+
+<h2 id="1-gradle-plugin-2-2-0-android-sdk-25都需要jdk-1-8">1. gradle plugin 2.2.0+、android sdk 25都需要jdk 1.8。</h2>
+
+<pre><code class="language-groovy">buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.2.0'
+    }
+}
+</code></pre>
+
+<p>在执行gradle脚本时，可以在参数中指定jdk版本，如下所示：</p>
+
+<pre><code class="language-bash">gradlew clean -Dorg.gradle.java.home=/usr/java/jdk1.8
+</code></pre>
+
+<p>也可以直接在<code>gradle.properties</code>中指定jdk版本，如下所示：</p>
+
+<pre><code class="language-groovy">org.gradle.java.home=/usr/java/jdk1.8
+</code></pre>
+
+<h2 id="2-build-tools-24-0-2以上的的aapt需要将centos-6-5的glibc升级到glibc-2-14">2. build-tools/24.0.2以上的的aapt需要将centOS 6.5的GLIBC升级到GLIBC_2.14。</h2>
+
+<pre><code class="language-bash">[exec] /android-sdk-linux/build-tools/24.0.2/aapt: /lib64/libc.so.6: version `GLIBC_2.14' not found (required by /android-sdk-linux/build-tools/24.0.2/aapt)
+[exec] /android-sdk-linux/build-tools/24.0.2/aapt: /lib64/libc.so.6: version `GLIBC_2.14' not found (required by /android-sdk-linux/build-tools/24.0.2/lib64/libc++.so)
+</code></pre>
+
+<p>可以使用<code>strings /lib64/libc.so.6 | grep GLIBC</code>获取GLIBC的版本。</p>
+
+<p><em>注意：build-tools使用23.0.2时则不需要升级。</em></p>
+
+<h2 id="3-targetsdkversion-support-library-upgrade">3. targetSdkVersion &amp; support library upgrade</h2>
+
+<ul>
+<li><p>targetSdkVersion=25时libssl.so已经被系统移除了，所以如果有使用openssl的需要做兼容。注: android 6.0已经使用<code>BoringSSL</code>替换了<code>OpenSSL</code>。</p></li>
+
+<li><p>support库升级到25.4.0时，需要使用google官方的maven仓库(<a href="https://maven.google.com">https://maven.google.com</a>) 需要翻墙，解决方案如下:</p></li>
+</ul>
+
+<pre><code class="language-groovy">allprojects {
+    repositories {
+        maven {
+            url &quot;https://dl.google.com/dl/android/maven2/&quot;
+        }
+        jcenter()
+    }
+}
+</code></pre>
+
+<ul>
+<li>support库升级到25.4.0时，使用<code>CoordinatorLayout</code>控件的页面，Activity的主题必须继承<code>Theme.AppCompat</code>，否则会直接崩溃，错误日志如下：</li>
+</ul>
+
+<pre><code class="language-java">Caused by: java.lang.IllegalArgumentException: You need to use a Theme.AppCompat theme (or descendant) with the design library.
+	at android.support.design.widget.ThemeUtils.checkAppCompatTheme(ThemeUtils.java:33)
+	at android.support.design.widget.CoordinatorLayout.&lt;init&gt;(CoordinatorLayout.java:206)
+	at android.support.design.widget.CoordinatorLayout.&lt;init&gt;(CoordinatorLayout.java:200)
+	at java.lang.reflect.Constructor.newInstance0(Native Method) 
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:430) 
+	at android.view.LayoutInflater.createView(LayoutInflater.java:656) 
+	at android.view.LayoutInflater.createViewFromTag(LayoutInflater.java:798) 
+	at android.view.LayoutInflater.createViewFromTag(LayoutInflater.java:738) 
+	at android.view.LayoutInflater.inflate(LayoutInflater.java:495) 
+	at android.view.LayoutInflater.inflate(LayoutInflater.java:426) 
+	at android.view.LayoutInflater.inflate(LayoutInflater.java:377) 
+	at com.wuba.home.fragment.HomeFragment.initView(HomeFragment.java:273) 
+	at com.wuba.home.fragment.HomeFragment.onCreateView(HomeFragment.java:260) 
+</code></pre>
+
+<ul>
+<li>RecyclerView在<strong>23.2</strong>版本支持<code>setAutoMeasureEnabled()</code>，当item布局是<code>match_parent</code>时，这个item会占满整个RecyclerView的高度/宽度，所以当从低版本升级到高版本时需要将<code>match_parent</code>替换为精确的宽度/高度，或者使用<code>wrap_content</code>。</li>
+</ul>
+
+<p>原因如下:</p>
+
+<blockquote>
+<p>The RecyclerView widget provides an advanced and flexible base for creating lists and grids as well as supporting animations. This release brings an exciting new feature to the LayoutManager API: auto-measurement! This allows a RecyclerView to size itself based on the size of its contents. This means that previously unavailable scenarios, such as using WRAP_CONTENT for a dimension of the RecyclerView, are now possible. You’ll find all built in LayoutManagers now support auto-measurement.</p>
+
+<p>Due to this change, make sure to double check the layout parameters of your item views: previously ignored layout parameters (such as MATCH_PARENT in the scroll direction) will now be fully respected.</p>
+</blockquote>
+
+<p><a href="https://android-developers.googleblog.com/2016/02/android-support-library-232.html">详见: RecyclerView 23.2.0</a></p>
+
+<p>如果布局xml非常多，修改麻烦的话，可以考虑在<code>Adapter.onCreateViewHolder()</code>方法中直接修改itemView的属性即可，下面是一个竖直RecyclerView的样例：</p>
+
+<pre><code class="language-java">ViewGroup.LayoutParams layoutParams = itemView.getLayoutParams();
+if (layoutParams == null) {
+    layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+    itemView.setLayoutParams(layoutParams);
+
+} else if (layoutParams.height == ViewGroup.LayoutParams.MATCH_PARENT) {
+    layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+    itemView.setLayoutParams(layoutParams);
+
+}
+
+</code></pre>
+
+<h2 id="4-可以考虑升级multidex以及其他修改">4. 可以考虑升级multidex以及其他修改</h2>
+
+<ul>
+<li><p>可以考虑使用Fragment时使用<code>commitNow()</code>方法替换<code>executePendingTransactions()</code>。</p></li>
+
+<li><p>multidex 升级到 <code>1.0.2</code> (暂时拉取不下来，maven都找不到这个aar，不知道是什么情况)</p></li>
+</ul>
+
+<blockquote>
+<ol>
+<li>Allows multidexing of instrumentation APK.
+Deprecates MultiDexTestRunner (AndroidJUnitRunner should be used instead).<br /></li>
+<li>Provides better protection against some bad archive extraction management of the app.<br /></li>
+<li>Fixes a bug that could lead to abandoned temporary files.<br /></li>
+<li>Provides faster installation when done in concurrent process.<br /></li>
+<li>Fixes an installation bug on API 19 and 20.<br /></li>
+</ol>
+</blockquote>
+
+<p><a href="https://developer.android.com/topic/libraries/support-library/revisions.html#25-4-0">see support-library-25.4.0</a></p>
+</div></article>
+					
+						<div class="share">
+	<div class="addthis_toolbox addthis_default_style ">
+	
+	<a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+	
+	
+	<a class="addthis_button_tweet"></a>
+	
+	
+	<a class="addthis_button_google_plusone" g:plusone:size=''></a>
+	
+	
+	</div>
+	
+  	<script type="text/javascript" src='http://s7.addthis.com/js/250/addthis_widget.js#pubid='></script>
+  	
+</div>
+
+					
+					
+					<section id="comment">
+					    <h1 class="title">Comments</h1>
+					    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+					</section>
+					
+					
+
+<script type="text/javascript">
+    
+    var disqus_shortname = 'coofee-github-io';
+
+    
+    
+
+    
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+    
+</script>
+
+
+				    </div>
+				</div>
+			</div>
+			<footer id="footer" class="inner">Copyright &copy; 2017
+
+    Coofee
+
+Design credit: <a href="http://shashankmehta.in/archive/2012/greyshade.html">Shashank Mehta</a>
+<script src="http://coofee.github.io/js/slash.js"></script>
+<script src="http://coofee.github.io/js/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+	$('.fancybox').fancybox();
+})(jQuery);
+</script></footer>
+		</div>
+	</div>
+	
+</body>
+</html>
