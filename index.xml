@@ -563,7 +563,7 @@ aspectjx {
       <guid>http://coofee.github.io/post/react-native-bundle-split/</guid>
       <description>
 
-&lt;p&gt;使用&lt;a href=&#34;https://github.com/react-component/rn-packager&#34;&gt;rn-packager&lt;/a&gt;拆分react-native的jsbundle(core.android.bundle + business.android.bundle)，然后在程序启动时分步加载拆分后的bundle，以达到热更新目的。&lt;/p&gt;
+&lt;p&gt;使用&lt;a href=&#34;https://github.com/react-component/rn-packager&#34;&gt;rn-packager&lt;/a&gt;拆分react-native的jsbundle(core.android.bundle + business.android.bundle)，然后在程序启动时分步加载拆分后的bundle，以达到热更新目的，&lt;strong&gt;注:本文档使用的react native版本为0.43&lt;/strong&gt;。&lt;/p&gt;
 
 &lt;h1 id=&#34;0x00-分步加载jsbundle&#34;&gt;0x00 分步加载jsbundle&lt;/h1&gt;
 
