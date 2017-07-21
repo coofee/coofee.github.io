@@ -103,6 +103,32 @@
 					
 				        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
     <div class="meta">
+		<div class="date"><time datetime='Fri, Jul 21, 2017' data-updated="true" itemprop="datePublished">Fri, Jul 21, 2017</time>
+</div>
+		<div class="tags">
+
+
+	
+	
+	    <a href="http://coofee.github.io/categories/react-native"> react-native </a>
+	
+
+
+</div>
+		
+			<span class="comments"><a href="http://coofee.github.io/post/catch-react-native-IllegalViewOperationException/#disqus_thread">Comments</a></span>
+		
+	</div>
+	<h1 class="title" itemprop="name"><a href="http://coofee.github.io/post/catch-react-native-IllegalViewOperationException/" itemprop="url">catch react native IllegalViewOperationException</a></h1>
+	<div class="entry-content" itemprop="articleBody">
+		0x00 React Native Default Exception Handler React Native官方支持在生成ReactInstanceManager时使用NativeModuleCallExceptionHandler接口来设置自己的异常处理器，防止js/react-native代码异常导致native端直接崩溃，样例代码如下： ReactInstanceManagerBuilder builder = ReactInstanceManager.builder() .setApplication(context.getApplicationContext()) .addPackage(new MainReactPackage()) .setInitialLifecycleState(LifecycleState.BEFORE_CREATE) .setNativeModuleCallExceptionHandler(new NativeModuleCallExceptionHandler { @Override public void handleException(Exception e) { // 自己处理react-native异常. } }); 0x01 com.facebook.react.uimanager.IllegalViewOperationException app发布到线上之后，仍然出现了少部分未能捕获的异常，堆栈信息如下: com.facebook.react.uimanager.IllegalViewOperationException Trying to add unknown view tag: 500 detail: View tag:496 children(2): [ 497,498, ], viewsToAdd(1): [ [2,500], ], 1 com.facebook.react.uimanager.NativeViewHierarchyManager.manageChildren(NativeViewHierarchyManager.java:387) 2 com.facebook.react.uimanager.UIViewOperationQueue$ManageChildrenOperation.execute(UIViewOperationQueue.java:179) 3 com.facebook.react.uimanager.UIViewOperationQueue$2.run(UIViewOperationQueue.java:787) 4 com.facebook.react.uimanager.UIViewOperationQueue.flushPendingBatches(UIViewOperationQueue.java:843) 5 com.facebook.react.uimanager.UIViewOperationQueue.access$1600(UIViewOperationQueue.java:48) 6 com.facebook.react.uimanager.UIViewOperationQueue$DispatchUIFrameCallback.doFrameGuarded(UIViewOperationQueue.java:889) 7 com.facebook.react.uimanager.GuardedFrameCallback.doFrame(GuardedFrameCallback.java:31) 8 com.facebook.react.modules.core.ReactChoreographer$ReactChoreographerDispatcher.doFrame(ReactChoreographer.java:129) 9 com.facebook.react.modules.core.ChoreographerCompat$FrameCallback$1.doFrame(ChoreographerCompat.java:107) 10
+		<a href="http://coofee.github.io/post/catch-react-native-IllegalViewOperationException/" class="more-link">Read on →</a>
+	</div>
+</article>
+
+				    
+				        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+    <div class="meta">
 		<div class="date"><time datetime='Thu, Jul 13, 2017' data-updated="true" itemprop="datePublished">Thu, Jul 13, 2017</time>
 </div>
 		<div class="tags">
@@ -295,27 +321,11 @@
 </article>
 
 				    
-				        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-    <div class="meta">
-		<div class="date"><time datetime='Tue, Mar 15, 2016' data-updated="true" itemprop="datePublished">Tue, Mar 15, 2016</time>
-</div>
-		<div class="tags">
-</div>
-		
-			<span class="comments"><a href="http://coofee.github.io/post/about/#disqus_thread">Comments</a></span>
-		
-	</div>
-	<h1 class="title" itemprop="name"><a href="http://coofee.github.io/post/about/" itemprop="url">about</a></h1>
-	<div class="entry-content" itemprop="articleBody">
-		
-		
-	</div>
-</article>
-
-				    
 				    </div>
 				    <nav id="pagenavi">
 					    
+					    
+					        <a href="/page/2/" class="next">Next</a>
 					    
 					    <div class="center"><a href="http://coofee.github.io/post/">Blog Archives</a></div>
 					</nav>

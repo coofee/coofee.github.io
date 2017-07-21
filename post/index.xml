@@ -7,7 +7,122 @@
     <language>en-us</language>
     <author>Coofee</author>
     
-    <updated>Thu, 13 Jul 2017 19:52:39 CST</updated>
+    <updated>Fri, 21 Jul 2017 17:44:38 CST</updated>
+    
+    <item>
+      <title>catch react native IllegalViewOperationException</title>
+      <link>http://coofee.github.io/post/catch-react-native-IllegalViewOperationException/</link>
+      <pubDate>Fri, 21 Jul 2017 17:44:38 CST</pubDate>
+      <author>Coofee</author>
+      <guid>http://coofee.github.io/post/catch-react-native-IllegalViewOperationException/</guid>
+      <description>
+
+&lt;h1 id=&#34;0x00-react-native-default-exception-handler&#34;&gt;0x00 React Native Default Exception Handler&lt;/h1&gt;
+
+&lt;p&gt;React Native官方支持在生成&lt;code&gt;ReactInstanceManager&lt;/code&gt;时使用&lt;code&gt;NativeModuleCallExceptionHandler&lt;/code&gt;接口来设置自己的异常处理器，防止js/react-native代码异常导致native端直接崩溃，样例代码如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-java&#34;&gt;  ReactInstanceManagerBuilder builder = ReactInstanceManager.builder()
+                .setApplication(context.getApplicationContext())
+                .addPackage(new MainReactPackage())
+                .setInitialLifecycleState(LifecycleState.BEFORE_CREATE)
+                .setNativeModuleCallExceptionHandler(new NativeModuleCallExceptionHandler {
+
+			        @Override
+			        public void handleException(Exception e) {
+			        	// 自己处理react-native异常.
+			        }
+			    });
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1 id=&#34;0x01-com-facebook-react-uimanager-illegalviewoperationexception&#34;&gt;0x01 com.facebook.react.uimanager.IllegalViewOperationException&lt;/h1&gt;
+
+&lt;p&gt;app发布到线上之后，仍然出现了少部分未能捕获的异常，堆栈信息如下:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-java&#34;&gt;com.facebook.react.uimanager.IllegalViewOperationException
+Trying to add unknown view tag: 500 detail: View tag:496 children(2): [ 497,498, ], viewsToAdd(1): [ [2,500], ],
+1 com.facebook.react.uimanager.NativeViewHierarchyManager.manageChildren(NativeViewHierarchyManager.java:387)
+2 com.facebook.react.uimanager.UIViewOperationQueue$ManageChildrenOperation.execute(UIViewOperationQueue.java:179)
+3 com.facebook.react.uimanager.UIViewOperationQueue$2.run(UIViewOperationQueue.java:787)
+4 com.facebook.react.uimanager.UIViewOperationQueue.flushPendingBatches(UIViewOperationQueue.java:843)
+5 com.facebook.react.uimanager.UIViewOperationQueue.access$1600(UIViewOperationQueue.java:48)
+6 com.facebook.react.uimanager.UIViewOperationQueue$DispatchUIFrameCallback.doFrameGuarded(UIViewOperationQueue.java:889)
+7 com.facebook.react.uimanager.GuardedFrameCallback.doFrame(GuardedFrameCallback.java:31)
+8 com.facebook.react.modules.core.ReactChoreographer$ReactChoreographerDispatcher.doFrame(ReactChoreographer.java:129)
+9 com.facebook.react.modules.core.ChoreographerCompat$FrameCallback$1.doFrame(ChoreographerCompat.java:107)
+10 android.view.Choreographer$CallbackRecord.run(Choreographer.java:798)
+11 android.view.Choreographer.doCallbacks(Choreographer.java:603)
+12 android.view.Choreographer.doFrame(Choreographer.java:571)
+13 android.view.Choreographer$FrameDisplayEventReceiver.run(Choreographer.java:786)
+14 android.os.Handler.handleCallback(Handler.java:815)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;从日志中可以看出，抛出的异常为&lt;code&gt;IllegalViewOperationException&lt;/code&gt;，该异常的继承链如下，可以发现该异常继承自&lt;code&gt;RuntimeException&lt;/code&gt;，&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;IllegalViewOperationException -&amp;gt; JSApplicationCausedNativeException -&amp;gt; RuntimeException&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;对比&lt;code&gt;GuardedFrameCallback&lt;/code&gt;的源代码，可以发现在&lt;code&gt;GuardedFrameCallback.doFrame&lt;/code&gt;方法中捕获了全部的&lt;code&gt;RuntimeException&lt;/code&gt;。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-java&#34;&gt;package com.facebook.react.uimanager;
+
+public abstract class GuardedFrameCallback extends ChoreographerCompat.FrameCallback {
+
+  @Override
+  public final void doFrame(long frameTimeNanos) {
+    try {
+      doFrameGuarded(frameTimeNanos);
+    } catch (RuntimeException e) {
+      mReactContext.handleException(e);
+    }
+  }
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;进一步往下追踪，&lt;code&gt;ReactContext&lt;/code&gt;的&lt;code&gt;handleException()&lt;/code&gt;方法的源代码如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-java&#34;&gt;public void handleException(RuntimeException e) {
+	if (mCatalystInstance != null &amp;amp;&amp;amp;
+	    !mCatalystInstance.isDestroyed() &amp;amp;&amp;amp;
+	    mNativeModuleCallExceptionHandler != null) {
+	  mNativeModuleCallExceptionHandler.handleException(e);
+	} else {
+	  throw e;
+	}
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;由于我们先前已经设置了&lt;code&gt;NativeModuleCallExceptionHandler&lt;/code&gt;处理器；同时异常并没有被捕获到；可知出现异常时&lt;code&gt;mCatalystInstance&lt;/code&gt;要么为&lt;code&gt;null&lt;/code&gt;，要么已经销毁了。&lt;/p&gt;
+
+&lt;h1 id=&#34;catch-illegalviewoperationexception&#34;&gt;Catch IllegalViewOperationException&lt;/h1&gt;
+
+&lt;p&gt;为了捕获这个异常，我们的做法大致如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-java&#34;&gt;@Aspect
+public class ReactContextAspect {
+
+    @Around(&amp;quot;execution (* com.facebook.react.bridge.ReactContext.handleException(..))&amp;quot;)
+    public Object injectHandleException(ProceedingJoinPoint joinPoint) throws Throwable {
+        try {
+            joinPoint.proceed(joinPoint.getArgs());
+		 } catch (Throwable e) {
+            LOGGER.d(&amp;quot;ReactContextAspect&amp;quot;, &amp;quot;handleException&amp;quot;, e);
+			// 上报错误
+     	 }
+        return null;
+    }
+
+    private static class ReactContextHandleException extends Throwable {
+        public ReactContextHandleException(Throwable cause) {
+            super(cause);
+        }
+    }
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
     
     <item>
       <title>upgrade android sdk</title>

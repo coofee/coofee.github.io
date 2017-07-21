@@ -1,0 +1,275 @@
+<!DOCTYPE HTML>
+
+<html lang="en-us">
+
+<head>
+	<meta charset="utf-8">
+	<title>catch react native IllegalViewOperationException - Simple...</title>
+	<meta name="author" content="map[email:coffeerene.zhao@gmail.com name:Coofee]">
+
+	
+	
+	<meta name="description" content="">
+	
+
+	
+	<meta name="HandheldFriendly" content="True">
+	<meta name="MobileOptimized" content="320">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+    
+	<link href='/index.xml' rel="alternate" title="Simple..." type="application/atom+xml">
+	
+	<link rel="canonical" href="http://coofee.github.io/post/catch-react-native-IllegalViewOperationException/">
+	<link href="http://coofee.github.io/favicon.png" rel="shortcut icon">
+	<link href="http://coofee.github.io/css/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<link href="http://coofee.github.io/css/font-awesome.min.css" media="screen, projection" rel="stylesheet" type="text/css">
+	
+	<link href='http://fonts.googleapis.com/css?family=Nunito:400,300,700' rel='stylesheet' type='text/css'>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+
+	
+	<link href="http://coofee.github.io/css/prism.css" rel="stylesheet" />
+	<script src="http://coofee.github.io/js/prism.js"></script>
+
+	
+  
+
+</head>
+
+
+<body>
+	<div class="container">
+		<div class="left-col">
+			<div class="intrude-less">
+			<header id="header" class="inner"><div class="profilepic">
+	
+	
+	<script src="http://coofee.github.io/js/md5.js"></script>
+	<script type="text/javascript">
+		$(function(){
+			$('.profilepic').append("<img src='http://www.gravatar.com/avatar/" + MD5('coffeerene.zhao@gmail.com') + "?s=160' alt='Profile Picture' style='width: 160px;' />");
+		});
+	</script>
+	
+	
+</div>
+
+<nav id="main-nav"><ul class="main">
+    <li><a href="/">Blog</a></li>
+    <li><a href="/post/about">About</a></li>
+    <li><a href="/post/">Archives</a></li>
+</ul>
+
+<section class="aboutme">
+  <p>
+    Less is more
+  </p>
+</section>
+</nav>
+<nav id="sub-nav">
+	<div class="social">
+		
+			<a class="email" href='mailto:coffeerene.zhao@gmail.com' title="Email">Email</a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+    	
+    	
+			<a class="rss" href='/index.xml' title="RSS">RSS</a>
+		
+	</div>
+</nav>
+</header>
+			</div>
+		</div>
+		<div class="mid-col">
+			
+			<div class="mid-col-container">
+				<div id="content" class="inner">
+					<div itemscope itemtype="http://schema.org/Blog">
+					<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+    <h1 class="title" itemprop="name">catch react native IllegalViewOperationException</h1>
+	<div class="entry-content" itemprop="articleBody">
+
+<h1 id="0x00-react-native-default-exception-handler">0x00 React Native Default Exception Handler</h1>
+
+<p>React Native官方支持在生成<code>ReactInstanceManager</code>时使用<code>NativeModuleCallExceptionHandler</code>接口来设置自己的异常处理器，防止js/react-native代码异常导致native端直接崩溃，样例代码如下：</p>
+
+<pre><code class="language-java">  ReactInstanceManagerBuilder builder = ReactInstanceManager.builder()
+                .setApplication(context.getApplicationContext())
+                .addPackage(new MainReactPackage())
+                .setInitialLifecycleState(LifecycleState.BEFORE_CREATE)
+                .setNativeModuleCallExceptionHandler(new NativeModuleCallExceptionHandler {
+
+			        @Override
+			        public void handleException(Exception e) {
+			        	// 自己处理react-native异常.
+			        }
+			    });
+</code></pre>
+
+<h1 id="0x01-com-facebook-react-uimanager-illegalviewoperationexception">0x01 com.facebook.react.uimanager.IllegalViewOperationException</h1>
+
+<p>app发布到线上之后，仍然出现了少部分未能捕获的异常，堆栈信息如下:</p>
+
+<pre><code class="language-java">com.facebook.react.uimanager.IllegalViewOperationException
+Trying to add unknown view tag: 500 detail: View tag:496 children(2): [ 497,498, ], viewsToAdd(1): [ [2,500], ],
+1 com.facebook.react.uimanager.NativeViewHierarchyManager.manageChildren(NativeViewHierarchyManager.java:387)
+2 com.facebook.react.uimanager.UIViewOperationQueue$ManageChildrenOperation.execute(UIViewOperationQueue.java:179)
+3 com.facebook.react.uimanager.UIViewOperationQueue$2.run(UIViewOperationQueue.java:787)
+4 com.facebook.react.uimanager.UIViewOperationQueue.flushPendingBatches(UIViewOperationQueue.java:843)
+5 com.facebook.react.uimanager.UIViewOperationQueue.access$1600(UIViewOperationQueue.java:48)
+6 com.facebook.react.uimanager.UIViewOperationQueue$DispatchUIFrameCallback.doFrameGuarded(UIViewOperationQueue.java:889)
+7 com.facebook.react.uimanager.GuardedFrameCallback.doFrame(GuardedFrameCallback.java:31)
+8 com.facebook.react.modules.core.ReactChoreographer$ReactChoreographerDispatcher.doFrame(ReactChoreographer.java:129)
+9 com.facebook.react.modules.core.ChoreographerCompat$FrameCallback$1.doFrame(ChoreographerCompat.java:107)
+10 android.view.Choreographer$CallbackRecord.run(Choreographer.java:798)
+11 android.view.Choreographer.doCallbacks(Choreographer.java:603)
+12 android.view.Choreographer.doFrame(Choreographer.java:571)
+13 android.view.Choreographer$FrameDisplayEventReceiver.run(Choreographer.java:786)
+14 android.os.Handler.handleCallback(Handler.java:815)
+</code></pre>
+
+<p>从日志中可以看出，抛出的异常为<code>IllegalViewOperationException</code>，该异常的继承链如下，可以发现该异常继承自<code>RuntimeException</code>，</p>
+
+<blockquote>
+<p>IllegalViewOperationException -&gt; JSApplicationCausedNativeException -&gt; RuntimeException</p>
+</blockquote>
+
+<p>对比<code>GuardedFrameCallback</code>的源代码，可以发现在<code>GuardedFrameCallback.doFrame</code>方法中捕获了全部的<code>RuntimeException</code>。</p>
+
+<pre><code class="language-java">package com.facebook.react.uimanager;
+
+public abstract class GuardedFrameCallback extends ChoreographerCompat.FrameCallback {
+
+  @Override
+  public final void doFrame(long frameTimeNanos) {
+    try {
+      doFrameGuarded(frameTimeNanos);
+    } catch (RuntimeException e) {
+      mReactContext.handleException(e);
+    }
+  }
+}
+
+</code></pre>
+
+<p>进一步往下追踪，<code>ReactContext</code>的<code>handleException()</code>方法的源代码如下：</p>
+
+<pre><code class="language-java">public void handleException(RuntimeException e) {
+	if (mCatalystInstance != null &amp;&amp;
+	    !mCatalystInstance.isDestroyed() &amp;&amp;
+	    mNativeModuleCallExceptionHandler != null) {
+	  mNativeModuleCallExceptionHandler.handleException(e);
+	} else {
+	  throw e;
+	}
+}
+</code></pre>
+
+<p>由于我们先前已经设置了<code>NativeModuleCallExceptionHandler</code>处理器；同时异常并没有被捕获到；可知出现异常时<code>mCatalystInstance</code>要么为<code>null</code>，要么已经销毁了。</p>
+
+<h1 id="catch-illegalviewoperationexception">Catch IllegalViewOperationException</h1>
+
+<p>为了捕获这个异常，我们的做法大致如下：</p>
+
+<pre><code class="language-java">@Aspect
+public class ReactContextAspect {
+
+    @Around(&quot;execution (* com.facebook.react.bridge.ReactContext.handleException(..))&quot;)
+    public Object injectHandleException(ProceedingJoinPoint joinPoint) throws Throwable {
+        try {
+            joinPoint.proceed(joinPoint.getArgs());
+		 } catch (Throwable e) {
+            LOGGER.d(&quot;ReactContextAspect&quot;, &quot;handleException&quot;, e);
+			// 上报错误
+     	 }
+        return null;
+    }
+
+    private static class ReactContextHandleException extends Throwable {
+        public ReactContextHandleException(Throwable cause) {
+            super(cause);
+        }
+    }
+}
+
+</code></pre>
+</div></article>
+					
+						<div class="share">
+	<div class="addthis_toolbox addthis_default_style ">
+	
+	<a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+	
+	
+	<a class="addthis_button_tweet"></a>
+	
+	
+	<a class="addthis_button_google_plusone" g:plusone:size=''></a>
+	
+	
+	</div>
+	
+  	<script type="text/javascript" src='http://s7.addthis.com/js/250/addthis_widget.js#pubid='></script>
+  	
+</div>
+
+					
+					
+					<section id="comment">
+					    <h1 class="title">Comments</h1>
+					    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+					</section>
+					
+					
+
+<script type="text/javascript">
+    
+    var disqus_shortname = 'coofee-github-io';
+
+    
+    
+
+    
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+    
+</script>
+
+
+				    </div>
+				</div>
+			</div>
+			<footer id="footer" class="inner">Copyright &copy; 2017
+
+    Coofee
+
+Design credit: <a href="http://shashankmehta.in/archive/2012/greyshade.html">Shashank Mehta</a>
+<script src="http://coofee.github.io/js/slash.js"></script>
+<script src="http://coofee.github.io/js/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+	$('.fancybox').fancybox();
+})(jQuery);
+</script></footer>
+		</div>
+	</div>
+	
+</body>
+</html>
