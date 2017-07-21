@@ -6,7 +6,7 @@
 	<meta name="generator" content="Hugo 0.16" />
 	<meta charset="utf-8">
 	<title>Simple...</title>
-	<meta name="author" content="map[email:coffeerene.zhao@gmail.com name:Coofee]">
+	<meta name="author" content="map[name:Coofee email:coffeerene.zhao@gmail.com]">
 
 	
 	
@@ -101,6 +101,32 @@
 					
 					<div itemscope itemtype="http://schema.org/Blog">
 					
+				        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+    <div class="meta">
+		<div class="date"><time datetime='Fri, Mar 25, 2016' data-updated="true" itemprop="datePublished">Fri, Mar 25, 2016</time>
+</div>
+		<div class="tags">
+
+
+	
+	
+	    <a href="http://coofee.github.io/categories/proxy"> proxy </a>
+	
+
+
+</div>
+		
+			<span class="comments"><a href="http://coofee.github.io/post/%E5%A6%82%E4%BD%95%E7%A7%91%E5%AD%A6%E4%B8%8A%E7%BD%91/#disqus_thread">Comments</a></span>
+		
+	</div>
+	<h1 class="title" itemprop="name"><a href="http://coofee.github.io/post/%E5%A6%82%E4%BD%95%E7%A7%91%E5%AD%A6%E4%B8%8A%E7%BD%91/" itemprop="url">如何科学上网</a></h1>
+	<div class="entry-content" itemprop="articleBody">
+		1. 如何使用shadowsocks代理访问网络？ 购买代理服务器，安装shadowsocks。 本机安装shadowsocks-gui，然后添加代理服务器上shadowsocks的配置，此时shadowsocks会在本机上面开启一个socks代理，其默认端口是: 1080。 打开shadowsocks，勾选代理服务器，同时勾选shadowsocks-gui的全局模式或者自动代理模式，然后在浏览器上面选择使用系统代理即可正常访问google。 2. 如何在mac的Terminal中使用socks代理？ 使用homebrew安装proxychains4-ng 创建~/.proxychains/proxychains.conf文件，文件内容如下。 strict_chain proxy_dns remote_dns_subnet 224 tcp_read_time_out 15000 tcp_connect_time_out 8000 localnet 127.0.0.0/255.0.0.0 quiet_mode [ProxyList] socks5 127.0.0.1 1080 在Terminal中，使用proxychains4 [cmd]就可以使用代理服务器了。如： ~$ proxychains4 brew update 对于mac osx 10.11，由于apple新增了sip模式，需要进入到Recovery模式(cmmand+R)，然后在terminal中执行csrutil enable --without debug命令，然后重启电脑，即可正常使用proxychains4-ng。 3. 如何让socks代理支持http代理？ 安装polipo：brew install polipo 查看配置参数：polipo -v 启动http代理：polipo socksParentProxy=localhost:1080，其默认端口是8123。 此时其他应该程序就可以设置polipo的http代理：localhost:8123 4. 如何在Terminal中使用Http代理？ 在~/.bash_profile文件中添加以下代码，然后执行source ~/.bash_profile。 alias gaproxy='export http_proxy=127.0.0.1:8123 https_proxy=127.0.0.1:8123' alias noproxy='unset http_proxy https_proxy' 当使用http代理时，执行gaproxy，然后执行其他命令即可。如： ~$ gaproxy ~$ curl www.google.com 不使用时，可以直接执行noproxy。
+		
+	</div>
+</article>
+
+				    
 				        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
     <div class="meta">
 		<div class="date"><time datetime='Tue, Mar 15, 2016' data-updated="true" itemprop="datePublished">Tue, Mar 15, 2016</time>
