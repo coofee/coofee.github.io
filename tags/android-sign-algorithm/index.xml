@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+      <title>Android Sign Algorithm on Simple... </title>
+      <generator uri="https://gohugo.io">Hugo</generator>
+    <link>http://coofee.github.io/tags/android-sign-algorithm/</link>
+    <language>en-us</language>
+    <author>Coofee</author>
+    
+    <updated>Fri, 21 Jul 2017 18:35:56 CST</updated>
+    
+    <item>
+      <title>sha1-collision &amp; android signature algorithm</title>
+      <link>http://coofee.github.io/post/upgrade-app-signature-algorithm/</link>
+      <pubDate>Fri, 21 Jul 2017 18:35:56 CST</pubDate>
+      <author>Coofee</author>
+      <guid>http://coofee.github.io/post/upgrade-app-signature-algorithm/</guid>
+      <description>
+
+&lt;h1 id=&#34;sha1-collision-android-sign&#34;&gt;SHA1-Collision &amp;amp; Android Sign&lt;/h1&gt;
+
+&lt;p&gt;参看&lt;a href=&#34;https://security.googleblog.com/2017/02/announcing-first-sha1-collision.html&#34;&gt;SHA1-collision&lt;/a&gt;我们可以知道，SHA-1签名已经不安全了，签名算法可以考虑升级到SHA-2或者其他算法。&lt;/p&gt;
+
+&lt;h1 id=&#34;0x01-sha1-collision&#34;&gt;0x01 SHA1-Collision&lt;/h1&gt;
+
+&lt;h2 id=&#34;1-sha-1是什么&#34;&gt;1. SHA-1是什么？&lt;/h2&gt;
+
+&lt;p&gt;SHA-1（英语：Secure Hash Algorithm 1，中文名：安全散列算法1）是一种密码散列函数，美国国家安全局设计，并由美国国家标准技术研究所（NIST）发布为联邦数据处理标准（FIPS）[2]。SHA-1可以生成一个被称为消息摘要的160位（20字节）散列值，散列值通常的呈现形式为40个十六进制数，参考：&lt;a href=&#34;https://zh.wikipedia.org/wiki/SHA-1&#34;&gt;SHA-1&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;2-sha1-collision是什么&#34;&gt;2. SHA1-Collision是什么？&lt;/h2&gt;
+
+&lt;p&gt;两个内容不同的数据，SHA-1算法会生成相同的摘要信息，参考：&lt;a href=&#34;https://shattered.it/&#34;&gt;SHA1 collision Two PDF&lt;/a&gt;。&lt;/p&gt;
+
+&lt;h2 id=&#34;3-sha1-collision对android的影响&#34;&gt;3. SHA1-Collision对Android的影响&lt;/h2&gt;
+
+&lt;p&gt;Android SDK默认对apk使用SHA-1签名，在最坏的情况下，攻击者可以伪造SHA-1值相同的文件替换已签名apk中的文件来达到攻击的目的。&lt;/p&gt;
+
+&lt;h1 id=&#34;0x02-android的证书验证机制&#34;&gt;0x02 Android的证书验证机制&lt;/h1&gt;
+
+&lt;p&gt;我们知道Android的Apk文件是一个压缩文件，文件结构大致如下:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;.
+├── AndroidManifest.xml
+├── META-INF
+│   ├── CERT.RSA
+│   ├── CERT.SF
+│   └── MANIFEST.MF
+├── assets
+├── classes.dex
+├── classes2.dex
+├── classes3.dex
+├── lib
+├── res
+└── resources.arsc
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;apk相关的签名相关的文件在&lt;code&gt;META-INF&lt;/code&gt;目录中，其中：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;MANIFEST.MF&lt;br /&gt;
+  遍历APK包中除了&lt;code&gt;META-INF\&lt;/code&gt;文件夹以外的所有文件，利用SHA-1算法生成这些文件的消息摘要，然后转化为对应的base64编码。&lt;code&gt;MANIFEST.MF&lt;/code&gt;存储的是文件的摘要值，保证完整性，防止文件被篡改。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;.SF&lt;br /&gt;
+  xx.SF文件（xx为使用者证书的自定义别名，默认为CERT，即CERT.SF），保存的是MANIFEST.MF的摘要值， 以及MANIFEST.MF中每一个摘要项的摘要值，然后转化成对应的base64编码。虽然该文件的后缀名.sf(SignatureFile)看起来是签名文件，但是并没有私钥参与运算，也不保存任何签名内容。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;.RSA/.DSA&lt;br /&gt;
+  .RSA/.DSA文件（后缀不同采用的签名算法不同，.RSA使用的是RSA算法，.DSA使用的是数字签名算法DSA，目前APK主要使用的是这两种算法），保存的是第二项.SF文件的数字签名，同时还会包括签名采用的数字证书（公钥）。特别说明，当使用多重证书签名时，每一个.sf文件必须有一个.RSA/.DSA文件与之对应，也就是说使用证书CERT1签名时有CERT1.SF和CERT1.RSA，同时采用证书CERT2签名时又会生成CERT2.SF和CERT2.RSA。&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Android 系统不允许安装没有任何数字签名的应用APK程序，所有应用程序必须使用某个证书进行签名（一般为应用开发者自签名证书），&lt;br /&gt;
+APK源文件，首先由应用开发者使用自己的私钥，对整个文件进行签名，生成上述的三个文件，然后打包成签名后的APK文件；然后发布到市场。&lt;/p&gt;
+
+&lt;p&gt;用户从市场下载APK安装文件，在真正安装APK前，会首先验证数字签名。具体步骤：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;首先计算除META-INF\ 文件夹以外所有文件的SHA1摘要值，同MANIFEST.MF文件中的摘要值做比对。如果不同，则证明源文件被篡改，验证不通过，拒绝安装。&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;计算MANIFEST.MF的摘要值， 以及MANIFEST.MF中每一个摘要项的摘要值，同.SF文件中的摘要值做比对。如果不同，则证明.SF被篡改，验证不通过，拒绝安装。&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;从.RSA 文件中取出开发者证书，然后从证书中提取开发者公钥，用该公钥对.SF文件做数字签名，并将结果同.RSA文件中的.SF签名进行比对。如果不同，则验证不通过，拒绝安装。&lt;br /&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;摘自:&lt;a href=&#34;https://jaq.alibaba.com/blog.htm?id=65&#34;&gt;Shadows Everywhere&lt;/a&gt;&lt;/p&gt;
+
+&lt;h1 id=&#34;0x03-android支持的签名算法&#34;&gt;0x03 Android支持的签名算法&lt;/h1&gt;
+
+&lt;p&gt;android 4.3之前不支持SHA1之外的其他签名算法，在4.3之后支持了SHA2等算法，详见：&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;There is security vs compatibility trade off a few might be interested in. Pre-4.3, Android did not support any signature algorithms except SHA1. With Android &amp;gt;= 4.3, SHA256 support was fixed, and SHA384, SHA512, and ECDSA were added (source). There are still android 2.3.3 (android-10) devices being sold, so anyone interested in backwards compatibility will have to heed this.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;测试例子详见：&lt;a href=&#34;https://guardianproject.info/2015/12/29/how-to-migrate-your-android-apps-signing-key/&#34;&gt;how-to-migrate-your-android-apps-signing-key&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;下面是提交给google的bug链接：&lt;a href=&#34;https://issuetracker.google.com/issues/36956587&#34;&gt;APKs signed using SHA256withRSA or with individual files hashed using SHA-256 fail to install&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;在android 4.3版本之前的手机上面安装使用sha-256签名的app时，错误日志信息大致如下:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;adb install -r Downloads/notepad-sha256withrsa-sha256.apk
+~/Downloads/notepad-sha256withrsa-sha256.apk: 1 file pushed. 4.3 MB/s (62395 bytes in 0.014s)
+  pkg: /data/local/tmp/notepad-sha256withrsa-sha256.apk
+Failure [INSTALL_PARSE_FAILED_NO_CERTIFICATES]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1 id=&#34;0x04-签名生成与查看&#34;&gt;0x04 签名生成与查看&lt;/h1&gt;
+
+&lt;ul&gt;
+&lt;li&gt;生成keystore&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;keytool -genkey -v -keystore test.keystore -alias testkey -keyalg RSA -keysize 2048 -sigalg SHA256withRSA -dname &amp;quot;cn=Test,ou=Test,c=CA&amp;quot; -validity 10000
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;ul&gt;
+&lt;li&gt;查看APK的签名算法&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;keytool -printcert -jarfile notepad-sha1withrsa-sha1.apk
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;ul&gt;
+&lt;li&gt;查看keystore&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;pre&gt;&lt;code&gt;keytool -list -v -keystore test.keystore
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;ul&gt;
+&lt;li&gt;jarsigner签名&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;pre&gt;&lt;code&gt;jarsigner -keystore mykeystore -storepass password -sigalg SHA256withRSA -digestalg SHA256 my.apk test 
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1 id=&#34;0x05-jarsigner与apksigner的区别&#34;&gt;0x05 jarsigner与apksigner的区别&lt;/h1&gt;
+
+&lt;p&gt;jarsigner是jdk自带的工具，apksigner是android sdk自带的工具（build-tools 24.0.3+版本才拥有）。在android build-tools 24.0.3以前默认使用jarsigner对app进行签名，在24.0.3版本以及之后使用apksigner进行签名，其中apksigner签名算法根据android的最低版本的不同而不同，jarsigner则可以直接指定签名算法(见: 上面的jarsigner签名)。&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th align=&#34;center&#34;&gt;tool&lt;/th&gt;
+&lt;th align=&#34;center&#34;&gt;minSdkVersion &amp;lt; 18&lt;/th&gt;
+&lt;th align=&#34;center&#34;&gt;minSdkVersion &amp;gt;= 18&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td align=&#34;center&#34;&gt;apksigner&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;SHA1withRSA&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;SHA256withRSA&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;center&#34;&gt;apksigner&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;SHA1withDSA&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;SHA256withDSA&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;center&#34;&gt;apksigner&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;SHA256withEC&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;代码详见&lt;code&gt;com.android.apksig.internal.apk.v1.V1SchemeSigner&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-java&#34;&gt;public static DigestAlgorithm getSuggestedSignatureDigestAlgorithm(PublicKey signingKey, int minSdkVersion)
+  throws InvalidKeyException
+{
+  String keyAlgorithm = signingKey.getAlgorithm();
+  if (&amp;quot;RSA&amp;quot;.equalsIgnoreCase(keyAlgorithm))
+  {
+    if (minSdkVersion &amp;lt; 18) {
+      return DigestAlgorithm.SHA1;
+    }
+    return DigestAlgorithm.SHA256;
+  }
+  if (&amp;quot;DSA&amp;quot;.equalsIgnoreCase(keyAlgorithm))
+  {
+    if (minSdkVersion &amp;lt; 21) {
+      return DigestAlgorithm.SHA1;
+    }
+    return DigestAlgorithm.SHA256;
+  }
+  if (&amp;quot;EC&amp;quot;.equalsIgnoreCase(keyAlgorithm))
+  {
+    if (minSdkVersion &amp;lt; 18) {
+      throw new InvalidKeyException(&amp;quot;ECDSA signatures only supported for minSdkVersion 18 and higher&amp;quot;);
+    }
+    return DigestAlgorithm.SHA256;
+  }
+  throw new InvalidKeyException(&amp;quot;Unsupported key algorithm: &amp;quot; + keyAlgorithm);
+}  
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://developer.android.com/studio/command-line/apksigner.html&#34;&gt;关于ApkSigner更多信息，请戳~&lt;/a&gt;&lt;/p&gt;
+
+&lt;h1 id=&#34;0x06-升级签名算法为sha-2&#34;&gt;0x06 升级签名算法为SHA-2&lt;/h1&gt;
+
+&lt;p&gt;综上所示，我们可以知道App使用签名算法的地方有两处，分别是：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;使用keytools生成keystore时指定的算法。&lt;/li&gt;
+&lt;li&gt;使用jarsigner/apksigner和keystore对app进行签名时指定的算法。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;这里我们&lt;strong&gt;不修改签名文件keystore的签名算法&lt;/strong&gt;，我们只修改签名App时使用的签名算法为SHA-2，鉴于上面的原因我们需要升级android app的&lt;code&gt;minSdkVersion &amp;gt;= 18&lt;/code&gt;，下面介绍两种升级SHA-2的方法:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;升级buildToolsVersion的版本大于等于24.0.3，gradle打包时会自动调用apksigner使用SHA256withRSA对app进行签名。&lt;/li&gt;
+&lt;li&gt;使用jarsigner对app进行签名，然后在命令参数中直接指定签名算法即可。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&#34;0x07-遗留问题&#34;&gt;0x07 遗留问题&lt;/h1&gt;
+
+&lt;p&gt;由于keystore未发生变化，所以使用不同签名算法的app是可以互相覆盖的，故而攻击者也可以使用旧版本的apk(使用SHA-1)覆盖新版本apk(使用SHA-2)继续进行攻击，所以为了避免被攻击者进行攻击的最好更换keystore，但是这样就没法覆盖安装了，详细请参考&lt;a href=&#34;https://android-developers.googleblog.com/2011/06/things-that-cannot-change.html&#34;&gt;things-that-cannot-change&lt;/a&gt;。&lt;/p&gt;
+
+&lt;h1 id=&#34;0x08-参考引用&#34;&gt;0x08 参考引用&lt;/h1&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://security.googleblog.com/2017/02/announcing-first-sha1-collision.html&#34;&gt;Announcing the first SHA1 collision&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://shattered.it/&#34;&gt;SHA1 collision Two PDF&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://android-developers.googleblog.com/2011/06/things-that-cannot-change.html&#34;&gt;things-that-cannot-change&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://zh.wikipedia.org/wiki/SHA-1&#34;&gt;SHA-1&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://jaq.alibaba.com/blog.htm?id=65&#34;&gt;Shadows Everywhere&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://developer.android.com/studio/command-line/apksigner.html&#34;&gt;apksigner&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://jokester.io/post/2017-02/sha1-collision-and-apk-signing/&#34;&gt;sha1-collision-and-apk-signing&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>
