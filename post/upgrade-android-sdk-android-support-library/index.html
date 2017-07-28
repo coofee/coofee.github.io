@@ -4,7 +4,7 @@
 
 <head>
 	<meta charset="utf-8">
-	<title>upgrade android sdk - Simple...</title>
+	<title>upgrade android support library to 25.4.0 - Simple...</title>
 	<meta name="author" content="map[name:Coofee email:coffeerene.zhao@gmail.com]">
 
 	
@@ -99,22 +99,46 @@
 				<div id="content" class="inner">
 					<div itemscope itemtype="http://schema.org/Blog">
 					<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
-    <h1 class="title" itemprop="name">upgrade android sdk</h1>
+    <h1 class="title" itemprop="name">upgrade android support library to 25.4.0</h1>
 	<div class="entry-content" itemprop="articleBody">
 
-<h2 id="1-gradle-plugin-2-2-0-android-sdk-25都需要jdk-1-8">1. gradle plugin 2.2.0+、android sdk 25都需要jdk 1.8。</h2>
+<p>Android升级Support库版本至25.4.0</p>
 
-<pre><code class="language-groovy">buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.0'
-    }
-}
+<p>[TOC]</p>
+
+<h1 id="0x00-背景">0x00 背景</h1>
+
+<p>support库是google官方提供的支持库，其主要功能在于兼容android高/低版本系统（如：<code>support-v4</code>、<code>support-v7</code>库），同时伴随着support库的不同版本，也会发布同版本的各种UI组件库（如<code>Design</code>、<code>RecyclerView</code>等）。support库的每次更新升级，一般都会包括bug修复、性能优化以及功能改进等等。</p>
+
+<p>目前我们App使用的版本是<strong><a href="https://developer.android.com/topic/libraries/support-library/rev-archive.html#rev23-0-1">23.0.1</a></strong>，截止目前google发布的最新稳定版本是<strong><a href="https://developer.android.com/topic/libraries/support-library/revisions.html#25-4-0">25.4.0</a></strong>，中间相差了将近<strong>20</strong>个版本，其中包含大量的bug修复；同时又因为<code>Design</code>、<code>RecyclerView</code>等UI库的很多新组件也依赖于support库的升级，所以我们计划将<code>support-v4</code>、<code>support-v7</code>、<code>Design</code>、<code>RecyclerView</code>等库统一升级至25.4.0版本。</p>
+
+<h1 id="0x01-打包环境的影响及解决方案">0x01 打包环境的影响及解决方案</h1>
+
+<h2 id="1-升级jdk-android-sdk">1. 升级JDK &amp; Android SDK</h2>
+
+<ul>
+<li>升级JDK到1.8</li>
+<li>升级Android SDK到25</li>
+</ul>
+
+<h2 id="2-升级centos或glibc">2. 升级CentOS或GLIBC</h2>
+
+<p>由于我们的jenkins打包服务器的系统是CentOS 6.5，其默认支持的GLIBC库版本最高为2.12，而android sdk高版本需要的GLIBC版本为2.14，所以要么升级系统CentOS到7.x版本，要么升级GLIBC版本到2.14.</p>
+
+<p>当Android SDK需要的GLIBC版本不匹配时，出错信息大致如下:</p>
+
+<pre><code class="language-bash">[exec] /data0/android-tools/android-sdk-linux/build-tools/24.0.2/aapt: /lib64/libc.so.6: version `GLIBC_2.14' not found (required by /data0/android-tools/android-sdk-linux/build-tools/24.0.2/aapt)
+
+[exec] /data0/android-tools/android-sdk-linux/build-tools/24.0.2/aapt: /lib64/libc.so.6: version `GLIBC_2.14' not found (required by /data0/android-tools/android-sdk-linux/build-tools/24.0.2/lib64/libc++.so)
 </code></pre>
 
-<p>在执行gradle脚本时，可以在参数中指定jdk版本，如下所示：</p>
+<p>在CentOS系统中，使用<code>strings /lib64/libc.so.6 | grep GLIBC</code>命令可以查看其支持的GLIBC库的版本。</p>
+
+<h2 id="3-指定gradle使用jdk1-8">3. 指定gradle使用jdk1.8</h2>
+
+<p>由于android sdk需要在jdk1.8环境才能正常编译、打包，所以要么在系统中配置java环境变量为jdk1.8版本；要么在执行gradle时指定其运行环境为jdk1.8。</p>
+
+<p>指定gradle使用jdk1.8，具体配置如下：</p>
 
 <pre><code class="language-bash">gradlew clean -Dorg.gradle.java.home=/usr/java/jdk1.8
 </code></pre>
@@ -124,21 +148,12 @@
 <pre><code class="language-groovy">org.gradle.java.home=/usr/java/jdk1.8
 </code></pre>
 
-<h2 id="2-build-tools-24-0-2以上的的aapt需要将centos-6-5的glibc升级到glibc-2-14">2. build-tools/24.0.2以上的的aapt需要将centOS 6.5的GLIBC升级到GLIBC_2.14。</h2>
+<h2 id="4-support库与build-tools版本">4. support库与build-tools版本</h2>
 
-<pre><code class="language-bash">[exec] /android-sdk-linux/build-tools/24.0.2/aapt: /lib64/libc.so.6: version `GLIBC_2.14' not found (required by /android-sdk-linux/build-tools/24.0.2/aapt)
-[exec] /android-sdk-linux/build-tools/24.0.2/aapt: /lib64/libc.so.6: version `GLIBC_2.14' not found (required by /android-sdk-linux/build-tools/24.0.2/lib64/libc++.so)
-</code></pre>
+<p>由于我们app原本使用的build-tools版本是22.0.1，当保持build-tools版本不变，只升级support库版本时，在HUAWEI P7-L00 4.4.2上面运行时，会出现如下错误，推测是因为support库版本和build-tools主版本号不一致导致，所以如果升级support库版本，最好保持和build-tools主版本号一致，防止各种诡异问题。</p>
 
-<p>可以使用<code>strings /lib64/libc.so.6 | grep GLIBC</code>获取GLIBC的版本。</p>
-
-<p><em>注意：build-tools使用23.0.2时则不需要升级。</em></p>
-
-<p><em>注意：build-tools使用23.0.2时则不需要升级。</em></p>
-
-<p>build-tools版本保持22.0.1不变时，在HUAWEI P7-L00 4.4.2上面运行时，会出现如下错误，出错原因是因为support库版本和build-tools主版本号不一致导致，所以如果升级support库版本，最好保持和build-tools版本一致。</p>
-
-<pre><code class="language-java">Caused by: android.content.res.Resources$NotFoundException: File res/drawable/abc_vector_test.xml from drawable resource ID #0x7f820053
+<pre><code>E/AndroidRuntime: FATAL EXCEPTION: main
+Caused by: android.content.res.Resources$NotFoundException: File res/drawable/abc_vector_test.xml from drawable resource ID #0x7f820053
   at android.content.res.Resources.loadDrawable(Resources.java:2154)
   at com.huawei.android.content.res.ResourcesEx.loadDrawable(ResourcesEx.java:723)
   at android.content.res.Resources.getDrawable(Resources.java:741)
@@ -151,13 +166,11 @@
   at android.support.v7.content.res.AppCompatResources
 </code></pre>
 
-<h2 id="3-targetsdkversion-support-library-upgrade">3. targetSdkVersion &amp; support library upgrade</h2>
+<h1 id="0x02-相关代码的影响及解决方案">0x02 相关代码的影响及解决方案</h1>
 
-<ul>
-<li><p>targetSdkVersion=25时libssl.so已经被系统移除了，所以如果有使用openssl的需要做兼容。注: android 6.0已经使用<code>BoringSSL</code>替换了<code>OpenSSL</code>。</p></li>
+<h2 id="1-使用google官方的maven仓库">1. 使用google官方的Maven仓库</h2>
 
-<li><p>support库升级到25.4.0时，需要使用google官方的maven仓库(<a href="https://maven.google.com">https://maven.google.com</a>) 需要翻墙，解决方案如下:</p></li>
-</ul>
+<p>support库升级到25.4.0时，需要使用google官方的maven仓库(<a href="https://maven.google.com)需要翻墙，解决方案如下:">https://maven.google.com)需要翻墙，解决方案如下:</a></p>
 
 <pre><code class="language-groovy">allprojects {
     repositories {
@@ -169,27 +182,35 @@
 }
 </code></pre>
 
-<ul>
-<li>support库升级到25.4.0时，使用<code>CoordinatorLayout</code>控件的页面，Activity的主题必须继承<code>Theme.AppCompat</code>，否则会直接崩溃，错误日志如下：</li>
-</ul>
+<h2 id="2-targetsdkversion">2. targetSdkVersion</h2>
+
+<p>当我们将app的targetSdkVersion升级到25时，由于libssl.so已经被系统移除了，此时当我们的So依赖该库时，在App运行时会直接崩溃，所以targetSdkVersion可以仍然保持为23，也可以自己做兼容。注: android 6.0已经使用<code>BoringSSL</code>替换了<code>OpenSSL</code>。</p>
+
+<h2 id="3-coordinatorlayout">3. CoordinatorLayout</h2>
+
+<p>support库升级到25.4.0时，使用<code>CoordinatorLayout</code>控件的页面，Activity的主题必须继承<code>Theme.AppCompat</code>，否则会直接崩溃，错误日志如下：</p>
 
 <pre><code class="language-java">Caused by: java.lang.IllegalArgumentException: You need to use a Theme.AppCompat theme (or descendant) with the design library.
-	at android.support.design.widget.ThemeUtils.checkAppCompatTheme(ThemeUtils.java:33)
-	at android.support.design.widget.CoordinatorLayout.&lt;init&gt;(CoordinatorLayout.java:206)
-	at android.support.design.widget.CoordinatorLayout.&lt;init&gt;(CoordinatorLayout.java:200)
-	at java.lang.reflect.Constructor.newInstance0(Native Method) 
-	at java.lang.reflect.Constructor.newInstance(Constructor.java:430) 
-	at android.view.LayoutInflater.createView(LayoutInflater.java:656) 
-	at android.view.LayoutInflater.createViewFromTag(LayoutInflater.java:798) 
-	at android.view.LayoutInflater.createViewFromTag(LayoutInflater.java:738) 
-	at android.view.LayoutInflater.inflate(LayoutInflater.java:495) 
-	at android.view.LayoutInflater.inflate(LayoutInflater.java:426) 
-	at android.view.LayoutInflater.inflate(LayoutInflater.java:377) 
+  at android.support.design.widget.ThemeUtils.checkAppCompatTheme(ThemeUtils.java:33)
+  at android.support.design.widget.CoordinatorLayout.&lt;init&gt;(CoordinatorLayout.java:206)
+  at android.support.design.widget.CoordinatorLayout.&lt;init&gt;(CoordinatorLayout.java:200)
+  at java.lang.reflect.Constructor.newInstance0(Native Method) 
+  at java.lang.reflect.Constructor.newInstance(Constructor.java:430) 
+  at android.view.LayoutInflater.createView(LayoutInflater.java:656) 
+  at android.view.LayoutInflater.createViewFromTag(LayoutInflater.java:798) 
+  at android.view.LayoutInflater.createViewFromTag(LayoutInflater.java:738) 
+  at android.view.LayoutInflater.inflate(LayoutInflater.java:495) 
+  at android.view.LayoutInflater.inflate(LayoutInflater.java:426) 
+  at android.view.LayoutInflater.inflate(LayoutInflater.java:377) 
 </code></pre>
 
+<h2 id="4-recyclerview">4. RecyclerView</h2>
+
 <ul>
-<li>RecyclerView在<strong>23.2</strong>版本支持<code>setAutoMeasureEnabled()</code>，当item布局是<code>match_parent</code>时，这个item会占满整个RecyclerView的高度/宽度，所以当从低版本升级到高版本时需要将<code>match_parent</code>替换为精确的宽度/高度，或者使用<code>wrap_content</code>。</li>
+<li>ItemView高度占满RecyclerView</li>
 </ul>
+
+<p>RecyclerView在<strong>23.2</strong>版本支持<code>setAutoMeasureEnabled()</code>，当item布局是<code>match_parent</code>时，这个item会占满整个RecyclerView的高度/宽度，所以当从低版本升级到高版本时需要将<code>match_parent</code>替换为精确的宽度/高度，或者使用<code>wrap_content</code>。</p>
 
 <p>原因如下:</p>
 
@@ -217,7 +238,7 @@ if (layoutParams == null) {
 </code></pre>
 
 <ul>
-<li>RecyclerView隐藏ItemView</li>
+<li>隐藏ItemView</li>
 </ul>
 
 <p>在RecyclerView中即使itemView整个设置了GONE，仍然会占据空间，所以如果需要隐藏整个itemView的话，需要设置其宽度、高度为0.</p>
@@ -239,13 +260,11 @@ if (layoutParams == null) {
 }
 </code></pre>
 
-<h2 id="4-可以考虑升级multidex以及其他修改">4. 可以考虑升级multidex以及其他修改</h2>
+<h1 id="0x03-后续升级建议">0x03 后续升级建议</h1>
 
-<ul>
-<li><p>可以考虑使用Fragment时使用<code>commitNow()</code>方法替换<code>executePendingTransactions()</code>。</p></li>
+<h2 id="1-multidex">1. multidex</h2>
 
-<li><p>multidex 升级到 <code>1.0.2</code></p></li>
-</ul>
+<p>升级multidex库到1.0.2版本。</p>
 
 <blockquote>
 <ol>
@@ -260,7 +279,8 @@ Deprecates MultiDexTestRunner (AndroidJUnitRunner should be used instead).<br />
 
 <p>升级1.0.2之后直接编译，会出现以下问题:</p>
 
-<pre><code>Error:Conflict with dependency 'com.android.support:multidex'. Resolved versions for app (1.0.2) and test app (1.0.1) differ. See http://g.co/androidstudio/app-test-app-conflict for details.
+<pre><code>Error:Conflict with dependency 'com.android.support:multidex'. Resolved versions for app (1.0.2) and test app (1.0.1) differ. 
+See http://g.co/androidstudio/app-test-app-conflict for details.
 </code></pre>
 
 <p>解决这个问题，则需要在test依赖中手动指定<code>multidex</code>的依赖是1.0.2</p>
@@ -279,7 +299,20 @@ Deprecates MultiDexTestRunner (AndroidJUnitRunner should be used instead).<br />
 }
 </code></pre>
 
-<p><a href="https://developer.android.com/topic/libraries/support-library/revisions.html#25-4-0">see support-library-25.4.0</a></p>
+<h2 id="2-fragment">2. Fragment</h2>
+
+<ul>
+<li><p>可以考虑使用Fragment的<code>commitNow()</code>同步方法代替异步<code>commit()</code>，避免异步导致出现<code>Can not perform this action after onSaveInstanceState</code>异常。</p></li>
+
+<li><p>可以考虑使用FragmentTransaction.setAllowOptimization()优化fragment操作。</p></li>
+</ul>
+
+<h1 id="0x04-参考">0x04 参考</h1>
+
+<ul>
+<li><a href="https://developer.android.com/topic/libraries/support-library/revisions.html#25-4-0">support-library-25.4.0</a></li>
+<li><a href="https://android-developers.googleblog.com/2016/02/android-support-library-232.html">RecyclerView 23.2.0</a></li>
+</ul>
 </div></article>
 					
 						<div class="share">
