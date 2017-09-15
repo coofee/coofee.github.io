@@ -7,7 +7,605 @@
     <language>en-us</language>
     <author>Coofee</author>
     
-    <updated>Tue, 25 Jul 2017 19:43:30 CST</updated>
+    <updated>Fri, 15 Sep 2017 18:59:41 CST</updated>
+    
+    <item>
+      <title>Gradle plugin 3.0 &amp; Android Studio 3.0</title>
+      <link>http://coofee.github.io/post/upgrade-android-studio-gradle/</link>
+      <pubDate>Fri, 15 Sep 2017 18:59:41 CST</pubDate>
+      <author>Coofee</author>
+      <guid>http://coofee.github.io/post/upgrade-android-studio-gradle/</guid>
+      <description>
+
+&lt;h1 id=&#34;gradle-plugin-3-0-android-studio-3-0&#34;&gt;Gradle plugin 3.0 &amp;amp; Android Studio 3.0&lt;/h1&gt;
+
+&lt;p&gt;我们主要讲一下升级gradle plugin 3.0过程中遇到的问题与解决方案。&lt;/p&gt;
+
+&lt;h1 id=&#34;gradle-plugin-3-0&#34;&gt;Gradle Plugin 3.0&lt;/h1&gt;
+
+&lt;h2 id=&#34;1-升级gradle-plugin插件版本为3-x&#34;&gt;1. 升级gradle plugin插件版本为3.x&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;buildscript {
+    repositories {
+        mavenLocal()
+        jcenter()
+         // You need to add the following repository to download the
+        // for new plugin.
+        google()
+
+    }
+    dependencies {
+	    classpath &#39;com.android.tools.build:gradle:3.0.0-beta2&#39;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;2-升级gradle版本为4-1&#34;&gt;2. 升级gradle版本为4.1&lt;/h2&gt;
+
+&lt;p&gt;修改&lt;code&gt;gradle/wrapper/gradle-wrapper.properties&lt;/code&gt;中的&lt;code&gt;distributionUrl&lt;/code&gt;为&lt;code&gt;gradle-4.1-all&lt;/code&gt;。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;distributionUrl=https\://services.gradle.org/distributions/gradle-4.1-all.zip
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;3-升级build-tools为-25-0-3&#34;&gt;3. 升级build-tools为&lt;code&gt;25.0.3&lt;/code&gt;&lt;/h2&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;The specified Android SDK Build Tools version (22.0.1) is ignored, as it is below the minimum supported version (25.0.0) for Android Gradle Plugin 3.0.0-beta2.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h1 id=&#34;2-dsl-changes&#34;&gt;2. DSL Changes&lt;/h1&gt;
+
+&lt;h2 id=&#34;1-enforceuniquepackagename被删除&#34;&gt;1. enforceUniquePackageName被删除&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-gradle&#34;&gt;android {
+// enforceUniquePackageName已经被删除，需要删除。
+//	enforceUniquePackageName = false
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;2-consumerproguardfiles不支持filetree&#34;&gt;2. consumerProguardFiles不支持fileTree&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-gradle&#34;&gt;
+// 不支持这种写法
+// consumerProguardFiles fileTree(dir: projectDir, include: &#39;proguard*&#39;)
+
+// 支持这种写法
+consumerProguardFiles &#39;proguard.pro&#39;,&#39;proguard-fresco.pro&#39;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;3-aapt2&#34;&gt;3. aapt2&lt;/h2&gt;
+
+&lt;p&gt;aapt2是支持增量编译资源开发，目前不支持&lt;code&gt;Robelectric&lt;/code&gt;，并且在一些情况下会导致编译失败，此时可以选择关闭aapt2。&lt;/p&gt;
+
+&lt;p&gt;在根项目的&lt;strong&gt;gradle.properties&lt;/strong&gt;文件中添加&lt;code&gt;android.enableAapt2=false&lt;/code&gt;，然后在终端中执行&lt;code&gt;./gradlew --stop&lt;/code&gt;即可，更新信息可以参考&lt;a href=&#34;https://developer.android.com/studio/build/gradle-plugin-3-0-0.html&#34;&gt;gradle-plugin-3-0-0&lt;/a&gt;。
+。&lt;/p&gt;
+
+&lt;h2 id=&#34;4-not-support-local-aar&#34;&gt;4. not support local aar&lt;/h2&gt;
+
+&lt;p&gt;While using this plugin with Android Studio, dependencies on local AAR files are not yet supported.&lt;/p&gt;
+
+&lt;h2 id=&#34;5-not-support-protobuf-plugin&#34;&gt;5. not support protobuf plugin&lt;/h2&gt;
+
+&lt;p&gt;Does not currently work with the Protobuf plugin.&lt;/p&gt;
+
+&lt;h2 id=&#34;6-not-support-android-apt&#34;&gt;6. not support android-apt&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;The third party android-apt plugin is no longer supported. You should switch to the &lt;a href=&#34;https://developer.android.com/studio/preview/features/index.html#annotationProcessor_config&#34;&gt;built-in annotation processor support&lt;/a&gt;, which has been improved to handle resolving dependencies lazily.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;7-support-java-1-8&#34;&gt;7. support java 1.8&lt;/h2&gt;
+
+&lt;p&gt;当前已经支持java 8的部分特性，但是使用java 8某些特性可能会导致编译失败，可以手动禁止使用java 8的特性。在根项目的&lt;strong&gt;gradle.properties&lt;/strong&gt;文件中添加&lt;code&gt;android.enableDesugar=false&lt;/code&gt;即可，更多信息可以参考&lt;a href=&#34;https://developer.android.com/studio/write/java8-support.html#disable&#34;&gt;disable Java 8 language features&lt;/a&gt;。&lt;/p&gt;
+
+&lt;h1 id=&#34;4-bug-solution&#34;&gt;4. Bug &amp;amp; Solution&lt;/h1&gt;
+
+&lt;h2 id=&#34;1-解决multidex插件错误&#34;&gt;1. 解决multidex插件错误&lt;/h2&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;FAILURE: Build failed with an exception.
+What went wrong:
+A problem occurred configuring project &amp;lsquo;:app&amp;rsquo;.
+&amp;gt; Failed to notify project evaluation listener.
+Cannot invoke method doLast() on null object
+No such property: multiDex for class: com.android.build.gradle.internal.transforms.DexTransform&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;由于目前使用的gradle插件版本的DSL已经支持了&lt;code&gt;additionalParameters&lt;/code&gt;，所以我们移除了自己编写的用于给&lt;code&gt;dx&lt;/code&gt;追加&lt;code&gt;additionalParameters&lt;/code&gt;参数的插件。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;dexOptions {
+    additionalParameters = [&amp;quot;--minimal-main-dex&amp;quot;]
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;2-aop插件gradle-android-plugin-aspectjx兼容&#34;&gt;2. aop插件gradle-android-plugin-aspectjx兼容&lt;/h2&gt;
+
+&lt;p&gt;启用aop编译时，会出现如下错误：&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;Unexpected scopes found in folder &amp;lsquo;/Users/zhaocongying/program/git_proj/new_arch/test_gradle/ClientProject/WuxianClient/build/intermediates/transforms/AspectTransform/debug&amp;rsquo;. Required: PROJECT, SUB_PROJECTS, EXTERNAL_LIBRARIES. Found: EXTERNAL_LIBRARIES, PROJECT, PROJECT_LOCAL_DEPS, SUB_PROJECTS, SUB_PROJECTS_LOCAL_DEPS&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;在项目对应的github上面已经有人提出了类似的
+&lt;a href=&#34;https://github.com/HujiangTechnology/gradle_plugin_android_aspectjx/issues/45&#34;&gt;issue: java.lang.RuntimeException: Unexpected scopes found in folder&lt;/a&gt;，但是一直没有修复。&lt;/p&gt;
+
+&lt;p&gt;首先，我们知道在&lt;code&gt;Transform&lt;/code&gt;中，&lt;code&gt;getScopes()&lt;/code&gt;方法的返回值表示了这个&lt;code&gt;Transform&lt;/code&gt;可以处理的文件类型，那么根据报错信息，我们可以知道aspect插件的&lt;code&gt;getScopes()&lt;/code&gt;的方法返回了错误的类型导致编译终止。&lt;/p&gt;
+
+&lt;p&gt;撸一眼gradle plugin 3.x版本的&lt;code&gt;QualifiedContent.Scope&lt;/code&gt;类，&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-java&#34;&gt;/**
+ * The scope of the content.
+ *
+ * &amp;lt;p&amp;gt;
+ * This indicates what the content represents, so that Transforms can apply to only part(s)
+ * of the classes or resources that the build manipulates.
+ */
+enum Scope implements ScopeType {
+    /** Only the project content */
+    PROJECT(0x01),
+    /** Only the sub-projects. */
+    SUB_PROJECTS(0x04),
+    /** Only the external libraries */
+    EXTERNAL_LIBRARIES(0x10),
+    /** Code that is being tested by the current variant, including dependencies */
+    TESTED_CODE(0x20),
+    /** Local or remote dependencies that are provided-only */
+    PROVIDED_ONLY(0x40),
+
+    /**
+     * Only the project&#39;s local dependencies (local jars)
+     *
+     * @deprecated local dependencies are now processed as {@link #EXTERNAL_LIBRARIES}
+     */
+    @Deprecated
+    PROJECT_LOCAL_DEPS(0x02),
+    /**
+     * Only the sub-projects&#39;s local dependencies (local jars).
+     *
+     * @deprecated local dependencies are now processed as {@link #EXTERNAL_LIBRARIES}
+     */
+    @Deprecated
+    SUB_PROJECTS_LOCAL_DEPS(0x08);
+
+    private final int value;
+
+    Scope(int value) {
+        this.value = value;
+    }
+
+    @Override
+    public int getValue() {
+        return value;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;我们可以知道&lt;code&gt;PROJECT_LOCAL_DEPS&lt;/code&gt;和&lt;code&gt;SUB_PROJECTS_LOCAL_DEPS&lt;/code&gt;这两个类型目前都属于&lt;code&gt;EXTERNAL_LIBRARIES&lt;/code&gt;类型，并且已经不推荐使用，所以解决方案就呼之欲出了: &lt;strong&gt;在gradle plugin的不同版本返回不同的scops集合即可。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;那么如何区分不同的gradle插件版本呢？&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;我们知道在2.x版本中&lt;code&gt;PROJECT_LOCAL_DEPS&lt;/code&gt;和&lt;code&gt;SUB_PROJECTS_LOCAL_DEPS&lt;/code&gt;都是可用的，直到3.x才被标记为了不推荐，所以，我们可以通过获取这两个枚举常量的注解来解决这个问题，具体修改代码如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;@Override
+Set&amp;lt;QualifiedContent.Scope&amp;gt; getScopes() {
+    def name = QualifiedContent.Scope.PROJECT_LOCAL_DEPS.name()
+    def deprecated = QualifiedContent.Scope.PROJECT_LOCAL_DEPS.getClass()
+            .getField(name).getAnnotation(Deprecated.class)
+
+    if (deprecated == null) {
+        println &amp;quot;cannot find QualifiedContent.Scope.PROJECT_LOCAL_DEPS Deprecated.class &amp;quot;
+        return ImmutableSet.&amp;lt;QualifiedContent.Scope&amp;gt; of(QualifiedContent.Scope.PROJECT
+                , QualifiedContent.Scope.PROJECT_LOCAL_DEPS
+                , QualifiedContent.Scope.EXTERNAL_LIBRARIES
+                , QualifiedContent.Scope.SUB_PROJECTS
+                , QualifiedContent.Scope.SUB_PROJECTS_LOCAL_DEPS)
+    } else {
+        println &amp;quot;find QualifiedContent.Scope.PROJECT_LOCAL_DEPS Deprecated.class &amp;quot;
+        return ImmutableSet.&amp;lt;QualifiedContent.Scope&amp;gt; of(QualifiedContent.Scope.PROJECT
+                , QualifiedContent.Scope.EXTERNAL_LIBRARIES
+                , QualifiedContent.Scope.SUB_PROJECTS)
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;由于目前我们发起的&lt;a href=&#34;https://github.com/HujiangTechnology/gradle_plugin_android_aspectjx/pull/54&#34;&gt;pull request&lt;/a&gt;仍然没有被合并，所以我们发布了&lt;code&gt;com.hujiang.aspectjx:gradle-android-plugin-aspectjx:1.0.11.1&lt;/code&gt;到公司内部的maven仓库来解决目前的问题。&lt;/p&gt;
+
+&lt;h2 id=&#34;3-修复替换登录库so文件的插件&#34;&gt;3. 修复替换登录库So文件的插件&lt;/h2&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;FAILURE: Build failed with an exception.&lt;/p&gt;
+
+&lt;p&gt;What went wrong:&lt;br /&gt;
+Execution failed for task &amp;lsquo;:  WuxianClient:transformNativeLibsWithMergeJniLibsForDebug&amp;rsquo;.
+More than one file was found with OS independent path &amp;lsquo;lib/armeabi/libcom_cc_aes_ExecV4_0_1.so&amp;rsquo;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;由于升级插件之后，我们hook的替换so文件时的task名称发生了变化，从&lt;code&gt;transformNative_libsWithMergeJniLibsForDebug&lt;/code&gt;变成了
+&lt;code&gt;transformNativeLibsWithMergeJniLibsForDebug&lt;/code&gt;，对此进行兼容即可。&lt;/p&gt;
+
+&lt;h2 id=&#34;4-tinker-1-7-5版本插件兼容&#34;&gt;4. Tinker 1.7.5版本插件兼容&lt;/h2&gt;
+
+&lt;h3 id=&#34;1-unexpected-scopes-found-in-folder-aspecttransform-debug-required-project-sub-projects-external-libraries&#34;&gt;1. Unexpected scopes found in folder &amp;lsquo;/AspectTransform/debug&amp;rsquo; Required: &lt;code&gt;PROJECT, SUB_PROJECTS, EXTERNAL_LIBRARIES&lt;/code&gt;&lt;/h3&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;Unexpected scopes found in folder &amp;lsquo;/Users/zhaocongying/program/git_proj//new_arch/test_gradle/ClientProject/WuxianClient/build/intermediates/transforms/AspectTransform/debug&amp;rsquo;. Required: PROJECT, SUB_PROJECTS, EXTERNAL_LIBRARIES. Found: EXTERNAL_LIBRARIES, PROJECT, PROJECT_LOCAL_DEPS, SUB_PROJECTS, SUB_PROJECTS_LOCAL_DEPS&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;我们目前使用的tinker版本仍然是1.7.5，未使用到&lt;code&gt;AuxiliaryInjectTransform&lt;/code&gt;，所以这里我们直接干掉了&lt;code&gt;AuxiliaryInjectTransform&lt;/code&gt;，如果需要修复的话，可以使用上文aop插件的修复方案.&lt;/p&gt;
+
+&lt;h3 id=&#34;2-unknown-property-apkvariantdata&#34;&gt;2. unknown property &amp;lsquo;apkVariantData&amp;rsquo;&lt;/h3&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;[exec] A problem occurred configuring project &amp;lsquo;:WuxianClient&amp;rsquo;.
+ [exec] &amp;gt; Could not get unknown property &amp;lsquo;apkVariantData&amp;rsquo; for object of type com.android.build.gradle.internal.api.ApplicationVariantImpl.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;这个是因为在2.x中的&lt;code&gt;getApkVariantData()&lt;/code&gt;函数在3.x中被修改成了&lt;code&gt;getVariantData()&lt;/code&gt;，所以&lt;code&gt;ApplicationVariantImpl&lt;/code&gt;类的&lt;code&gt;apkVariantData&lt;/code&gt;属性就不存在了；这是因为groovy会为get函数映射一个对应的属性，如getApkVariantData()函数就被映射出了apkVariantData属性。&lt;/p&gt;
+
+&lt;p&gt;由于在2.x与3.x的&lt;code&gt;ApplicationVariantImpl&lt;/code&gt;类中一直存在&lt;code&gt;variantData&lt;/code&gt;属性，为了同时兼容2.x和3.x，这里我们使用&lt;code&gt;variant.getProperty(&#39;variantData&#39;)&lt;/code&gt;来替换先前的&lt;code&gt;variant.apkVariantData&lt;/code&gt;写法。&lt;/p&gt;
+
+&lt;h3 id=&#34;3-unknown-property-resdir&#34;&gt;3. unknown property &amp;lsquo;resDir&amp;rsquo;&lt;/h3&gt;
+
+&lt;p&gt;原始写法:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;applyResourceTask.resDir = variantOutput.processResources.resDir
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;兼容2.x与3.x:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;if (variantOutput.processResources.properties[&#39;resDir&#39;] != null) {
+    applyResourceTask.resDir = variantOutput.processResources.resDir;
+} else if (variantOutput.processResources.properties[&#39;resPackageOutputFolder&#39;] != null){
+    def resPackageOutputFolder = new File(&amp;quot;${variantOutput.processResources.resPackageOutputFolder}&amp;quot;);
+    applyResourceTask.resDir = &amp;quot;${resPackageOutputFolder.parentFile.absolutePath}/merged/${resPackageOutputFolder.name}&amp;quot;
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;4-unknown-property-manifestoutputfile&#34;&gt;4. unknown property &amp;lsquo;manifestOutputFile&amp;rsquo;&lt;/h3&gt;
+
+&lt;p&gt;原始写法:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;manifestTask.manifestPath = variantOutput.processManifest.manifestOutputFile
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;兼容2.x与3.x:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;if (variantOutput.processManifest.properties[&#39;manifestOutputFile&#39;] != null) {
+    manifestTask.manifestPath = variantOutput.processManifest.manifestOutputFile;
+} else if (variantOutput.processResources.properties[&#39;manifestFile&#39;] != null){
+    manifestTask.manifestPath = variantOutput.processResources.manifestFile;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;综上，由于目前tinker已经发布了N多新版本，所以我们没有发起pull-request，而是在公司内部maven上面发布了1.7.5.1版本。&lt;/p&gt;
+
+&lt;h2 id=&#34;5-packager打包插件兼容&#34;&gt;5. Packager打包插件兼容&lt;/h2&gt;
+
+&lt;h3 id=&#34;1-cannot-invoke-method-dolast-on-null-object&#34;&gt;1. Cannot invoke method doLast() on null object&lt;/h3&gt;
+
+&lt;p&gt;在3.x版本中，本地开发开启增量编译时，不会生成&lt;code&gt;transformClassesWithDexForDebug&lt;/code&gt;这个task，使用前需要进行判空。&lt;/p&gt;
+
+&lt;h3 id=&#34;2-unknown-property-manifestoutputfile&#34;&gt;2. unknown property &amp;lsquo;manifestOutputFile&amp;rsquo;&lt;/h3&gt;
+
+&lt;p&gt;修复方案见Tinker热修复本节。&lt;/p&gt;
+
+&lt;h3 id=&#34;3-删除walle预生成dex文件&#34;&gt;3. 删除walle预生成dex文件&lt;/h3&gt;
+
+&lt;p&gt;由于walle插件与gradle plugin 3.0冲突，所以我们关闭了walle插件，然而由于先前在发布aar文件时，walle预生成了dex并存放到了assets/dexs目录中，导致本地打包生成的apk文件的assets/dexs中包含了全部的预生成dex文件，进而导致apk文件过大。&lt;/p&gt;
+
+&lt;p&gt;目前使用临时方案解决这个问题，在合并assets资源之前，我们删除掉了walle预先生成的dex文件，代码大致如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;project.gradle.taskGraph.beforeTask { Task task -&amp;gt;
+    if (mergeAssetsName == task.name) {
+        removeWalleDexsInAssetsBeforeTask(task);
+    }
+}
+
+public static void removeWalleDexsInAssetsBeforeTask(Task task) {
+    task.inputs.getFiles().each { File file -&amp;gt;
+        println &amp;quot;AssetsUtils.removeWalleDexsInAssetsBeforeTask: file=${file}&amp;quot;;
+        def dexsDir = new File(file, &#39;dexs&#39;);
+        if (dexsDir.exists() &amp;amp;&amp;amp; dexsDir.isDirectory()
+                &amp;amp;&amp;amp; (file.absolutePath.contains(&#39;intermediates&#39;) || file.absolutePath.contains(&#39;.gradle&#39;))) {
+            def result = dexsDir.deleteDir();
+            println &amp;quot;AssetsUtils.removeWalleDexsInAssetsBeforeTask: delete $dexsDir successed? $result&amp;quot;;
+        }
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;最终待全部升级之后，可以通过重新发布不带dex的aar来解决这个问题。&lt;/p&gt;
+
+&lt;h3 id=&#34;4-com-android-dex-dexexception-library-dex-files-are-not-supported-in-multi-dex-mode&#34;&gt;4. com.android.dex.DexException: Library dex files are not supported in multi-dex mode&lt;/h3&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;[exec] Dex: Error converting bytecode to dex:
+[exec] Cause: com.android.dex.DexException: Library dex files are not supported in multi-dex mode&lt;br /&gt;
+[exec]     UNEXPECTED TOP-LEVEL EXCEPTION:&lt;br /&gt;
+[exec]     com.android.dex.DexException: Library dex files are not supported in multi-dex mode&lt;br /&gt;
+[exec]         at com.android.dx.command.dexer.Main.runMultiDex(Main.java:371)&lt;br /&gt;
+[exec]         at com.android.dx.command.dexer.Main.run(Main.java:275)&lt;br /&gt;
+[exec]         at com.android.dx.command.dexer.Main.main(Main.java:245)&lt;br /&gt;
+[exec]         at com.android.dx.command.Main.main(Main.java:106)&lt;br /&gt;
+[exec]&lt;br /&gt;
+[exec] org.gradle.api.tasks.TaskExecutionException: Execution failed for task &amp;lsquo;:WuxianClient:transformClassesWithDexForRelease&amp;rsquo;.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;这个问题看起来像是multidex导致的一个问题，但是在本地编译期间并未出现该问题，只有在jenkins上面编译才出现了该问题。&lt;/p&gt;
+
+&lt;p&gt;根据错误信息google一番，基本上能搜索到的信息都说是由于pre-dexing与multidex冲突导致该问题产生，如:&lt;a href=&#34;https://stackoverflow.com/questions/25696933/android-gradle-dexexception-library-dex-files-are-not-supported-in-multi-dex-m&#34;&gt;StackOverflow&lt;/a&gt;。
+(注: pre-dexing指的是为了加快增量编译，而预先将aar的java代码转换为dex的一种方法)。&lt;/p&gt;
+
+&lt;p&gt;通过错误信息+搜索结果，我们可以推测出，在执行转dex的task时，其输入文件中包含dex文件，那么转dex的task的输入文件是从哪里来的呢？&lt;/p&gt;
+
+&lt;p&gt;查看日志文件，我们可以知道在release模式下转dex的task的执行顺序大致如下，其中上一次task的输出是下一个task的输入，&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;-&amp;gt; transformClassesAndResourcesWithProguardForRelease (混淆优化java代码生成jar文件)
+-&amp;gt; transformClassesWithMultidexlistForRelease (生成main dex list)
+-&amp;gt; transformClassesWithDexForRelease (将jar转换为dex)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;由于&lt;code&gt;transformClassesWithMultidexlistForRelease&lt;/code&gt;只是生成mainDexList，并未对&lt;code&gt;transformClassesAndResourcesWithProguardForRelease&lt;/code&gt;生成的jar文件进行任何处理，所以jar文件最终会作为&lt;code&gt;transformClassesWithDexForRelease&lt;/code&gt;的输入jar被&lt;code&gt;dx&lt;/code&gt;转换为dex文件。当&lt;code&gt;dx&lt;/code&gt;在对jar文件进行转换时发现输入的文件中包含&lt;code&gt;dex&lt;/code&gt;文件，就会抛出了上面的错误信息。&lt;/p&gt;
+
+&lt;p&gt;进入proguard对应的&lt;code&gt;transformClassesAndResourcesWithProguardForRelease&lt;/code&gt;输出文件目录&lt;code&gt;/build/intermediates/transforms/proguard/release/&lt;/code&gt;，打开&lt;strong&gt;0.jar&lt;/strong&gt;文件可以发现在该文件中确实存在一个&lt;strong&gt;classes.dex&lt;/strong&gt;文件，其目录结构大致如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;0.jar  
+├── META-INF  
+│   └── MANIFEST.MF  
+├── assets  
+├── classes.dex  
+└── com
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;那么知道了问题所在，解决起来就很容易了，&lt;strong&gt;我们只需要在proguard执行完成之后，过滤到其中的已经存在的dex文件即可&lt;/strong&gt;，但是，这个classes.dex文件属于谁？可以被删除吗？&lt;/p&gt;
+
+&lt;p&gt;反编译上面提到的&lt;code&gt;classes.dex&lt;/code&gt;文件，通过包名我们可以发现该文件属于广点通sdk，解压缩后其文件目录结构如下:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;GDTUnionSDK.4.8.520.min.jar  
+├── META-INF  
+│   └── MANIFEST.MF  
+├── assets  
+│   └── gdt_plugin  
+│       └── gdtadv2.jar
+│           └── classes.dex
+└── com
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;进入目录打开&lt;code&gt;gdtadv2.jar&lt;/code&gt;，也可以验证其中确实包括&lt;code&gt;classes.dex&lt;/code&gt;文件，至此，我们可以确认&lt;code&gt;classes.dex&lt;/code&gt;文件属于广点通sdk，并且是广点通sdk的assets目录的一个资源文件。&lt;/p&gt;
+
+&lt;p&gt;我们知道assets资源文件编译后仍然会原封不动的合并到apk的assets目录中，所以我们猜测proguard在处理文件时将广点通assets目录的gdtadv2.jar提取出classes.dex并打包进0.jar应该是一个bug，classes.dex应该是可以安全删除的，我们可以在打包成功之后进行验证测试。&lt;/p&gt;
+
+&lt;p&gt;重新打包生成apk进行验证，发现apk的assets目录中并没有&lt;strong&gt;gdt_plugin/gdtadv2.jar&lt;/strong&gt;文件，并没有，没有，没。。。&lt;/p&gt;
+
+&lt;p&gt;出现这个问题是因为我们误解了&lt;code&gt;transformClassesAndResourcesWithProguardForRelease&lt;/code&gt;这个task的含义，该task包含两层意思：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;transform classes with proguard&lt;/li&gt;
+&lt;li&gt;transform resources&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;通过上面我们已经之后，在transform resources的时候出错了，它将&lt;strong&gt;assets/gdt_plugin/gdtadv2.jar&lt;/strong&gt;文件中的classes.dex提取到了jar文件的根目录&lt;strong&gt;classes.dex&lt;/strong&gt;，破坏了assets目录的结构，所以我们解决这个问题需要做两件事:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;删除0.jar根目录的&lt;strong&gt;classes.dex&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;在0.jar中插入&lt;strong&gt;assets/gdt_plugin/gdtadv2.jar&lt;/strong&gt;文件&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;代码如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;def proguardTask = project.getTasksByName(proguardTaskName, false).getAt(0);
+if (proguardTask != null) {
+    proguardTask.doLast {
+        ProguardUtils.removeDexAndJavaInProguardJar(proguardTask);
+    }
+} 
+
+public static void removeDexAndJavaInProguardJar(Task task) {
+    def streamOutputFolder = new File(&amp;quot;${task.streamOutputFolder}&amp;quot;);
+    println &amp;quot;removeDexAndJavaInProguardJar: streamOutputFolder=${streamOutputFolder}&amp;quot;
+
+    def jarFiles = streamOutputFolder.listFiles(new FileFilter() {
+        @Override
+        boolean accept(File file) {
+            return file.name.endsWith(&amp;quot;.jar&amp;quot;);
+        }
+    });
+    println &amp;quot;removeDexAndJavaInProguardJar: jarFiles=${jarFiles}&amp;quot;
+
+    if (jarFiles != null &amp;amp;&amp;amp; jarFiles.length &amp;gt; 0) {
+        File originJar = jarFiles[0];
+        println &amp;quot;removeDexAndJavaInProguardJar: originJar=${originJar}&amp;quot;
+
+        String originName = originJar.name;
+        File targetJar = new File(originJar.parentFile, &amp;quot;${System.currentTimeMillis()}_${originName}&amp;quot;);
+        println &amp;quot;removeDexAndJavaInProguardJar: targetJar=${targetJar}&amp;quot;
+
+        ZipFile originZip = new ZipFile(originJar);
+        ZipOutputStream targetJarOut = new ZipOutputStream(new FileOutputStream(targetJar));
+        originZip.entries().each { entry -&amp;gt;
+            if (!entry.name.endsWith(&#39;.dex&#39;) &amp;amp;&amp;amp; !entry.name.endsWith(&#39;.java&#39;)) {
+                targetJarOut.putNextEntry(entry);
+                targetJarOut &amp;lt;&amp;lt; originZip.getInputStream(entry).bytes;
+                targetJarOut.closeEntry();
+            }
+        }
+        originZip.close()
+
+        def jarsInAssets = task.inputs.getFiles().findAll { File file -&amp;gt;
+            file.name.endsWith(&#39;.jar&#39;) &amp;amp;&amp;amp; file.absolutePath.contains(&#39;mergeJavaRes&#39;) &amp;amp;&amp;amp; file.absolutePath.contains(&#39;assets&#39;)
+        }
+
+        if (jarsInAssets != null &amp;amp;&amp;amp; !jarsInAssets.isEmpty()) {
+            println &amp;quot;removeDexAndJavaInProguardJar: jarsInAssets=${jarsInAssets}&amp;quot;;
+            jarsInAssets.each { File file -&amp;gt;
+                String entryName = file.name;
+
+                File parentFile = file.parentFile;
+                while (parentFile.name != &amp;quot;assets&amp;quot;) {
+                    entryName = parentFile.name + &amp;quot;/&amp;quot; + entryName;
+                    parentFile = parentFile.parentFile;
+                }
+
+                entryName = &amp;quot;assets/&amp;quot; + entryName;
+
+                println &amp;quot;removeDexAndJavaInProguardJar: jarsInAssets.entryName=${entryName}&amp;quot;
+
+                ZipEntry zipEntry = new ZipEntry(entryName);
+                targetJarOut.putNextEntry(zipEntry);
+                targetJarOut &amp;lt;&amp;lt; file.bytes;
+                targetJarOut.closeEntry();
+            }
+        }
+
+        targetJarOut.flush()
+        targetJarOut.close();
+
+        originJar.delete();
+        targetJar.renameTo(originJar);
+        println &amp;quot;removeDexAndJavaInProguardJar: rename ${targetJar} to ${originJar}&amp;quot;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这个问题到此为止算是解决了。&lt;/p&gt;
+
+&lt;h3 id=&#34;5-删除java源代码&#34;&gt;5. 删除java源代码&lt;/h3&gt;
+
+&lt;p&gt;由于&lt;code&gt;HouseLib/libs/mpandroidchartlibrary-2-1-6.jar&lt;/code&gt;中包含了源代码和编译后的class文件，导致在jenkins上面使用gradle plugin 3.0生成的apk中同样也包含了java源代码，目前我们在proguard生成的jar中过滤掉了java源文件（见上面的代码），后续希望大家在引入依赖时不要将源代码也一并引入打包进jar中。&lt;/p&gt;
+
+&lt;h3 id=&#34;6-兼容apk路径改变&#34;&gt;6. 兼容apk路径改变&lt;/h3&gt;
+
+&lt;p&gt;3.x与2.x生成的apk路径和名称都发生了变化，为了避免ant脚本进行修改，这个我们直接在插件中将生成的apk复制到了旧的路径。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;2.x apk路径
+build/outputs/apk/WuxianClient-debug.apk
+
+3.x apk路径
+build/outputs/apk/debug/WuxianClient-armeabi-debug.apk
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;在3.x版本中与apk同级目录中存在output.json，这个json文件描述了本次打包生成的apk的信息，虽然现在我们的so库都是armeabi类型，为了兼容其他情况，我们在获取apk的文件名称的时候仍然从output.json中获取，output.json文件内容如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-json&#34;&gt;[
+  {
+    &amp;quot;outputType&amp;quot;: {
+      &amp;quot;type&amp;quot;: &amp;quot;APK&amp;quot;
+    },
+    &amp;quot;apkInfo&amp;quot;: {
+      &amp;quot;type&amp;quot;: &amp;quot;FULL_SPLIT&amp;quot;,
+      &amp;quot;splits&amp;quot;: [
+        {
+          &amp;quot;filterType&amp;quot;: &amp;quot;ABI&amp;quot;,
+          &amp;quot;value&amp;quot;: &amp;quot;armeabi&amp;quot;
+        }
+      ],
+      &amp;quot;versionCode&amp;quot;: 71500
+    },
+    &amp;quot;path&amp;quot;: &amp;quot;WuxianClient-armeabi-debug.apk&amp;quot;,
+    &amp;quot;properties&amp;quot;: {
+      &amp;quot;packageId&amp;quot;: &amp;quot;com.cc&amp;quot;,
+      &amp;quot;split&amp;quot;: &amp;quot;&amp;quot;,
+      &amp;quot;minSdkVersion&amp;quot;: &amp;quot;16&amp;quot;
+    }
+  }
+]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;获取apk以及复制apk到旧路径的代码大致如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;public static File getApk(File rootDir, ProjectConfig config, boolean needCopy = false) {
+    File apkFile = null;
+    if (config.flavor.isEmpty()) {
+        apkFile = new File(&amp;quot;${rootDir}/${config.name}/build/outputs/apk/${config.name}-${config.buildType}.apk&amp;quot;);
+    } else {
+        apkFile = new File(&amp;quot;${rootDir}/${config.name}/build/outputs/apk/${config.name}-${config.flavor}-${config.buildType}.apk&amp;quot;);
+    }
+
+    if (!apkFile.exists()) {
+        File apkDir = new File(&amp;quot;${rootDir}/${config.name}/build/outputs/apk/${config.buildType}/&amp;quot;);
+        File outputJson = new File(apkDir, &amp;quot;output.json&amp;quot;);
+        String apkName = new JsonSlurper().parse(outputJson)[0].path;
+        File realApkFile = new File(apkDir, apkName);
+        if (needCopy) {
+            java.nio.file.Files.copy(
+                    realApkFile.toPath(),
+                    apkFile.toPath(),
+                    java.nio.file.StandardCopyOption.COPY_ATTRIBUTES,
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            println &amp;quot;getApk: copy from=${realApkFile} to=${apkFile}&amp;quot;;
+        }
+        apkFile = realApkFile;
+    }
+
+    println &amp;quot;getApk: apkFile=${apkFile}&amp;quot;
+    return apkFile;
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;6-aapt2-link-failed-style-attribute-android-attr-windowexitanimation-not-found&#34;&gt;6. AAPT2 link failed: style attribute @android:attr/windowExitAnimation not found&lt;/h2&gt;
+
+&lt;p&gt;这是因为在属性名前面多了@字符导致，删除@符号即可，如ccBasicBusinessLib库的styles.xml文件就有这个错误：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-xml&#34;&gt;&amp;lt;!-- 导致编译出错的xml属性 --&amp;gt;
+&amp;lt;style name=&amp;quot;coin_flow_dialog_out&amp;quot; parent=&amp;quot;android:Animation&amp;quot;&amp;gt;
+    &amp;lt;item name=&amp;quot;@android:windowExitAnimation&amp;quot;&amp;gt;@anim/task_center_coin_increase&amp;lt;/item&amp;gt;
+&amp;lt;/style&amp;gt;
+
+&amp;lt;!-- 修改后的xml属性 --&amp;gt;
+&amp;lt;style name=&amp;quot;coin_flow_dialog_out&amp;quot; parent=&amp;quot;android:Animation&amp;quot;&amp;gt;
+    &amp;lt;item name=&amp;quot;android:windowExitAnimation&amp;quot;&amp;gt;@anim/task_center_coin_increase&amp;lt;/item&amp;gt;
+&amp;lt;/style&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1 id=&#34;android-studio-3-0&#34;&gt;Android Studio 3.0&lt;/h1&gt;
+
+&lt;p&gt;使用Android Studio 3.0 Beta 2之后，编译7.15.0分支代码，直接在android studio的terminal中可以编译成功，但是打开java类时，大部分引用都会飘红。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;使用rebuild/sync等时，可能出现类似下面这样的错误:&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;Error:Argument for @NotNull parameter &amp;lsquo;key&amp;rsquo; of com/android/tools/idea/gradle/project/model/ide/android/ModelCache.computeIfAbsent must not be null&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;ul&gt;
+&lt;li&gt;在terminal显示/输入中文均存在问题&lt;a href=&#34;https://issuetracker.google.com/issues/63875050&#34;&gt;Terminal in AndroidStudio can&amp;rsquo;t show chinese!&lt;/a&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ol&gt;
+&lt;li&gt;无法输入中文，输入后显示为&lt;code&gt;&amp;lt;00e3&amp;gt;&amp;lt;0080&amp;gt;&amp;lt;0082&amp;gt;&amp;lt;00e3&amp;gt;&amp;lt;0080&amp;gt;&amp;lt;0082&amp;gt;&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;无法显示中文，中文会显示为“???”(如使用ls显示中文名称文件)。 &lt;code&gt;-rw-r--r--   1 zhaocongying  staff     0B Aug 22 14:44 chinese.??????.test&lt;/code&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;gradle文件中大写的字母P不显示&lt;a href=&#34;https://issuetracker.google.com/issues/64993944&#34;&gt;cannot show uppercase character P in *.gradle files.&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;目前android studio自己使用gradle wrapper时可能会报错，错误信息如下（但是在android studio自己的terminal中使用wrapper确实正常的）：&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;Error:Failed to open zip file.
+Gradle&amp;rsquo;s dependency cache may be corrupt (this sometimes occurs after a network connection timeout.)
+&lt;a href=&#34;syncProject&#34;&gt;Re-download dependencies and sync project (requires network)&lt;/a&gt;
+&lt;a href=&#34;syncProject&#34;&gt;Re-download dependencies and sync project (requires network)&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;解决方案就是自己在android studio中指定gradle的路径即可。&lt;/p&gt;
+
+&lt;h1 id=&#34;开发期间快速编译&#34;&gt;开发期间快速编译&lt;/h1&gt;
+
+&lt;p&gt;开发期间为了加快编译速度默认值设置为：minSdkVersion=21，preDexLibraries=true，android.enableAapt2=true。&lt;/p&gt;
+
+&lt;h1 id=&#34;参考&#34;&gt;参考&lt;/h1&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://developer.android.com/studio/build/gradle-plugin-3-0-0.html&#34;&gt;gradle-plugin-3-0-0&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
     
     <item>
       <title>android check app running foreground</title>
