@@ -35,7 +35,25 @@ env GOOS=linux GOARCH=amd64 go build  *.go
 scp -P port -r local_dir  username@host:remote_dir
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h1 id=&#34;4-git&#34;&gt;4. git&lt;/h1&gt;
+&lt;h1 id=&#34;4-github-pull-request&#34;&gt;4. github pull request&lt;/h1&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;# clone
+git clone https://github.com/coofee/tinker.git
+
+# 添加tinker
+git remote add tinker https://github.com/Tencent/tinker
+
+# 从tinker的dev分支创建功能分支
+git branch compat-gradle-plugin-3.x-dev tinker/dev
+git checkout compat-gradle-plugin-3.x-dev
+
+# push分支到origin
+git push -u origin compat-gradle-plugin-3.x-dev
+
+# 合并tinker的dev分支代码
+git pull tinker dev
+
+&lt;/code&gt;&lt;/pre&gt;
 </description>
     </item>
     
