@@ -6,7 +6,7 @@
 	<meta name="generator" content="Hugo 0.16" />
 	<meta charset="utf-8">
 	<title>Simple...</title>
-	<meta name="author" content="map[email:coffeerene.zhao@gmail.com name:Coofee]">
+	<meta name="author" content="map[name:Coofee email:coffeerene.zhao@gmail.com]">
 
 	
 	
@@ -101,6 +101,42 @@
 					
 					<div itemscope itemtype="http://schema.org/Blog">
 					
+				        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+    <div class="meta">
+		<div class="date"><time datetime='Thu, Sep 6, 2018' data-updated="true" itemprop="datePublished">Thu, Sep 6, 2018</time>
+</div>
+		<div class="tags">
+</div>
+		
+			<span class="comments"><a href="http://coofee.github.io/post/golang-dev/#disqus_thread">Comments</a></span>
+		
+	</div>
+	<h1 class="title" itemprop="name"><a href="http://coofee.github.io/post/golang-dev/" itemprop="url">golang dev</a></h1>
+	<div class="entry-content" itemprop="articleBody">
+		配置Golang开发环境（仅介绍Mac平台） install Homebrew $ /usr/bin/ruby -e &quot;$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)&quot; install golang $ brew install go $ go version go version go1.11 darwin/amd64 # 配置GOROOT $ printf &quot;\n\nexport GOROOT=/usr/local/Cellar/go/1.11/libexec \n&quot; &gt;&gt; ~/.bash_profile # 配置GOPATH $ mkdir -p ~/go/gopath $ printf &quot;export GOPATH=~/go/gopath \n&quot; &gt;&gt; ~/.bash_profile # 追加到PATH $ printf &quot;export GOBIN=$GOROOT/bin \n&quot; &gt;&gt; ~/.bash_profile $ printf &quot;export PATH=$PATH:$GOBIN:$GOPATH/bin \n\n&quot; &gt;&gt; ~/.bash_profile $ source ~/.bash_profile install privoxy privoxy可以将http请求代理到socks5，下面将 privoxy + shadowsocks 搭配使用 $ brew install privoxy # http代理地址 $ printf &quot;\n\nlisten-address 0.0.0.0:7777 \n&quot; &gt;&gt; /usr/local/etc/privoxy/config # shadowsocks socks5代理地址 $ printf &quot;forward-socks5 / 127.0.0.1:1080 .\n&quot; &gt;&gt; /usr/local/etc/privoxy/config # 内网地址不进行代理 $ printf &quot;forward 192.168.*.*/ .
+		<a href="http://coofee.github.io/post/golang-dev/" class="more-link">Read on →</a>
+	</div>
+</article>
+
+				    
+				        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+    <div class="meta">
+		<div class="date"><time datetime='Thu, Sep 6, 2018' data-updated="true" itemprop="datePublished">Thu, Sep 6, 2018</time>
+</div>
+		<div class="tags">
+</div>
+		
+			<span class="comments"><a href="http://coofee.github.io/post/flutter/#disqus_thread">Comments</a></span>
+		
+	</div>
+	<h1 class="title" itemprop="name"><a href="http://coofee.github.io/post/flutter/" itemprop="url">flutter</a></h1>
+	<div class="entry-content" itemprop="articleBody">
+		[TOC] 0x00 Flutter flutter是google开发的移动端UI框架，支持android和ios。该框架使用dart语言进行开发，在skia的基础上开发了一套公共组件达到android与ios共用代码的目的。 1. Flutter系统架构 2. Platform Channels flutter使用methodChannel/flutterMethodChannel来访问系统原生api。 0x01 使用Flutter开发应用程序 1. 下载配置Flutter SDK 由于众所周知的原因，我们首先需要进行如下配置，让flutter通过国内镜像下载sdk等依赖。 export PUB_HOSTED_URL=https://pub.flutter-io.cn export FLUTTER_STORAGE_BASE_URL=https://storage.flutter-io.cn 安装sdk $ git clone -b beta https://github.com/flutter/flutter.git $ export PATH=`pwd`/flutter/bin:$PATH 使用flutter doctor检测本机环境，然后根据提示安装依赖软件。 $ flutter doctor Doctor summary (to see all details, run flutter doctor -v): [✓] Flutter (Channel beta, v0.1.5, on Mac OS X 10.11.6 15G19009, locale zh-Hans) [✓] Android toolchain - develop for Android devices (Android SDK 27.0.3) [!] iOS toolchain - develop for iOS devices (Xcode 7.2.1) ✗ Flutter requires a minimum Xcode version of 9.0.0.
+		<a href="http://coofee.github.io/post/flutter/" class="more-link">Read on →</a>
+	</div>
+</article>
+
+				    
 				        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
     <div class="meta">
 		<div class="date"><time datetime='Fri, Sep 15, 2017' data-updated="true" itemprop="datePublished">Fri, Sep 15, 2017</time>
@@ -279,44 +315,8 @@
 	</div>
 	<h1 class="title" itemprop="name"><a href="http://coofee.github.io/post/tools/" itemprop="url">常用命令</a></h1>
 	<div class="entry-content" itemprop="articleBody">
-		1. golang跨平台编译 // 如： env GOOS=linux GOARCH=amd64 go build *.go 2. ssh ssh -p port username@host 3. scp scp -P port local_file username@host:remote_file scp -P port -r local_dir username@host:remote_dir 4. github pull request # clone git clone https://github.com/coofee/tinker.git # 添加tinker git remote add tinker https://github.com/Tencent/tinker # 从tinker的dev分支创建功能分支 git branch compat-gradle-plugin-3.x-dev tinker/dev git checkout compat-gradle-plugin-3.x-dev # push分支到origin git push -u origin compat-gradle-plugin-3.x-dev # 合并tinker的dev分支代码 git pull tinker dev
-		
-	</div>
-</article>
-
-				    
-				        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-    <div class="meta">
-		<div class="date"><time datetime='Sat, Sep 17, 2016' data-updated="true" itemprop="datePublished">Sat, Sep 17, 2016</time>
-</div>
-		<div class="tags">
-</div>
-		
-			<span class="comments"><a href="http://coofee.github.io/post/jni-bspatch/#disqus_thread">Comments</a></span>
-		
-	</div>
-	<h1 class="title" itemprop="name"><a href="http://coofee.github.io/post/jni-bspatch/" itemprop="url">android jni bspatch</a></h1>
-	<div class="entry-content" itemprop="articleBody">
-		[TOC] 1. 下载并配置NDK: https://developer.android.com/ndk/downloads/index.html 2. 编译Bsdiff 2.1 编写java类，创建native方法 package com.commons.utils; public class Bspatch { static { System.loadLibrary(&quot;bspatch&quot;); } public static native int applyPatch(String oldFile, String newFile, String patchFile); } 2.2 生成.h文件 使用javac编写Bspatch或者在ide里面编译，这里我在android studio中编写并执行gradle的compileDebugJavaWithJavac任务进行编译，编译完成后，切换到classes目录。 使用javah生成.h文件 // 切换到编译好的类目录 cd app/build/intermediates/classes // 生成.h文件 javah -d h -classpath debug com.commons.utils.Bspatch 2.3 编译c/c++代码. 复制生成的.h文件到c/c++文件目录. 在存放c/c++代码的目录中添加Android.mk、Application.mk文件。 其中Android.mk用于指定要编译的类，模块名称等； Application.mk用于指定要生成特定abi类型的so文件，如：x86，armeabi等。 目录结构如下： app build jni bspatch bzip2 Android.mk Application.mk com_commons_utils_Bspatch.c com_commons_utils_Bspatch.h libs src build.gradle proguard-rules.pro Android.mk内容如下： LOCAL_PATH := $(call my-dir) include $(CLEAR_VARS) # 指定模块名称 LOCAL_MODULE := bspatch # 添加源码 LOCAL_SRC_FILES := com_commons_utils_BsPatch.c # for logging LOCAL_LDLIBS := -lz -llog include $(BUILD_SHARED_LIBRARY) Application.mk #表示生成全部abi的so APP_ABI := all 切换到jni目录，手动编译native代码。 $ cd app/jni $ ndk-build 3.
-		<a href="http://coofee.github.io/post/jni-bspatch/" class="more-link">Read on →</a>
-	</div>
-</article>
-
-				    
-				        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-    <div class="meta">
-		<div class="date"><time datetime='Thu, Sep 1, 2016' data-updated="true" itemprop="datePublished">Thu, Sep 1, 2016</time>
-</div>
-		<div class="tags">
-</div>
-		
-			<span class="comments"><a href="http://coofee.github.io/post/android-gradle-plugin-compat/#disqus_thread">Comments</a></span>
-		
-	</div>
-	<h1 class="title" itemprop="name"><a href="http://coofee.github.io/post/android-gradle-plugin-compat/" itemprop="url">Android Gradle插件升级填坑指南</a></h1>
-	<div class="entry-content" itemprop="articleBody">
-		[TOC] Android Gradle插件升级填坑指南 1. 引子 自打android开发环境从eclipse迁移到android studio之后，android项目的打包就从ant迁移到了gradle。自此只要是在打包过程中需要干扰代码生成或执行其他特殊处理，都需要通过gradle脚本完成，具体来说就是通过在打包过程中插入task或者给现用task添加hook。 对于我们的项目而言，在插件化和热修复技术，为了降低打包成本，我们编写了自己的gradle插件，用于支持app的插件化和热修复打包。 2. 由instant-run引发的血案 时间来到了16年，随着Instant-Run功能的逐渐完善，我们也升级android studio和gradle来体验强大的Instant-Run，刚一运行就崩溃了。。。 查看一下报错日志，发现proguardDebug任务找不到；瞅了一下打包产生的临时目录，发现intermediates/classes-proguard目录也找不到了，并且还多出来了intermediates/transforms这个奇怪的目录，赶紧google一下，发现google在gradle插件高版本中引入了transform-api（主要是给大家提供了一个操作代码的接口，比如可以注入代码什么的），并且在高版本的gradle插件中使用transformClassesAndResourcesWithProguardForDebug任务替换了低版本的proguardDebug任务。 3. 兼容Transform Api 知道了问题所在，那就让我们撸起袖子干起来吧，将原本需要在proguardDebug之后执行的代码迁移到transformClassesAndResourcesWithProguardForDebug之后，并稍作改动就可以了。大概代码如下： def proguardTaskName = &quot;transformClassesAndResourcesWithProguardFor${flavor.capitalize()}${buildType.capitalize()}&quot;.toString() gradle.taskGraph.afterTask { Task task, TaskState state -&gt; if (state.failure != null) { println &quot;${task} error: ${state.failure}&quot; state.failure.printStackTrace() state.rethrowFailure(); return; } if (task.name.equals(proguardTaskName)) { // 执行自己的代码，将先前的代码迁移至此，并稍作改动即可。 } } 4. 兼容不同版本 这里我们为了兼容各个版本的gradle插件，那么就出现了一个新问题如何区分某个gradle插件版本是否支持transform api？ 查看官网，发现上面有这么一句话 &gt; (The API existed in 1.4.0-beta2 but it&rsquo;s been completely revamped in 1.5.0-beta1) 也就是说，这个api在1.4.0-beta2的时候就已经存在了，但是直到1.5.0-beta1版本的时候才改造完成。这么来看的话，通过版本来判断比较复杂，并且不一定靠谱，那么如何能够既简单又靠谱的判断呢？ 答案很简单，直接判断project是否拥有transform的task即可，大概代码如下： boolean isSupportTransformApi(Project project, def variant) { def supportTransformApi = false; def flavor = variant.flavorName == null ?
-		<a href="http://coofee.github.io/post/android-gradle-plugin-compat/" class="more-link">Read on →</a>
+		1. golang跨平台编译 // 如： env GOOS=linux GOARCH=amd64 go build *.go 2. ssh ssh -p port username@host 3. scp scp -P port local_file username@host:remote_file scp -P port -r local_dir username@host:remote_dir 4. github pull request # clone git clone https://github.com/coofee/tinker.git # 添加tinker git remote add tinker https://github.com/Tencent/tinker # 从tinker的dev分支创建功能分支 git branch compat-gradle-plugin-3.x-dev tinker/dev git checkout compat-gradle-plugin-3.x-dev # push分支到origin git push -u origin compat-gradle-plugin-3.x-dev # 合并tinker的dev分支代码 git pull tinker dev # 删除远程分支 git
+		<a href="http://coofee.github.io/post/tools/" class="more-link">Read on →</a>
 	</div>
 </article>
 
@@ -331,7 +331,7 @@
 					</nav>
 				</div>
 			</div>
-			<footer id="footer" class="inner">Copyright &copy; 2017
+			<footer id="footer" class="inner">Copyright &copy; 2018
 
     Coofee
 

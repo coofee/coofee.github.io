@@ -7,7 +7,489 @@
     <language>en-us</language>
     <author>Coofee</author>
     
-    <updated>Fri, 15 Sep 2017 18:59:41 CST</updated>
+    <updated>Thu, 06 Sep 2018 19:36:14 CST</updated>
+    
+    <item>
+      <title>golang dev</title>
+      <link>http://coofee.github.io/post/golang-dev/</link>
+      <pubDate>Thu, 06 Sep 2018 19:36:14 CST</pubDate>
+      <author>Coofee</author>
+      <guid>http://coofee.github.io/post/golang-dev/</guid>
+      <description>
+
+&lt;h1 id=&#34;配置golang开发环境-仅介绍mac平台&#34;&gt;配置Golang开发环境（仅介绍Mac平台）&lt;/h1&gt;
+
+&lt;h2 id=&#34;install-homebrew&#34;&gt;install Homebrew&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ /usr/bin/ruby -e &amp;quot;$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;install-golang&#34;&gt;install golang&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ brew install go
+$ go version
+go version go1.11 darwin/amd64
+
+# 配置GOROOT
+$ printf &amp;quot;\n\nexport GOROOT=/usr/local/Cellar/go/1.11/libexec \n&amp;quot; &amp;gt;&amp;gt; ~/.bash_profile
+
+# 配置GOPATH
+$ mkdir -p ~/go/gopath
+$ printf &amp;quot;export GOPATH=~/go/gopath \n&amp;quot; &amp;gt;&amp;gt; ~/.bash_profile
+
+# 追加到PATH
+$ printf &amp;quot;export GOBIN=$GOROOT/bin \n&amp;quot; &amp;gt;&amp;gt; ~/.bash_profile
+$ printf &amp;quot;export PATH=$PATH:$GOBIN:$GOPATH/bin \n\n&amp;quot; &amp;gt;&amp;gt; ~/.bash_profile
+
+$ source ~/.bash_profile
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;install-privoxy&#34;&gt;install privoxy&lt;/h2&gt;
+
+&lt;p&gt;privoxy可以将http请求代理到socks5，下面将 privoxy + shadowsocks 搭配使用&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ brew install privoxy
+
+# http代理地址
+$ printf &amp;quot;\n\nlisten-address 0.0.0.0:7777 \n&amp;quot; &amp;gt;&amp;gt; /usr/local/etc/privoxy/config
+
+# shadowsocks socks5代理地址
+$ printf &amp;quot;forward-socks5 / 127.0.0.1:1080 .\n&amp;quot; &amp;gt;&amp;gt; /usr/local/etc/privoxy/config
+
+# 内网地址不进行代理
+$ printf &amp;quot;forward 192.168.*.*/ . \n&amp;quot; &amp;gt;&amp;gt; /usr/local/etc/privoxy/config
+$ printf &amp;quot;forward 127.*.*.*/   . \n&amp;quot; &amp;gt;&amp;gt; /usr/local/etc/privoxy/config
+$ printf &amp;quot;forward 10.*.*.*/    . \n&amp;quot; &amp;gt;&amp;gt; /usr/local/etc/privoxy/config
+$ printf &amp;quot;forward *.xxx.com    . \n\n&amp;quot; &amp;gt;&amp;gt; /usr/local/etc/privoxy/config
+
+# 启动privoxy服务
+$ brew services start privoxy
+
+# 配置http/https代理环境变量
+$ printf &amp;quot;\n\nalias noproxy=&#39;unset http_proxy https_proxy&#39; \n&amp;quot; &amp;gt;&amp;gt; ~/.bash_profile
+$ printf &amp;quot;alias goproxy=&#39;export http_proxy=127.0.0.1:7777 https_proxy=127.0.0.1:7777&#39; \n\n&amp;quot; &amp;gt;&amp;gt; ~/.bash_profile
+$ source ~/.bash_profile
+
+# 测试代理
+$ goproxy
+$ curl -v www.google.com
+$ noproxy
+$ curl -v www.google.com
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;install-dep&#34;&gt;install dep&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ brew install dep
+$ dep version
+dep:
+ version     : v0.5.0
+ build date  : 2018-07-26
+ git hash    : 224a564
+ go version  : go1.10.3
+ go compiler : gc
+ platform    : darwin/amd64
+ features    : ImportDuringSolve=false
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;配置&lt;code&gt;~/.netrc&lt;/code&gt;使dep支持私有repo，在github中生成access_token，然后添加到&lt;code&gt;~/.netrc&lt;/code&gt;文件中即可，dep会自动使用&lt;code&gt;~/.netrc&lt;/code&gt;中的配置，操作如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ printf &amp;quot;\n\nmachine *.github.com
+  login git_user
+  password git_access_token \n&amp;quot; &amp;gt;&amp;gt; ~/.netrc
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://github.com/golang/dep/blob/master/docs/FAQ.md#how-do-i-get-dep-to-authenticate-to-a-git-repo&#34;&gt;SEE FAQ: how-do-i-get-dep-to-authenticate-to-a-git-repo&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;dep可以使用branch/tag等作为版本号，一般为了保持依赖的稳定性，建议统一使用tag作为版本号。如：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ git tag v0.0.1
+$ git push --tags
+# 使用tag作为版本
+$ dep ensure -v -add github.com/spf13/cobra@v0.0.3
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;golang-clone-source-code&#34;&gt;golang clone source code&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ git clone https://github.com/spf13/cobra $GOPATH/src/github.com/spf13/cobra &amp;amp;&amp;amp; cd $GOPATH/src/github.com/spf13/cobra 
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>flutter</title>
+      <link>http://coofee.github.io/post/flutter/</link>
+      <pubDate>Thu, 06 Sep 2018 19:33:10 CST</pubDate>
+      <author>Coofee</author>
+      <guid>http://coofee.github.io/post/flutter/</guid>
+      <description>
+
+&lt;p&gt;[TOC]&lt;/p&gt;
+
+&lt;h1 id=&#34;0x00-flutter&#34;&gt;0x00 Flutter&lt;/h1&gt;
+
+&lt;p&gt;flutter是google开发的移动端UI框架，支持android和ios。该框架使用dart语言进行开发，在skia的基础上开发了一套公共组件达到android与ios共用代码的目的。&lt;/p&gt;
+
+&lt;h2 id=&#34;1-flutter系统架构&#34;&gt;1. Flutter系统架构&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://coofee.github.io/flutter/flutter_arch.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;2-platform-channels&#34;&gt;2. Platform Channels&lt;/h2&gt;
+
+&lt;p&gt;flutter使用methodChannel/flutterMethodChannel来访问系统原生api。
+&lt;img src=&#34;http://coofee.github.io/flutter/platform_channels.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;h1 id=&#34;0x01-使用flutter开发应用程序&#34;&gt;0x01 使用Flutter开发应用程序&lt;/h1&gt;
+
+&lt;h2 id=&#34;1-下载配置flutter-sdk&#34;&gt;1. 下载配置Flutter SDK&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;由于众所周知的原因，我们首先需要进行如下配置，让flutter通过国内镜像下载sdk等依赖。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;pre&gt;&lt;code&gt;export PUB_HOSTED_URL=https://pub.flutter-io.cn
+export FLUTTER_STORAGE_BASE_URL=https://storage.flutter-io.cn
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;ul&gt;
+&lt;li&gt;安装sdk&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;pre&gt;&lt;code&gt;$ git clone -b beta https://github.com/flutter/flutter.git
+$ export PATH=`pwd`/flutter/bin:$PATH
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;ul&gt;
+&lt;li&gt;使用&lt;code&gt;flutter doctor&lt;/code&gt;检测本机环境，然后根据提示安装依赖软件。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;pre&gt;&lt;code&gt;$ flutter doctor
+Doctor summary (to see all details, run flutter doctor -v):
+[✓] Flutter (Channel beta, v0.1.5, on Mac OS X 10.11.6 15G19009, locale zh-Hans)
+[✓] Android toolchain - develop for Android devices (Android SDK 27.0.3)
+[!] iOS toolchain - develop for iOS devices (Xcode 7.2.1)
+    ✗ Flutter requires a minimum Xcode version of 9.0.0.
+      Download the latest version or update via the Mac App Store.
+    ✗ ios-deploy not installed. To install:
+        brew install ios-deploy
+    ✗ CocoaPods not installed.
+        CocoaPods is used to retrieve the iOS platform side&#39;s plugin code that responds to your plugin usage on the Dart side.
+        Without resolving iOS dependencies with CocoaPods, plugins will not work on iOS.
+        For more info, see https://flutter.io/platform-plugins
+      To install:
+        brew install cocoapods
+        pod setup
+[✓] Android Studio (version 3.0)
+[✓] Android Studio (version 2.3)
+[!] IntelliJ IDEA Community Edition (version 2017.2.6)
+    ✗ Flutter plugin not installed; this adds Flutter specific functionality.
+[!] VS Code (version 1.21.0)
+[!] Connected devices
+    ! No devices available
+
+! Doctor found issues in 4 categories.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;2-使用android-studio开发demo&#34;&gt;2. 使用Android Studio开发Demo&lt;/h2&gt;
+
+&lt;h3 id=&#34;1-创建应用&#34;&gt;1. 创建应用&lt;/h3&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://coofee.github.io/flutter/create_flutter_app_1.png&#34; alt=&#34;创建flutter应用&#34; /&gt;
+&lt;img src=&#34;http://coofee.github.io/flutter/create_flutter_app_2.png&#34; alt=&#34;创建flutter应用&#34; /&gt;
+&lt;img src=&#34;http://coofee.github.io/flutter/create_flutter_app_3.png&#34; alt=&#34;创建flutter应用&#34; /&gt;
+&lt;img src=&#34;http://coofee.github.io/flutter/create_flutter_app_4.png&#34; alt=&#34;创建flutter应用&#34; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;2-项目结构&#34;&gt;2. 项目结构&lt;/h3&gt;
+
+&lt;p&gt;使用android studio创建出来的项目目录结构大致如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;ios&lt;/code&gt;目录包含了ios的全部代码可以直接使用xcode（需要9.0+版本）进行开发。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;android&lt;/code&gt;目录包含了android的全部代码，直接使用android studio开发即可。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;lib&lt;/code&gt;目录中包含了两端通用的dart代码，在打包生成应用时，全部的dart代码会被编译为本地代码（如在android端，会被直接编译为so文件）。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://coofee.github.io/flutter/app_struct.png&#34; alt=&#34;Flutter应用项目结构&#34; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;3-调试与运行&#34;&gt;3. 调试与运行&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;选择android/ios设备，然后点击运行按钮就可以将应用运行到android/ios设备上。
+&lt;img src=&#34;http://coofee.github.io/flutter/app_select_device_and_run.png&#34; alt=&#34;选择设备运行&#34; /&gt;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;点击调试安妮运行app，就可以调试dart代码，调试界面与java完全一样。
+&lt;img src=&#34;http://coofee.github.io/flutter/app_debug.png&#34; alt=&#34;应用调试&#34; /&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;4-热加载&#34;&gt;4. 热加载&lt;/h3&gt;
+
+&lt;p&gt;flutter中热加载的概念和android开发中的Instant run类似，同样也是点击⚡️按钮启用热加载功能。但是其拥有以下优点：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;点击保存按钮或者保存快捷键，也会触发热加载功能（⚡️按钮功能相同）。&lt;/li&gt;
+&lt;li&gt;热加载会&lt;strong&gt;保留先前的状态&lt;/strong&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;快！快！快！&lt;/strong&gt; 代码增量编译在秒级别，单行代码改变反应到应用程序UI改变耗时约&lt;strong&gt;1.5秒&lt;/strong&gt;左右。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;所以大家就可以像写web页面一样，可以边写-&amp;gt;边保存-&amp;gt;边查看效果，开发效率大大加快有没有，再也不用等等等有没有。。。&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th align=&#34;center&#34;&gt;热加载前&lt;/th&gt;
+&lt;th align=&#34;center&#34;&gt;代码变动&lt;/th&gt;
+&lt;th align=&#34;center&#34;&gt;热加载后&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td align=&#34;center&#34;&gt;可以看到应用程序的计数器的值是2. &lt;img src=&#34;http://coofee.github.io/flutter/app_hot_reload_before.png&#34; alt=&#34;&#34; /&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;修改字符显示，添加“吼吼吼吼”到文本中，然后保存触发热加载。&lt;img src=&#34;http://coofee.github.io/flutter/app_hot_reload_with_state.png&#34; alt=&#34;带状态的应用热启动&#34; /&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;可以看到文本字符发生改变，但是计数器的值未发生变化，仍然是2.&lt;img src=&#34;http://coofee.github.io/flutter/app_hot_reload_after.png&#34; alt=&#34;&#34; /&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h3 id=&#34;5-应用程序结构与兼容性&#34;&gt;5. 应用程序结构与兼容性&lt;/h3&gt;
+
+&lt;h4 id=&#34;1-应用程序结构-flutter-flutter&#34;&gt;1. 应用程序结构![](/flutter//flutter/&lt;/h4&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Debug (slow mode模式)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;首先我们打开项目根目录中的&lt;code&gt;build&lt;/code&gt;文件夹，该文件包含了编译app的全部生成文件，其结构与android应用程序一致（注意：&lt;strong&gt;&lt;code&gt;build&lt;/code&gt;目录在android studio中不显示，可以通过terminal打开或查看&lt;/strong&gt;）。
+&lt;img src=&#34;http://coofee.github.io/flutter/apk_location.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;接下来，我们可以通过android studio直接打开该apk，可以发现仅仅只有一个页面的flutter应用大小已经达到了&lt;strong&gt;25MB&lt;/strong&gt;左右，分析其结构（见下图），其包含了全部abi类型的so文件，导致apk整体比较大，排除掉&lt;code&gt;x86&lt;/code&gt;、&lt;code&gt;x86_64&lt;/code&gt;平台的so文件之后，apk整体大小约&lt;strong&gt;11MB&lt;/strong&gt;左右。
+&lt;img src=&#34;http://coofee.github.io/flutter/apk_struct_with_dart-1.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Release模式&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;使用release模式时，apk大小约&lt;strong&gt;8.1MB&lt;/strong&gt;，大小比较正常。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://coofee.github.io/flutter/apk_struct_mode_release.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;h4 id=&#34;2-应用程序兼容性&#34;&gt;2. 应用程序兼容性&lt;/h4&gt;
+
+&lt;ul&gt;
+&lt;li&gt;andorid最低支持到 api 16;&lt;/li&gt;
+&lt;li&gt;ios最低支持到ios 8.0;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;3-开发toast模块&#34;&gt;3. 开发Toast模块&lt;/h2&gt;
+
+&lt;p&gt;这里我们直接使用android studio进行开发，如果大家需要直接使用flutter进行创建的话，可以直接参考&lt;a href=&#34;https://flutter.io/platform-channels/&#34;&gt;platform-channels&lt;/a&gt;进行开发。&lt;/p&gt;
+
+&lt;h3 id=&#34;1-使用dart编写公共的toast模块&#34;&gt;1. 使用dart编写公共的toast模块&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-dart&#34;&gt;import &#39;package:flutter/services.dart&#39;;
+
+// 下划线开头的变量只在当前package中可见。
+const _toast = const MethodChannel(&#39;com.coofee.flutterdemoapp/sdk/toast&#39;);
+
+const int _LENGTH_SHORT = 0;
+
+const int _LENGTH_LONG = 1;
+
+void show(String text, int duration) async {
+  try {
+    await _toast.invokeMethod(&amp;quot;show&amp;quot;, {&#39;text&#39;: text, &#39;duration&#39;: duration});
+  } on Exception catch (e) {
+    print(e);
+  } on Error catch (e) {
+    print(e);
+  }
+}
+
+void showShort(String text) {
+  show(text, _LENGTH_SHORT);
+}
+
+void showLong(String text) {
+  show(text, _LENGTH_LONG);
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;2-编写android端的代码并注册&#34;&gt;2. 编写android端的代码并注册&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-java&#34;&gt;package com.coofee.flutterdemoapp;
+
+import android.os.Bundle;
+import android.widget.Toast;
+
+import io.flutter.app.FlutterActivity;
+import io.flutter.plugin.common.MethodCall;
+import io.flutter.plugin.common.MethodChannel;
+import io.flutter.plugins.GeneratedPluginRegistrant;
+
+public class MainActivity extends FlutterActivity {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        GeneratedPluginRegistrant.registerWith(this);
+
+        new MethodChannel(getFlutterView(), &amp;quot;com.coofee.flutterdemoapp/sdk/toast&amp;quot;)
+                .setMethodCallHandler(new MethodChannel.MethodCallHandler() {
+                    @Override
+                    public void onMethodCall(MethodCall methodCall, MethodChannel.Result result) {
+                        if (&amp;quot;show&amp;quot;.equals(methodCall.method)) {
+                            String text = methodCall.argument(&amp;quot;text&amp;quot;);
+                            int duration = methodCall.argument(&amp;quot;duration&amp;quot;);
+                            Toast.makeText(MainActivity.this, text, duration).show();
+                        }
+                    }
+                });
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;3-编写ios端代码并注册&#34;&gt;3. 编写ios端代码并注册&lt;/h3&gt;
+
+&lt;p&gt;ios端的代码与android端类似，但是需要使用&lt;code&gt;FlutterMethodChannel&lt;/code&gt;进行处理，其他操作与android端一致，打开&lt;code&gt;AppDelegate.m&lt;/code&gt;文件，添加如下代码：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-objective-c&#34;&gt;- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+  [GeneratedPluginRegistrant registerWithRegistry:self];
+
+  FlutterViewController* controller = (FlutterViewController*)self.window.rootViewController;
+
+  FlutterMethodChannel* toastChannel = [FlutterMethodChannel
+                                            methodChannelWithName:@&amp;quot;com.coofee.flutterdemoapp/sdk/toast&amp;quot;
+                                            binaryMessenger:controller];
+
+  [toastChannel setMethodCallHandler:^(FlutterMethodCall* call, FlutterResult result) {
+      if ([@&amp;quot;show&amp;quot; isEqualToString:call.method]) {
+          // 展示toast;
+          NSLog(@&amp;quot;显示toast....&amp;quot;)
+      }
+  }];
+
+  // Override point for customization after application launch.
+  return [super application:application didFinishLaunchingWithOptions:launchOptions];
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;4-在flutter中调用toast模块&#34;&gt;4. 在flutter中调用toast模块&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-dart&#34;&gt;import &#39;sdk/toast.dart&#39;;
+
+void _incrementCounter() {
+  showShort(&#39;你点击了$_counter次&#39;);
+
+  setState(() {
+    // This call to setState tells the Flutter framework that something has
+    // changed in this State, which causes it to rerun the build method below
+    // so that the display can reflect the updated values. If we changed
+    // _counter without calling setState(), then the build method would not be
+    // called again, and so nothing would appear to happen.
+    _counter++;
+  });
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;5-效果&#34;&gt;5. 效果&lt;/h3&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://coofee.github.io/flutter/toast_show.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;h1 id=&#34;0x02-使用dart-2&#34;&gt;0x02 使用Dart 2&lt;/h1&gt;
+
+&lt;h2 id=&#34;1-升级flutter-sdk&#34;&gt;1. 升级flutter sdk&lt;/h2&gt;
+
+&lt;p&gt;使用dart 2时，必须保证，Flutter SDK版本必须大于等于以下版本:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Beta channel: build 0.1.4 from 2018-02-19, or later&lt;/li&gt;
+&lt;li&gt;Dev channel: build from 2018-02-22, or later&lt;/li&gt;
+&lt;li&gt;Master channel: build from 2018-02-20, or later&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;在Terminal中执行&lt;code&gt;flutter --version&lt;/code&gt;命令，查看flutter的版本:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;→ flutter --version
+Flutter 0.1.5 • channel beta • https://github.com/flutter/flutter.git
+Framework • revision 3ea4d06340 (3 weeks ago) • 2018-02-22 11:12:39 -0800
+Engine • revision ead227f118
+Tools • Dart 2.0.0-dev.28.0.flutter-0b4f01f759
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;在Terminal中执行&lt;code&gt;flutter upgrade&lt;/code&gt;可以升级flutter。&lt;/p&gt;
+
+&lt;h2 id=&#34;2-在android-studio中启用dart-2&#34;&gt;2. 在android studio中启用dart 2&lt;/h2&gt;
+
+&lt;p&gt;在android studio中启用dart2后，需要重启android studio使其生效。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://coofee.github.io/flutter/dart-2.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;3-dart-1-vs-dart-2&#34;&gt;3. dart 1 vs dart 2&lt;/h2&gt;
+
+&lt;p&gt;从下图可以看出dart2相对于dart1来说，省略了关键字&lt;code&gt;new&lt;/code&gt;，使得声明式布局的可读性更进一步。
+&lt;img src=&#34;http://coofee.github.io/flutter/dart1_vs_dart2.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;4-dart2对apk大小的影响&#34;&gt;4. dart2对apk大小的影响&lt;/h2&gt;
+
+&lt;p&gt;从下图可以看出来，使用dart2时生成的apk比dart1打5MB左右(slow mode模式)。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://coofee.github.io/flutter/apk_dart1_vs_dart2_cut.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;h1 id=&#34;0x03-flutter-s-modes&#34;&gt;0x03 Flutter&amp;rsquo;s modes&lt;/h1&gt;
+
+&lt;p&gt;从下图我们可以看到，flutter mode显示在在app的右上角。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://coofee.github.io/flutter/mode_slow.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;flutter的应用程序有以下4中模式，分别使用不同的命令生成，且不同模式下生成的应用大小不一（如：release模式会去掉x86相关的so文件）&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th align=&#34;center&#34;&gt;mode&lt;/th&gt;
+&lt;th align=&#34;center&#34;&gt;命令&lt;/th&gt;
+&lt;th align=&#34;center&#34;&gt;&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td align=&#34;center&#34;&gt;debug&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;flutter run&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;debug模式下的产物，且应用的右上角会显示&lt;code&gt;slow mode&lt;/code&gt;字样，支持debug。&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;center&#34;&gt;release&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;flutter run &amp;ndash;release&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;UI上面不显示模式；禁止debug，且删除了debug相关的信息；关闭全部的断言检测，减小包大小，使其达到最佳性能。&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;center&#34;&gt;profile&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;flutter run &amp;ndash;profile&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;调试性能，不支持模拟器。&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;center&#34;&gt;test&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;flutter test&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;和debug模式类似，不支持headless和桌面平台。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h1 id=&#34;0x04-参考引用&#34;&gt;0x04 参考引用&lt;/h1&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://docs.google.com/presentation/d/1cw7A4HbvM_Abv320rVgPVGiUP2msVs7tfGbkgdrTy0I/edit#slide=id.gbb3c3233b_0_162&#34;&gt;Flutter System Architecture
+&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://flutter.io/platform-channels/&#34;&gt;platform-channels&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/flutter/flutter/wiki/Using-Flutter-in-China&#34;&gt;Using-Flutter-in-China&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://flutter.io/get-started/install/&#34;&gt;install&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/flutter/flutter/wiki/Flutter%27s-modes&#34;&gt;flutter-modes&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/flutter/flutter/wiki/Trying-the-preview-of-Dart-2-in-Flutter&#34;&gt;flutter-with-dart-2&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
     
     <item>
       <title>Gradle plugin 3.0 &amp; Android Studio 3.0</title>
@@ -1895,6 +2377,8 @@ git push -u origin compat-gradle-plugin-3.x-dev
 # 合并tinker的dev分支代码
 git pull tinker dev
 
+# 删除远程分支
+git push origin --delete compat-gradle-plugin-3.x
 &lt;/code&gt;&lt;/pre&gt;
 </description>
     </item>
@@ -2916,15 +3400,6 @@ alias noproxy=&#39;unset http_proxy https_proxy&#39;
 &lt;li&gt;&lt;p&gt;不使用时，可以直接执行noproxy。&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;
 </description>
-    </item>
-    
-    <item>
-      <title>about</title>
-      <link>http://coofee.github.io/post/about/</link>
-      <pubDate>Tue, 15 Mar 2016 19:51:21 CST</pubDate>
-      <author>Coofee</author>
-      <guid>http://coofee.github.io/post/about/</guid>
-      <description></description>
     </item>
     
   </channel>

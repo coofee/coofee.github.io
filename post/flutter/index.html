@@ -1,0 +1,536 @@
+<!DOCTYPE HTML>
+
+<html lang="en-us">
+
+<head>
+	<meta charset="utf-8">
+	<title>flutter - Simple...</title>
+	<meta name="author" content="map[name:Coofee email:coffeerene.zhao@gmail.com]">
+
+	
+	
+	<meta name="description" content="">
+	
+
+	
+	<meta name="HandheldFriendly" content="True">
+	<meta name="MobileOptimized" content="320">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+    
+	<link href='/index.xml' rel="alternate" title="Simple..." type="application/atom+xml">
+	
+	<link rel="canonical" href="http://coofee.github.io/post/flutter/">
+	<link href="http://coofee.github.io/favicon.png" rel="shortcut icon">
+	<link href="http://coofee.github.io/css/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<link href="http://coofee.github.io/css/font-awesome.min.css" media="screen, projection" rel="stylesheet" type="text/css">
+	
+	<link href='http://fonts.googleapis.com/css?family=Nunito:400,300,700' rel='stylesheet' type='text/css'>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+
+	
+	<link href="http://coofee.github.io/css/prism.css" rel="stylesheet" />
+	<script src="http://coofee.github.io/js/prism.js"></script>
+
+	
+  
+
+</head>
+
+
+<body>
+	<div class="container">
+		<div class="left-col">
+			<div class="intrude-less">
+			<header id="header" class="inner"><div class="profilepic">
+	
+	
+	<script src="http://coofee.github.io/js/md5.js"></script>
+	<script type="text/javascript">
+		$(function(){
+			$('.profilepic').append("<img src='http://www.gravatar.com/avatar/" + MD5('coffeerene.zhao@gmail.com') + "?s=160' alt='Profile Picture' style='width: 160px;' />");
+		});
+	</script>
+	
+	
+</div>
+
+<nav id="main-nav"><ul class="main">
+    <li><a href="/">Blog</a></li>
+    <li><a href="/post/about">About</a></li>
+    <li><a href="/post/">Archives</a></li>
+</ul>
+
+<section class="aboutme">
+  <p>
+    Less is more
+  </p>
+</section>
+</nav>
+<nav id="sub-nav">
+	<div class="social">
+		
+			<a class="email" href='mailto:coffeerene.zhao@gmail.com' title="Email">Email</a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+    	
+    	
+			<a class="rss" href='/index.xml' title="RSS">RSS</a>
+		
+	</div>
+</nav>
+</header>
+			</div>
+		</div>
+		<div class="mid-col">
+			
+			<div class="mid-col-container">
+				<div id="content" class="inner">
+					<div itemscope itemtype="http://schema.org/Blog">
+					<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+    <h1 class="title" itemprop="name">flutter</h1>
+	<div class="entry-content" itemprop="articleBody">
+
+<p>[TOC]</p>
+
+<h1 id="0x00-flutter">0x00 Flutter</h1>
+
+<p>flutter是google开发的移动端UI框架，支持android和ios。该框架使用dart语言进行开发，在skia的基础上开发了一套公共组件达到android与ios共用代码的目的。</p>
+
+<h2 id="1-flutter系统架构">1. Flutter系统架构</h2>
+
+<p><img src="/flutter/flutter_arch.png" alt="" /></p>
+
+<h2 id="2-platform-channels">2. Platform Channels</h2>
+
+<p>flutter使用methodChannel/flutterMethodChannel来访问系统原生api。
+<img src="/flutter/platform_channels.png" alt="" /></p>
+
+<h1 id="0x01-使用flutter开发应用程序">0x01 使用Flutter开发应用程序</h1>
+
+<h2 id="1-下载配置flutter-sdk">1. 下载配置Flutter SDK</h2>
+
+<ul>
+<li>由于众所周知的原因，我们首先需要进行如下配置，让flutter通过国内镜像下载sdk等依赖。</li>
+</ul>
+
+<pre><code>export PUB_HOSTED_URL=https://pub.flutter-io.cn
+export FLUTTER_STORAGE_BASE_URL=https://storage.flutter-io.cn
+</code></pre>
+
+<ul>
+<li>安装sdk</li>
+</ul>
+
+<pre><code>$ git clone -b beta https://github.com/flutter/flutter.git
+$ export PATH=`pwd`/flutter/bin:$PATH
+</code></pre>
+
+<ul>
+<li>使用<code>flutter doctor</code>检测本机环境，然后根据提示安装依赖软件。</li>
+</ul>
+
+<pre><code>$ flutter doctor
+Doctor summary (to see all details, run flutter doctor -v):
+[✓] Flutter (Channel beta, v0.1.5, on Mac OS X 10.11.6 15G19009, locale zh-Hans)
+[✓] Android toolchain - develop for Android devices (Android SDK 27.0.3)
+[!] iOS toolchain - develop for iOS devices (Xcode 7.2.1)
+    ✗ Flutter requires a minimum Xcode version of 9.0.0.
+      Download the latest version or update via the Mac App Store.
+    ✗ ios-deploy not installed. To install:
+        brew install ios-deploy
+    ✗ CocoaPods not installed.
+        CocoaPods is used to retrieve the iOS platform side's plugin code that responds to your plugin usage on the Dart side.
+        Without resolving iOS dependencies with CocoaPods, plugins will not work on iOS.
+        For more info, see https://flutter.io/platform-plugins
+      To install:
+        brew install cocoapods
+        pod setup
+[✓] Android Studio (version 3.0)
+[✓] Android Studio (version 2.3)
+[!] IntelliJ IDEA Community Edition (version 2017.2.6)
+    ✗ Flutter plugin not installed; this adds Flutter specific functionality.
+[!] VS Code (version 1.21.0)
+[!] Connected devices
+    ! No devices available
+
+! Doctor found issues in 4 categories.
+</code></pre>
+
+<h2 id="2-使用android-studio开发demo">2. 使用Android Studio开发Demo</h2>
+
+<h3 id="1-创建应用">1. 创建应用</h3>
+
+<p><img src="/flutter/create_flutter_app_1.png" alt="创建flutter应用" />
+<img src="/flutter/create_flutter_app_2.png" alt="创建flutter应用" />
+<img src="/flutter/create_flutter_app_3.png" alt="创建flutter应用" />
+<img src="/flutter/create_flutter_app_4.png" alt="创建flutter应用" /></p>
+
+<h3 id="2-项目结构">2. 项目结构</h3>
+
+<p>使用android studio创建出来的项目目录结构大致如下：</p>
+
+<ul>
+<li><code>ios</code>目录包含了ios的全部代码可以直接使用xcode（需要9.0+版本）进行开发。</li>
+<li><code>android</code>目录包含了android的全部代码，直接使用android studio开发即可。</li>
+<li><code>lib</code>目录中包含了两端通用的dart代码，在打包生成应用时，全部的dart代码会被编译为本地代码（如在android端，会被直接编译为so文件）。</li>
+</ul>
+
+<p><img src="/flutter/app_struct.png" alt="Flutter应用项目结构" /></p>
+
+<h3 id="3-调试与运行">3. 调试与运行</h3>
+
+<ul>
+<li><p>选择android/ios设备，然后点击运行按钮就可以将应用运行到android/ios设备上。
+<img src="/flutter/app_select_device_and_run.png" alt="选择设备运行" /></p></li>
+
+<li><p>点击调试安妮运行app，就可以调试dart代码，调试界面与java完全一样。
+<img src="/flutter/app_debug.png" alt="应用调试" /></p></li>
+</ul>
+
+<h3 id="4-热加载">4. 热加载</h3>
+
+<p>flutter中热加载的概念和android开发中的Instant run类似，同样也是点击⚡️按钮启用热加载功能。但是其拥有以下优点：</p>
+
+<ol>
+<li>点击保存按钮或者保存快捷键，也会触发热加载功能（⚡️按钮功能相同）。</li>
+<li>热加载会<strong>保留先前的状态</strong>。</li>
+<li><strong>快！快！快！</strong> 代码增量编译在秒级别，单行代码改变反应到应用程序UI改变耗时约<strong>1.5秒</strong>左右。</li>
+</ol>
+
+<p>所以大家就可以像写web页面一样，可以边写-&gt;边保存-&gt;边查看效果，开发效率大大加快有没有，再也不用等等等有没有。。。</p>
+
+<table>
+<thead>
+<tr>
+<th align="center">热加载前</th>
+<th align="center">代码变动</th>
+<th align="center">热加载后</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td align="center">可以看到应用程序的计数器的值是2. <img src="/flutter/app_hot_reload_before.png" alt="" /></td>
+<td align="center">修改字符显示，添加“吼吼吼吼”到文本中，然后保存触发热加载。<img src="/flutter/app_hot_reload_with_state.png" alt="带状态的应用热启动" /></td>
+<td align="center">可以看到文本字符发生改变，但是计数器的值未发生变化，仍然是2.<img src="/flutter/app_hot_reload_after.png" alt="" /></td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="5-应用程序结构与兼容性">5. 应用程序结构与兼容性</h3>
+
+<h4 id="1-应用程序结构-flutter-flutter">1. 应用程序结构![](/flutter//flutter/</h4>
+
+<ul>
+<li>Debug (slow mode模式)</li>
+</ul>
+
+<p>首先我们打开项目根目录中的<code>build</code>文件夹，该文件包含了编译app的全部生成文件，其结构与android应用程序一致（注意：<strong><code>build</code>目录在android studio中不显示，可以通过terminal打开或查看</strong>）。
+<img src="/flutter/apk_location.png" alt="" /></p>
+
+<p>接下来，我们可以通过android studio直接打开该apk，可以发现仅仅只有一个页面的flutter应用大小已经达到了<strong>25MB</strong>左右，分析其结构（见下图），其包含了全部abi类型的so文件，导致apk整体比较大，排除掉<code>x86</code>、<code>x86_64</code>平台的so文件之后，apk整体大小约<strong>11MB</strong>左右。
+<img src="/flutter/apk_struct_with_dart-1.png" alt="" /></p>
+
+<ul>
+<li>Release模式</li>
+</ul>
+
+<p>使用release模式时，apk大小约<strong>8.1MB</strong>，大小比较正常。</p>
+
+<p><img src="/flutter/apk_struct_mode_release.png" alt="" /></p>
+
+<h4 id="2-应用程序兼容性">2. 应用程序兼容性</h4>
+
+<ul>
+<li>andorid最低支持到 api 16;</li>
+<li>ios最低支持到ios 8.0;</li>
+</ul>
+
+<h2 id="3-开发toast模块">3. 开发Toast模块</h2>
+
+<p>这里我们直接使用android studio进行开发，如果大家需要直接使用flutter进行创建的话，可以直接参考<a href="https://flutter.io/platform-channels/">platform-channels</a>进行开发。</p>
+
+<h3 id="1-使用dart编写公共的toast模块">1. 使用dart编写公共的toast模块</h3>
+
+<pre><code class="language-dart">import 'package:flutter/services.dart';
+
+// 下划线开头的变量只在当前package中可见。
+const _toast = const MethodChannel('com.coofee.flutterdemoapp/sdk/toast');
+
+const int _LENGTH_SHORT = 0;
+
+const int _LENGTH_LONG = 1;
+
+void show(String text, int duration) async {
+  try {
+    await _toast.invokeMethod(&quot;show&quot;, {'text': text, 'duration': duration});
+  } on Exception catch (e) {
+    print(e);
+  } on Error catch (e) {
+    print(e);
+  }
+}
+
+void showShort(String text) {
+  show(text, _LENGTH_SHORT);
+}
+
+void showLong(String text) {
+  show(text, _LENGTH_LONG);
+}
+</code></pre>
+
+<h3 id="2-编写android端的代码并注册">2. 编写android端的代码并注册</h3>
+
+<pre><code class="language-java">package com.coofee.flutterdemoapp;
+
+import android.os.Bundle;
+import android.widget.Toast;
+
+import io.flutter.app.FlutterActivity;
+import io.flutter.plugin.common.MethodCall;
+import io.flutter.plugin.common.MethodChannel;
+import io.flutter.plugins.GeneratedPluginRegistrant;
+
+public class MainActivity extends FlutterActivity {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        GeneratedPluginRegistrant.registerWith(this);
+
+        new MethodChannel(getFlutterView(), &quot;com.coofee.flutterdemoapp/sdk/toast&quot;)
+                .setMethodCallHandler(new MethodChannel.MethodCallHandler() {
+                    @Override
+                    public void onMethodCall(MethodCall methodCall, MethodChannel.Result result) {
+                        if (&quot;show&quot;.equals(methodCall.method)) {
+                            String text = methodCall.argument(&quot;text&quot;);
+                            int duration = methodCall.argument(&quot;duration&quot;);
+                            Toast.makeText(MainActivity.this, text, duration).show();
+                        }
+                    }
+                });
+    }
+}
+</code></pre>
+
+<h3 id="3-编写ios端代码并注册">3. 编写ios端代码并注册</h3>
+
+<p>ios端的代码与android端类似，但是需要使用<code>FlutterMethodChannel</code>进行处理，其他操作与android端一致，打开<code>AppDelegate.m</code>文件，添加如下代码：</p>
+
+<pre><code class="language-objective-c">- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+  [GeneratedPluginRegistrant registerWithRegistry:self];
+
+  FlutterViewController* controller = (FlutterViewController*)self.window.rootViewController;
+
+  FlutterMethodChannel* toastChannel = [FlutterMethodChannel
+                                            methodChannelWithName:@&quot;com.coofee.flutterdemoapp/sdk/toast&quot;
+                                            binaryMessenger:controller];
+
+  [toastChannel setMethodCallHandler:^(FlutterMethodCall* call, FlutterResult result) {
+      if ([@&quot;show&quot; isEqualToString:call.method]) {
+          // 展示toast;
+          NSLog(@&quot;显示toast....&quot;)
+      }
+  }];
+
+  // Override point for customization after application launch.
+  return [super application:application didFinishLaunchingWithOptions:launchOptions];
+}
+</code></pre>
+
+<h3 id="4-在flutter中调用toast模块">4. 在flutter中调用toast模块</h3>
+
+<pre><code class="language-dart">import 'sdk/toast.dart';
+
+void _incrementCounter() {
+  showShort('你点击了$_counter次');
+
+  setState(() {
+    // This call to setState tells the Flutter framework that something has
+    // changed in this State, which causes it to rerun the build method below
+    // so that the display can reflect the updated values. If we changed
+    // _counter without calling setState(), then the build method would not be
+    // called again, and so nothing would appear to happen.
+    _counter++;
+  });
+}
+</code></pre>
+
+<h3 id="5-效果">5. 效果</h3>
+
+<p><img src="/flutter/toast_show.png" alt="" /></p>
+
+<h1 id="0x02-使用dart-2">0x02 使用Dart 2</h1>
+
+<h2 id="1-升级flutter-sdk">1. 升级flutter sdk</h2>
+
+<p>使用dart 2时，必须保证，Flutter SDK版本必须大于等于以下版本:</p>
+
+<ul>
+<li>Beta channel: build 0.1.4 from 2018-02-19, or later</li>
+<li>Dev channel: build from 2018-02-22, or later</li>
+<li>Master channel: build from 2018-02-20, or later</li>
+</ul>
+
+<p>在Terminal中执行<code>flutter --version</code>命令，查看flutter的版本:</p>
+
+<pre><code>→ flutter --version
+Flutter 0.1.5 • channel beta • https://github.com/flutter/flutter.git
+Framework • revision 3ea4d06340 (3 weeks ago) • 2018-02-22 11:12:39 -0800
+Engine • revision ead227f118
+Tools • Dart 2.0.0-dev.28.0.flutter-0b4f01f759
+</code></pre>
+
+<p>在Terminal中执行<code>flutter upgrade</code>可以升级flutter。</p>
+
+<h2 id="2-在android-studio中启用dart-2">2. 在android studio中启用dart 2</h2>
+
+<p>在android studio中启用dart2后，需要重启android studio使其生效。</p>
+
+<p><img src="/flutter/dart-2.png" alt="" /></p>
+
+<h2 id="3-dart-1-vs-dart-2">3. dart 1 vs dart 2</h2>
+
+<p>从下图可以看出dart2相对于dart1来说，省略了关键字<code>new</code>，使得声明式布局的可读性更进一步。
+<img src="/flutter/dart1_vs_dart2.png" alt="" /></p>
+
+<h2 id="4-dart2对apk大小的影响">4. dart2对apk大小的影响</h2>
+
+<p>从下图可以看出来，使用dart2时生成的apk比dart1打5MB左右(slow mode模式)。</p>
+
+<p><img src="/flutter/apk_dart1_vs_dart2_cut.png" alt="" /></p>
+
+<h1 id="0x03-flutter-s-modes">0x03 Flutter&rsquo;s modes</h1>
+
+<p>从下图我们可以看到，flutter mode显示在在app的右上角。</p>
+
+<p><img src="/flutter/mode_slow.png" alt="" /></p>
+
+<p>flutter的应用程序有以下4中模式，分别使用不同的命令生成，且不同模式下生成的应用大小不一（如：release模式会去掉x86相关的so文件）</p>
+
+<table>
+<thead>
+<tr>
+<th align="center">mode</th>
+<th align="center">命令</th>
+<th align="center"></th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td align="center">debug</td>
+<td align="center">flutter run</td>
+<td align="center">debug模式下的产物，且应用的右上角会显示<code>slow mode</code>字样，支持debug。</td>
+</tr>
+
+<tr>
+<td align="center">release</td>
+<td align="center">flutter run &ndash;release</td>
+<td align="center">UI上面不显示模式；禁止debug，且删除了debug相关的信息；关闭全部的断言检测，减小包大小，使其达到最佳性能。</td>
+</tr>
+
+<tr>
+<td align="center">profile</td>
+<td align="center">flutter run &ndash;profile</td>
+<td align="center">调试性能，不支持模拟器。</td>
+</tr>
+
+<tr>
+<td align="center">test</td>
+<td align="center">flutter test</td>
+<td align="center">和debug模式类似，不支持headless和桌面平台。</td>
+</tr>
+</tbody>
+</table>
+
+<h1 id="0x04-参考引用">0x04 参考引用</h1>
+
+<ul>
+<li><a href="https://docs.google.com/presentation/d/1cw7A4HbvM_Abv320rVgPVGiUP2msVs7tfGbkgdrTy0I/edit#slide=id.gbb3c3233b_0_162">Flutter System Architecture
+</a></li>
+<li><a href="https://flutter.io/platform-channels/">platform-channels</a></li>
+<li><a href="https://github.com/flutter/flutter/wiki/Using-Flutter-in-China">Using-Flutter-in-China</a></li>
+<li><a href="https://flutter.io/get-started/install/">install</a></li>
+<li><a href="https://github.com/flutter/flutter/wiki/Flutter%27s-modes">flutter-modes</a></li>
+<li><a href="https://github.com/flutter/flutter/wiki/Trying-the-preview-of-Dart-2-in-Flutter">flutter-with-dart-2</a></li>
+</ul>
+</div></article>
+					
+						<div class="share">
+	<div class="addthis_toolbox addthis_default_style ">
+	
+	<a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+	
+	
+	<a class="addthis_button_tweet"></a>
+	
+	
+	<a class="addthis_button_google_plusone" g:plusone:size=''></a>
+	
+	
+	</div>
+	
+  	<script type="text/javascript" src='http://s7.addthis.com/js/250/addthis_widget.js#pubid='></script>
+  	
+</div>
+
+					
+					
+					<section id="comment">
+					    <h1 class="title">Comments</h1>
+					    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+					</section>
+					
+					
+
+<script type="text/javascript">
+    
+    var disqus_shortname = 'coofee-github-io';
+
+    
+    
+
+    
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+    
+</script>
+
+
+				    </div>
+				</div>
+			</div>
+			<footer id="footer" class="inner">Copyright &copy; 2018
+
+    Coofee
+
+Design credit: <a href="http://shashankmehta.in/archive/2012/greyshade.html">Shashank Mehta</a>
+<script src="http://coofee.github.io/js/slash.js"></script>
+<script src="http://coofee.github.io/js/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+	$('.fancybox').fancybox();
+})(jQuery);
+</script></footer>
+		</div>
+	</div>
+	
+</body>
+</html>

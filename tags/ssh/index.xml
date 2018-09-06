@@ -53,6 +53,8 @@ git push -u origin compat-gradle-plugin-3.x-dev
 # 合并tinker的dev分支代码
 git pull tinker dev
 
+# 删除远程分支
+git push origin --delete compat-gradle-plugin-3.x
 &lt;/code&gt;&lt;/pre&gt;
 </description>
     </item>
