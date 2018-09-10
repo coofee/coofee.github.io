@@ -1,0 +1,607 @@
+<!DOCTYPE HTML>
+
+<html lang="en-us">
+
+<head>
+	<meta charset="utf-8">
+	<title>auto_create_wx_acitivty_by_annotation - Simple...</title>
+	<meta name="author" content="map[name:Coofee email:coffeerene.zhao@gmail.com]">
+
+	
+	
+	<meta name="description" content="">
+	
+
+	
+	<meta name="HandheldFriendly" content="True">
+	<meta name="MobileOptimized" content="320">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+    
+	<link href='/index.xml' rel="alternate" title="Simple..." type="application/atom+xml">
+	
+	<link rel="canonical" href="http://coofee.github.io/post/auto_create_wx_acitivty_by_annotation/">
+	<link href="http://coofee.github.io/favicon.png" rel="shortcut icon">
+	<link href="http://coofee.github.io/css/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<link href="http://coofee.github.io/css/font-awesome.min.css" media="screen, projection" rel="stylesheet" type="text/css">
+	
+	<link href='http://fonts.googleapis.com/css?family=Nunito:400,300,700' rel='stylesheet' type='text/css'>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+
+	
+	<link href="http://coofee.github.io/css/prism.css" rel="stylesheet" />
+	<script src="http://coofee.github.io/js/prism.js"></script>
+
+	
+  
+
+</head>
+
+
+<body>
+	<div class="container">
+		<div class="left-col">
+			<div class="intrude-less">
+			<header id="header" class="inner"><div class="profilepic">
+	
+	
+	<script src="http://coofee.github.io/js/md5.js"></script>
+	<script type="text/javascript">
+		$(function(){
+			$('.profilepic').append("<img src='http://www.gravatar.com/avatar/" + MD5('coffeerene.zhao@gmail.com') + "?s=160' alt='Profile Picture' style='width: 160px;' />");
+		});
+	</script>
+	
+	
+</div>
+
+<nav id="main-nav"><ul class="main">
+    <li><a href="/">Blog</a></li>
+    <li><a href="/post/about">About</a></li>
+    <li><a href="/post/">Archives</a></li>
+</ul>
+
+<section class="aboutme">
+  <p>
+    Less is more
+  </p>
+</section>
+</nav>
+<nav id="sub-nav">
+	<div class="social">
+		
+			<a class="email" href='mailto:coffeerene.zhao@gmail.com' title="Email">Email</a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+    	
+    	
+			<a class="rss" href='/index.xml' title="RSS">RSS</a>
+		
+	</div>
+</nav>
+</header>
+			</div>
+		</div>
+		<div class="mid-col">
+			
+			<div class="mid-col-container">
+				<div id="content" class="inner">
+					<div itemscope itemtype="http://schema.org/Blog">
+					<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+    <h1 class="title" itemprop="name">auto_create_wx_acitivty_by_annotation</h1>
+	<div class="entry-content" itemprop="articleBody">
+
+<h1 id="如何使用注解生成wxentryactivity">如何使用注解生成WXEntryActivity?</h1>
+
+<p>在Android中使用注解时，需要创建java模块，否则无法导入<code>javax.annotation.processing.AbstractProcessor;</code>相关依赖。</p>
+
+<h2 id="1-android注解配置">1. android注解配置</h2>
+
+<h3 id="1-使用-annotationprocessor-设置参数">1. 使用<code>annotationProcessor</code>设置参数</h3>
+
+<p>a) <strong>/gradle/wrapper/gradle-wrapper.properties</strong></p>
+
+<pre><code class="language-properties">distributionUrl = https\://services.gradle.org/distributions/gradle-4.4-all.zip
+</code></pre>
+
+<p>b) 配置annotationProcessor</p>
+
+<pre><code class="language-groovy">buildscript {
+    repositories {
+        // Gradle 4.1 and higher include support for Google's Maven repo using
+        // the google() method. And you need to include this repo to download
+        // Android plugin 3.0.0 or higher.
+        google()
+        ...
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.1.0'
+    }
+}
+
+android {
+
+  defaultConfig {
+
+    javaCompileOptions {
+    
+      annotationProcessorOptions {
+      
+        arguments = [ 
+        	key1 : 'key1Value', 
+        	key2 : 'key2Value'
+        ]
+      }
+    }
+  }
+}
+
+dependencies {
+    annotationProcessor 'xxx:xx:xxx'
+}
+
+</code></pre>
+
+<h3 id="2-使用-apt-方式设置参数">2. 使用<code>apt</code>方式设置参数</h3>
+
+<pre><code class="language-groovy">buildscript {
+    dependencies {
+        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
+    }
+}
+
+apply plugin: 'com.neenbedankt.android-apt'
+
+apt {
+    arguments {
+       key1 'key1Value'
+       key2 'key2Value'
+    }
+}
+
+dependencies {
+    apt 'xxx:xx:xxx'
+}
+</code></pre>
+
+<h3 id="3-在注解解析器中获取传入参数">3. 在注解解析器中获取传入参数</h3>
+
+<p><code>processingEnvironment.getOptions()</code>获取传递给注解的参数.</p>
+
+<pre><code class="language-java">@SupportedSourceVersion(SourceVersion.RELEASE_7)
+public class AnnonationProcessor extends AbstractProcessor {
+	@Override
+	public synchronized void init(ProcessingEnvironment processingEnvironment) {
+	    super.init(processingEnvironment);
+	    Map&lt;String, String&gt; options = processingEnvironment.getOptions();
+	}
+}
+</code></pre>
+
+<h3 id="4-配置注解生效">4. 配置注解生效</h3>
+
+<ol>
+<li>在resources中添加该文件<code>resources/META-INF/services/javax.annotation.processing.Processor</code>，然后在文件内容中添加创建的注解处理器类，如下所示：</li>
+</ol>
+
+<pre><code class="language-bash">$ cat resources/META-INF/services/javax.annotation.processing.Processor
+com.xxx.yyy.AnnonationProcessor
+</code></pre>
+
+<h2 id="2-使用注解自动创建wxentryactivity">2. 使用注解自动创建WXEntryActivity</h2>
+
+<p>我们知道使用微信分享或者支付sdk时，微信会指定接收结果的回调Activity包名固定为<code>${packageName}.wxapi</code>，这样我们修改包名创建马甲包时就会比较麻烦，通过使用注解自动生成指定包名的activity可以很好的解决这个问题。</p>
+
+<p><img src="auto_create_wx_acitivty_by_annotation/class_arch.png" alt="通过注解自动创建指定packageName的WXEntryActivity" /></p>
+
+<h3 id="1-创建注解">1. 创建注解</h3>
+
+<p>在注解中指定包名，用于创建特定包名的WXEntryActivity。</p>
+
+<pre><code class="language-java">import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.SOURCE)
+
+public @interface WXEntryActivityHandler {
+    String packageName(); 
+}
+</code></pre>
+
+<h3 id="2-创建注解处理器">2. 创建注解处理器</h3>
+
+<ul>
+<li>注解处理器</li>
+</ul>
+
+<pre><code class="language-java">import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.util.Collections;
+import java.util.Set;
+
+import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedSourceVersion;
+import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import javax.tools.Diagnostic;
+import javax.tools.JavaFileObject;
+
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
+public class AnnonationProcessor extends AbstractProcessor {
+
+    private static final String WX_ENTRY_ACTIVITY_TEMPLATE_PATH = &quot;/WXEntryActivity.tmpl&quot;;
+
+    @Override
+    public Set&lt;String&gt; getSupportedAnnotationTypes() {
+        return Collections.singleton(WXEntryActivityHandler.class.getCanonicalName());
+    }
+
+    @Override
+    public synchronized void init(ProcessingEnvironment processingEnvironment) {
+        super.init(processingEnvironment);
+    }
+
+    @Override
+    public boolean process(Set&lt;? extends TypeElement&gt; set, RoundEnvironment roundEnvironment) {
+        Set&lt;? extends Element&gt; elementsAnnotatedWith = roundEnvironment.getElementsAnnotatedWith(WXEntryActivityHandler.class);
+        for (Element e : elementsAnnotatedWith) {
+            generateShareHandlerCode(e);
+        }
+        return true;
+    }
+
+    private void generateShareHandlerCode(Element element) {
+        if (!(element instanceof TypeElement)) {
+            return;
+        }
+
+        WXEntryActivityHandler annotation = element.getAnnotation(WXEntryActivityHandler.class);
+        if (annotation == null) {
+            return;
+        }
+
+        String wxEntryActivityTmplText = readAll(WX_ENTRY_ACTIVITY_TEMPLATE_PATH);
+        if (wxEntryActivityTmplText == null) {
+            return;
+        }
+
+        TypeElement typeElement = (TypeElement) element;
+        String wechatHandler = typeElement.getQualifiedName().toString();
+        final String packageName = annotation.packageName();
+        if (packageName == null || &quot;&quot;.equals(packageName.trim())) {
+            String msg = &quot;WXEntryActivityHandler.packageName() for &quot; + wechatHandler + &quot; cannot be null or empty.&quot;;
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, msg);
+            throw new RuntimeException(msg);
+        }
+
+        final String wxapiPackageName = packageName + &quot;.wxapi&quot;;
+        String generateCode = wxEntryActivityTmplText.replaceAll(&quot;%PACKAGE_NAME%&quot;, wxapiPackageName)
+                .replaceAll(&quot;%WXEntryActivityCallbackImpl%&quot;, wechatHandler);
+
+        try {
+            JavaFileObject fileObject = processingEnv.getFiler().createSourceFile(wxapiPackageName + &quot;.WXEntryActivity&quot;);
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, &quot;Creating &quot; + fileObject.toUri());
+            Writer writer = fileObject.openWriter();
+            try {
+                PrintWriter pw = new PrintWriter(writer);
+                pw.print(generateCode);
+                pw.flush();
+            } finally {
+                writer.close();
+            }
+        } catch (IOException x) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, x.toString());
+        }
+    }
+
+    private String readAll(String tmplPath) {
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(AnnonationProcessor.class.getResourceAsStream(tmplPath), &quot;utf-8&quot;));
+            StringBuilder text = new StringBuilder();
+            String line = null;
+            while ((line = reader.readLine()) != null) {
+                text.append(line);
+            }
+            reader.close();
+
+            text.trimToSize();
+            return text.toString();
+        } catch (Throwable e) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, &quot;readAll from &quot; + tmplPath + &quot; error; &quot; + e);
+        }
+
+        return null;
+    }
+}
+</code></pre>
+
+<ul>
+<li>模板代码</li>
+</ul>
+
+<pre><code class="language-java">package %PACKAGE_NAME%;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+
+import WXEntryActivityCallback;
+
+public class WXEntryActivity extends Activity {
+
+    private WXEntryActivityCallback wxEntryActivityCallback = new %WXEntryActivityCallbackImpl%();
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        wxEntryActivityCallback.onCreate(this, savedInstanceState);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        wxEntryActivityCallback.onNewIntent(this, intent);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        wxEntryActivityCallback.onStart();
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        wxEntryActivityCallback.onRestart();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        wxEntryActivityCallback.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        wxEntryActivityCallback.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        wxEntryActivityCallback.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        wxEntryActivityCallback.onDestroy();
+    }
+}
+</code></pre>
+
+<h3 id="3-注解的使用">3. 注解的使用</h3>
+
+<pre><code class="language-java">package com.xxx.yyy;
+
+@WXEntryActivityHandler(packageName = BuildConfig.APPLICATION_ID)
+public class WexinAPIEventHandler implements WXEntryActivityCallback, IWXAPIEventHandler {
+    private static final String TAG = &quot;WexinAPIEventHandler&quot;;
+
+    private IWXAPI mWXApi;
+
+    private Activity wxEntryActivity;
+
+    public void onCreate(Activity wxEntryActivity, Bundle savedInstanceState) {
+        this.wxEntryActivity = wxEntryActivity;
+        mWXApi = WXAPIFactory.createWXAPI(wxEntryActivity, BuildConfig.WX_APP_ID);
+        mWXApi.registerApp(BuildConfig.WX_APP_ID);
+        try {
+            mWXApi.handleIntent(wxEntryActivity.getIntent(), this);
+        } catch (Throwable e) {
+            Log.e(TAG, &quot;onCreate error&quot;, e);
+        }
+    }
+
+    public void onNewIntent(Activity wxEntryActivity, Intent intent) {
+        try {
+            mWXApi.handleIntent(intent, this);
+        } catch (Throwable e) {
+            Log.e(TAG, &quot;onCreate onNewIntent&quot;, e);
+        }
+    }
+
+    @Override
+    public void onReq(BaseReq baseReq) {
+
+        Log.e(TAG, &quot; baseReq-type:&quot; + baseReq.getType());
+        WXMediaMessage wxMsg = ((ShowMessageFromWX.Req) baseReq).message;
+        WXAppExtendObject obj = (WXAppExtendObject) wxMsg.mediaObject;
+        StringBuffer msg = new StringBuffer(); // 组织一个待显示的消息内容
+        msg.append(&quot;description: &quot;);
+        msg.append(wxMsg.description);
+        msg.append(&quot;\n&quot;);
+        msg.append(&quot;extInfo: &quot;);
+        msg.append(obj.extInfo);
+        msg.append(&quot;\n&quot;);
+        msg.append(&quot;filePath: &quot;);
+        msg.append(obj.filePath);
+        Log.e(TAG, &quot; baseReq-title：&quot; + wxMsg.title + &quot;：msg：&quot; + msg.toString());
+
+        switch (baseReq.getType()) {
+            case ConstantsAPI.COMMAND_GETMESSAGE_FROM_WX:
+                Log.e(TAG, &quot; baseReq-title：1&quot;);
+                break;
+            case ConstantsAPI.COMMAND_SHOWMESSAGE_FROM_WX:
+                Log.e(TAG, &quot; baseReq-title：2&quot;);
+
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
+    public void onResp(BaseResp baseResp) {
+        String result = &quot;&quot;;
+        Log.e(TAG, &quot;baseresp.getType：&quot; + baseResp.getType() + &quot;:transaction:&quot; + baseResp.transaction);
+
+        switch (baseResp.errCode) {
+            case BaseResp.ErrCode.ERR_OK:
+                result = &quot;发送成功&quot;;
+                break;
+            case BaseResp.ErrCode.ERR_USER_CANCEL:
+                result = &quot;发送取消&quot;;
+                break;
+            case BaseResp.ErrCode.ERR_AUTH_DENIED:
+                result = &quot;发送被拒绝&quot;;
+                break;
+            case BaseResp.ErrCode.ERR_UNSUPPORT:
+                result = &quot;不支持错误&quot;;
+                break;
+            default:
+                result = &quot;发送返回&quot;;
+                break;
+        }
+        Log.e(TAG, &quot;baseresp.getType-id：&quot; + 
+        Log.e(TAG, &quot;baseresp.getType-result：&quot; + result + &quot;&quot;);
+        this.wxEntryActivity.finish();
+    }
+
+    @Override
+    public void onStart() {
+        Log.e(TAG, &quot;onStart&quot;);
+
+    }
+
+    @Override
+    public void onRestart() {
+        Log.e(TAG, &quot;onRestart&quot;);
+
+    }
+
+    @Override
+    public void onResume() {
+        Log.e(TAG, &quot;onResume&quot;);
+
+    }
+
+    @Override
+    public void onPause() {
+        Log.e(TAG, &quot;onPause&quot;);
+
+    }
+
+    @Override
+    public void onStop() {
+        Log.e(TAG, &quot;onStop&quot;);
+
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.e(TAG, &quot;onDestroy&quot;);
+
+    }
+}
+
+</code></pre>
+
+<h3 id="4-代码生成">4. 代码生成</h3>
+
+<p>通过gradle执行<code>compileDebugJavaWithJavac</code>，注解就会自动生成<code>com.xxx.yyy.wxapi.WXEntryActivity</code>类，最后在AndroidManifest中配置WXEntryActivity即可。</p>
+
+<pre><code class="language-xml">&lt;activity
+        android:name=&quot;${applicationId}.wxapi.WXEntryActivity&quot;
+        android:exported=&quot;true&quot;
+        android:screenOrientation=&quot;portrait&quot; /&gt;
+
+</code></pre>
+</div></article>
+					
+						<div class="share">
+	<div class="addthis_toolbox addthis_default_style ">
+	
+	<a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+	
+	
+	<a class="addthis_button_tweet"></a>
+	
+	
+	<a class="addthis_button_google_plusone" g:plusone:size=''></a>
+	
+	
+	</div>
+	
+  	<script type="text/javascript" src='http://s7.addthis.com/js/250/addthis_widget.js#pubid='></script>
+  	
+</div>
+
+					
+					
+					<section id="comment">
+					    <h1 class="title">Comments</h1>
+					    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+					</section>
+					
+					
+
+<script type="text/javascript">
+    
+    var disqus_shortname = 'coofee-github-io';
+
+    
+    
+
+    
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+    
+</script>
+
+
+				    </div>
+				</div>
+			</div>
+			<footer id="footer" class="inner">Copyright &copy; 2018
+
+    Coofee
+
+Design credit: <a href="http://shashankmehta.in/archive/2012/greyshade.html">Shashank Mehta</a>
+<script src="http://coofee.github.io/js/slash.js"></script>
+<script src="http://coofee.github.io/js/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+	$('.fancybox').fancybox();
+})(jQuery);
+</script></footer>
+		</div>
+	</div>
+	
+</body>
+</html>

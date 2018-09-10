@@ -7,7 +7,454 @@
     <language>en-us</language>
     <author>Coofee</author>
     
-    <updated>Thu, 06 Sep 2018 19:36:14 CST</updated>
+    <updated>Mon, 10 Sep 2018 15:05:35 CST</updated>
+    
+    <item>
+      <title>auto_create_wx_acitivty_by_annotation</title>
+      <link>http://coofee.github.io/post/auto_create_wx_acitivty_by_annotation/</link>
+      <pubDate>Mon, 10 Sep 2018 15:05:35 CST</pubDate>
+      <author>Coofee</author>
+      <guid>http://coofee.github.io/post/auto_create_wx_acitivty_by_annotation/</guid>
+      <description>
+
+&lt;h1 id=&#34;如何使用注解生成wxentryactivity&#34;&gt;如何使用注解生成WXEntryActivity?&lt;/h1&gt;
+
+&lt;p&gt;在Android中使用注解时，需要创建java模块，否则无法导入&lt;code&gt;javax.annotation.processing.AbstractProcessor;&lt;/code&gt;相关依赖。&lt;/p&gt;
+
+&lt;h2 id=&#34;1-android注解配置&#34;&gt;1. android注解配置&lt;/h2&gt;
+
+&lt;h3 id=&#34;1-使用-annotationprocessor-设置参数&#34;&gt;1. 使用&lt;code&gt;annotationProcessor&lt;/code&gt;设置参数&lt;/h3&gt;
+
+&lt;p&gt;a) &lt;strong&gt;/gradle/wrapper/gradle-wrapper.properties&lt;/strong&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-properties&#34;&gt;distributionUrl = https\://services.gradle.org/distributions/gradle-4.4-all.zip
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;b) 配置annotationProcessor&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;buildscript {
+    repositories {
+        // Gradle 4.1 and higher include support for Google&#39;s Maven repo using
+        // the google() method. And you need to include this repo to download
+        // Android plugin 3.0.0 or higher.
+        google()
+        ...
+    }
+    dependencies {
+        classpath &#39;com.android.tools.build:gradle:3.1.0&#39;
+    }
+}
+
+android {
+
+  defaultConfig {
+
+    javaCompileOptions {
+    
+      annotationProcessorOptions {
+      
+        arguments = [ 
+        	key1 : &#39;key1Value&#39;, 
+        	key2 : &#39;key2Value&#39;
+        ]
+      }
+    }
+  }
+}
+
+dependencies {
+    annotationProcessor &#39;xxx:xx:xxx&#39;
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;2-使用-apt-方式设置参数&#34;&gt;2. 使用&lt;code&gt;apt&lt;/code&gt;方式设置参数&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;buildscript {
+    dependencies {
+        classpath &#39;com.neenbedankt.gradle.plugins:android-apt:1.8&#39;
+    }
+}
+
+apply plugin: &#39;com.neenbedankt.android-apt&#39;
+
+apt {
+    arguments {
+       key1 &#39;key1Value&#39;
+       key2 &#39;key2Value&#39;
+    }
+}
+
+dependencies {
+    apt &#39;xxx:xx:xxx&#39;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;3-在注解解析器中获取传入参数&#34;&gt;3. 在注解解析器中获取传入参数&lt;/h3&gt;
+
+&lt;p&gt;&lt;code&gt;processingEnvironment.getOptions()&lt;/code&gt;获取传递给注解的参数.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-java&#34;&gt;@SupportedSourceVersion(SourceVersion.RELEASE_7)
+public class AnnonationProcessor extends AbstractProcessor {
+	@Override
+	public synchronized void init(ProcessingEnvironment processingEnvironment) {
+	    super.init(processingEnvironment);
+	    Map&amp;lt;String, String&amp;gt; options = processingEnvironment.getOptions();
+	}
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;4-配置注解生效&#34;&gt;4. 配置注解生效&lt;/h3&gt;
+
+&lt;ol&gt;
+&lt;li&gt;在resources中添加该文件&lt;code&gt;resources/META-INF/services/javax.annotation.processing.Processor&lt;/code&gt;，然后在文件内容中添加创建的注解处理器类，如下所示：&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ cat resources/META-INF/services/javax.annotation.processing.Processor
+com.xxx.yyy.AnnonationProcessor
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;2-使用注解自动创建wxentryactivity&#34;&gt;2. 使用注解自动创建WXEntryActivity&lt;/h2&gt;
+
+&lt;p&gt;我们知道使用微信分享或者支付sdk时，微信会指定接收结果的回调Activity包名固定为&lt;code&gt;${packageName}.wxapi&lt;/code&gt;，这样我们修改包名创建马甲包时就会比较麻烦，通过使用注解自动生成指定包名的activity可以很好的解决这个问题。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;auto_create_wx_acitivty_by_annotation/class_arch.png&#34; alt=&#34;通过注解自动创建指定packageName的WXEntryActivity&#34; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;1-创建注解&#34;&gt;1. 创建注解&lt;/h3&gt;
+
+&lt;p&gt;在注解中指定包名，用于创建特定包名的WXEntryActivity。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-java&#34;&gt;import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.SOURCE)
+
+public @interface WXEntryActivityHandler {
+    String packageName(); 
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;2-创建注解处理器&#34;&gt;2. 创建注解处理器&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;注解处理器&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-java&#34;&gt;import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.util.Collections;
+import java.util.Set;
+
+import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedSourceVersion;
+import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import javax.tools.Diagnostic;
+import javax.tools.JavaFileObject;
+
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
+public class AnnonationProcessor extends AbstractProcessor {
+
+    private static final String WX_ENTRY_ACTIVITY_TEMPLATE_PATH = &amp;quot;/WXEntryActivity.tmpl&amp;quot;;
+
+    @Override
+    public Set&amp;lt;String&amp;gt; getSupportedAnnotationTypes() {
+        return Collections.singleton(WXEntryActivityHandler.class.getCanonicalName());
+    }
+
+    @Override
+    public synchronized void init(ProcessingEnvironment processingEnvironment) {
+        super.init(processingEnvironment);
+    }
+
+    @Override
+    public boolean process(Set&amp;lt;? extends TypeElement&amp;gt; set, RoundEnvironment roundEnvironment) {
+        Set&amp;lt;? extends Element&amp;gt; elementsAnnotatedWith = roundEnvironment.getElementsAnnotatedWith(WXEntryActivityHandler.class);
+        for (Element e : elementsAnnotatedWith) {
+            generateShareHandlerCode(e);
+        }
+        return true;
+    }
+
+    private void generateShareHandlerCode(Element element) {
+        if (!(element instanceof TypeElement)) {
+            return;
+        }
+
+        WXEntryActivityHandler annotation = element.getAnnotation(WXEntryActivityHandler.class);
+        if (annotation == null) {
+            return;
+        }
+
+        String wxEntryActivityTmplText = readAll(WX_ENTRY_ACTIVITY_TEMPLATE_PATH);
+        if (wxEntryActivityTmplText == null) {
+            return;
+        }
+
+        TypeElement typeElement = (TypeElement) element;
+        String wechatHandler = typeElement.getQualifiedName().toString();
+        final String packageName = annotation.packageName();
+        if (packageName == null || &amp;quot;&amp;quot;.equals(packageName.trim())) {
+            String msg = &amp;quot;WXEntryActivityHandler.packageName() for &amp;quot; + wechatHandler + &amp;quot; cannot be null or empty.&amp;quot;;
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, msg);
+            throw new RuntimeException(msg);
+        }
+
+        final String wxapiPackageName = packageName + &amp;quot;.wxapi&amp;quot;;
+        String generateCode = wxEntryActivityTmplText.replaceAll(&amp;quot;%PACKAGE_NAME%&amp;quot;, wxapiPackageName)
+                .replaceAll(&amp;quot;%WXEntryActivityCallbackImpl%&amp;quot;, wechatHandler);
+
+        try {
+            JavaFileObject fileObject = processingEnv.getFiler().createSourceFile(wxapiPackageName + &amp;quot;.WXEntryActivity&amp;quot;);
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, &amp;quot;Creating &amp;quot; + fileObject.toUri());
+            Writer writer = fileObject.openWriter();
+            try {
+                PrintWriter pw = new PrintWriter(writer);
+                pw.print(generateCode);
+                pw.flush();
+            } finally {
+                writer.close();
+            }
+        } catch (IOException x) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, x.toString());
+        }
+    }
+
+    private String readAll(String tmplPath) {
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(AnnonationProcessor.class.getResourceAsStream(tmplPath), &amp;quot;utf-8&amp;quot;));
+            StringBuilder text = new StringBuilder();
+            String line = null;
+            while ((line = reader.readLine()) != null) {
+                text.append(line);
+            }
+            reader.close();
+
+            text.trimToSize();
+            return text.toString();
+        } catch (Throwable e) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, &amp;quot;readAll from &amp;quot; + tmplPath + &amp;quot; error; &amp;quot; + e);
+        }
+
+        return null;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;ul&gt;
+&lt;li&gt;模板代码&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-java&#34;&gt;package %PACKAGE_NAME%;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+
+import WXEntryActivityCallback;
+
+public class WXEntryActivity extends Activity {
+
+    private WXEntryActivityCallback wxEntryActivityCallback = new %WXEntryActivityCallbackImpl%();
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        wxEntryActivityCallback.onCreate(this, savedInstanceState);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        wxEntryActivityCallback.onNewIntent(this, intent);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        wxEntryActivityCallback.onStart();
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        wxEntryActivityCallback.onRestart();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        wxEntryActivityCallback.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        wxEntryActivityCallback.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        wxEntryActivityCallback.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        wxEntryActivityCallback.onDestroy();
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;3-注解的使用&#34;&gt;3. 注解的使用&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-java&#34;&gt;package com.xxx.yyy;
+
+@WXEntryActivityHandler(packageName = BuildConfig.APPLICATION_ID)
+public class WexinAPIEventHandler implements WXEntryActivityCallback, IWXAPIEventHandler {
+    private static final String TAG = &amp;quot;WexinAPIEventHandler&amp;quot;;
+
+    private IWXAPI mWXApi;
+
+    private Activity wxEntryActivity;
+
+    public void onCreate(Activity wxEntryActivity, Bundle savedInstanceState) {
+        this.wxEntryActivity = wxEntryActivity;
+        mWXApi = WXAPIFactory.createWXAPI(wxEntryActivity, BuildConfig.WX_APP_ID);
+        mWXApi.registerApp(BuildConfig.WX_APP_ID);
+        try {
+            mWXApi.handleIntent(wxEntryActivity.getIntent(), this);
+        } catch (Throwable e) {
+            Log.e(TAG, &amp;quot;onCreate error&amp;quot;, e);
+        }
+    }
+
+    public void onNewIntent(Activity wxEntryActivity, Intent intent) {
+        try {
+            mWXApi.handleIntent(intent, this);
+        } catch (Throwable e) {
+            Log.e(TAG, &amp;quot;onCreate onNewIntent&amp;quot;, e);
+        }
+    }
+
+    @Override
+    public void onReq(BaseReq baseReq) {
+
+        Log.e(TAG, &amp;quot; baseReq-type:&amp;quot; + baseReq.getType());
+        WXMediaMessage wxMsg = ((ShowMessageFromWX.Req) baseReq).message;
+        WXAppExtendObject obj = (WXAppExtendObject) wxMsg.mediaObject;
+        StringBuffer msg = new StringBuffer(); // 组织一个待显示的消息内容
+        msg.append(&amp;quot;description: &amp;quot;);
+        msg.append(wxMsg.description);
+        msg.append(&amp;quot;\n&amp;quot;);
+        msg.append(&amp;quot;extInfo: &amp;quot;);
+        msg.append(obj.extInfo);
+        msg.append(&amp;quot;\n&amp;quot;);
+        msg.append(&amp;quot;filePath: &amp;quot;);
+        msg.append(obj.filePath);
+        Log.e(TAG, &amp;quot; baseReq-title：&amp;quot; + wxMsg.title + &amp;quot;：msg：&amp;quot; + msg.toString());
+
+        switch (baseReq.getType()) {
+            case ConstantsAPI.COMMAND_GETMESSAGE_FROM_WX:
+                Log.e(TAG, &amp;quot; baseReq-title：1&amp;quot;);
+                break;
+            case ConstantsAPI.COMMAND_SHOWMESSAGE_FROM_WX:
+                Log.e(TAG, &amp;quot; baseReq-title：2&amp;quot;);
+
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
+    public void onResp(BaseResp baseResp) {
+        String result = &amp;quot;&amp;quot;;
+        Log.e(TAG, &amp;quot;baseresp.getType：&amp;quot; + baseResp.getType() + &amp;quot;:transaction:&amp;quot; + baseResp.transaction);
+
+        switch (baseResp.errCode) {
+            case BaseResp.ErrCode.ERR_OK:
+                result = &amp;quot;发送成功&amp;quot;;
+                break;
+            case BaseResp.ErrCode.ERR_USER_CANCEL:
+                result = &amp;quot;发送取消&amp;quot;;
+                break;
+            case BaseResp.ErrCode.ERR_AUTH_DENIED:
+                result = &amp;quot;发送被拒绝&amp;quot;;
+                break;
+            case BaseResp.ErrCode.ERR_UNSUPPORT:
+                result = &amp;quot;不支持错误&amp;quot;;
+                break;
+            default:
+                result = &amp;quot;发送返回&amp;quot;;
+                break;
+        }
+        Log.e(TAG, &amp;quot;baseresp.getType-id：&amp;quot; + 
+        Log.e(TAG, &amp;quot;baseresp.getType-result：&amp;quot; + result + &amp;quot;&amp;quot;);
+        this.wxEntryActivity.finish();
+    }
+
+    @Override
+    public void onStart() {
+        Log.e(TAG, &amp;quot;onStart&amp;quot;);
+
+    }
+
+    @Override
+    public void onRestart() {
+        Log.e(TAG, &amp;quot;onRestart&amp;quot;);
+
+    }
+
+    @Override
+    public void onResume() {
+        Log.e(TAG, &amp;quot;onResume&amp;quot;);
+
+    }
+
+    @Override
+    public void onPause() {
+        Log.e(TAG, &amp;quot;onPause&amp;quot;);
+
+    }
+
+    @Override
+    public void onStop() {
+        Log.e(TAG, &amp;quot;onStop&amp;quot;);
+
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.e(TAG, &amp;quot;onDestroy&amp;quot;);
+
+    }
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;4-代码生成&#34;&gt;4. 代码生成&lt;/h3&gt;
+
+&lt;p&gt;通过gradle执行&lt;code&gt;compileDebugJavaWithJavac&lt;/code&gt;，注解就会自动生成&lt;code&gt;com.xxx.yyy.wxapi.WXEntryActivity&lt;/code&gt;类，最后在AndroidManifest中配置WXEntryActivity即可。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-xml&#34;&gt;&amp;lt;activity
+        android:name=&amp;quot;${applicationId}.wxapi.WXEntryActivity&amp;quot;
+        android:exported=&amp;quot;true&amp;quot;
+        android:screenOrientation=&amp;quot;portrait&amp;quot; /&amp;gt;
+
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
     
     <item>
       <title>golang dev</title>
@@ -3336,79 +3783,6 @@ clazz.metaClass.genericMethod = { strings, result -&amp;gt;
 
 repalceMethod.genericMethod(&amp;quot;ac, sd, dc, dd&amp;quot;.split(&amp;quot;, &amp;quot;), true)
 &lt;/code&gt;&lt;/pre&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>如何科学上网</title>
-      <link>http://coofee.github.io/post/%E5%A6%82%E4%BD%95%E7%A7%91%E5%AD%A6%E4%B8%8A%E7%BD%91/</link>
-      <pubDate>Fri, 25 Mar 2016 13:14:08 CST</pubDate>
-      <author>Coofee</author>
-      <guid>http://coofee.github.io/post/%E5%A6%82%E4%BD%95%E7%A7%91%E5%AD%A6%E4%B8%8A%E7%BD%91/</guid>
-      <description>
-
-&lt;h2 id=&#34;1-如何使用shadowsocks代理访问网络&#34;&gt;1. 如何使用shadowsocks代理访问网络？&lt;/h2&gt;
-
-&lt;ul&gt;
-&lt;li&gt;购买代理服务器，安装shadowsocks。&lt;/li&gt;
-&lt;li&gt;本机安装shadowsocks-gui，然后添加代理服务器上shadowsocks的配置，此时shadowsocks会在本机上面开启一个socks代理，其默认端口是: 1080。&lt;/li&gt;
-&lt;li&gt;打开shadowsocks，勾选代理服务器，同时勾选shadowsocks-gui的全局模式或者自动代理模式，然后在浏览器上面选择使用系统代理即可正常访问google。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&#34;2-如何在mac的terminal中使用socks代理&#34;&gt;2. 如何在mac的Terminal中使用socks代理？&lt;/h2&gt;
-
-&lt;ul&gt;
-&lt;li&gt;使用homebrew安装proxychains4-ng&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;创建&lt;code&gt;~/.proxychains/proxychains.conf&lt;/code&gt;文件，文件内容如下。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;strict_chain
-proxy_dns
-remote_dns_subnet 224
-tcp_read_time_out 15000
-tcp_connect_time_out 8000
-localnet 127.0.0.0/255.0.0.0
-quiet_mode
-
-[ProxyList]
-socks5  127.0.0.1 1080
-&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;在Terminal中，使用&lt;code&gt;proxychains4 [cmd]&lt;/code&gt;就可以使用代理服务器了。如：&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;code&gt;~$ proxychains4 brew update&lt;/code&gt;&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;对于mac osx 10.11，由于apple新增了sip模式，需要进入到Recovery模式(&lt;strong&gt;cmmand+R&lt;/strong&gt;)，然后在terminal中执行&lt;code&gt;csrutil enable --without debug&lt;/code&gt;命令，然后重启电脑，即可正常使用proxychains4-ng。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&#34;3-如何让socks代理支持http代理&#34;&gt;3. 如何让socks代理支持http代理？&lt;/h2&gt;
-
-&lt;ul&gt;
-&lt;li&gt;安装polipo：&lt;code&gt;brew install polipo&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;查看配置参数：&lt;code&gt;polipo -v&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;启动http代理：&lt;code&gt;polipo socksParentProxy=localhost:1080&lt;/code&gt;，其默认端口是8123。&lt;/li&gt;
-&lt;li&gt;此时其他应该程序就可以设置polipo的http代理：&lt;code&gt;localhost:8123&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&#34;4-如何在terminal中使用http代理&#34;&gt;4. 如何在Terminal中使用Http代理？&lt;/h2&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;在&lt;code&gt;~/.bash_profile&lt;/code&gt;文件中添加以下代码，然后执行&lt;code&gt;source ~/.bash_profile&lt;/code&gt;。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;alias gaproxy=&#39;export http_proxy=127.0.0.1:8123 https_proxy=127.0.0.1:8123&#39;
-alias noproxy=&#39;unset http_proxy https_proxy&#39;
-&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;当使用http代理时，执行gaproxy，然后执行其他命令即可。如：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;~$ gaproxy
-~$ curl www.google.com
-&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;不使用时，可以直接执行noproxy。&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
 </description>
     </item>
     
