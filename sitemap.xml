@@ -3,19 +3,14 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>http://coofee.github.io/post/how_to_write_sqlites_extension/</loc>
-    <lastmod>2019-07-26T19:18:58+08:00</lastmod>
-  </url>
-  
-  <url>
     <loc>http://coofee.github.io/post/</loc>
-    <lastmod>2019-07-26T19:18:58+08:00</lastmod>
+    <lastmod>2018-09-10T15:05:35+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>http://coofee.github.io/</loc>
-    <lastmod>2019-07-26T19:18:58+08:00</lastmod>
+    <lastmod>2018-09-10T15:05:35+08:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -58,12 +53,6 @@
   </url>
   
   <url>
-    <loc>http://coofee.github.io/series/android/</loc>
-    <lastmod>2017-07-25T19:43:30+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
     <loc>http://coofee.github.io/tags/android/</loc>
     <lastmod>2017-07-25T19:43:30+08:00</lastmod>
     <priority>0</priority>
@@ -71,6 +60,12 @@
   
   <url>
     <loc>http://coofee.github.io/categories/android/</loc>
+    <lastmod>2017-07-25T19:43:30+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://coofee.github.io/series/android/</loc>
     <lastmod>2017-07-25T19:43:30+08:00</lastmod>
     <priority>0</priority>
   </url>
@@ -115,12 +110,6 @@
   </url>
   
   <url>
-    <loc>http://coofee.github.io/series/react-native/</loc>
-    <lastmod>2017-07-21T17:44:38+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
     <loc>http://coofee.github.io/tags/react-native/</loc>
     <lastmod>2017-07-21T17:44:38+08:00</lastmod>
     <priority>0</priority>
@@ -128,6 +117,12 @@
   
   <url>
     <loc>http://coofee.github.io/categories/react-native/</loc>
+    <lastmod>2017-07-21T17:44:38+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://coofee.github.io/series/react-native/</loc>
     <lastmod>2017-07-21T17:44:38+08:00</lastmod>
     <priority>0</priority>
   </url>

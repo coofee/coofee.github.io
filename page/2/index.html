@@ -145,42 +145,6 @@
   
     <article>
   <header>
-    <h2><a href="http://coofee.github.io/post/react-native-bundle-split/">React Native Bundle Split</a></h2>
-
-    <div class="post-meta">
-
-  <div>
-    <i class="fa fa-calendar fa-fw"></i>
-    <time>18 May 2017, 19:28</time>
-  </div>
-
-  
-
-  
-
-  
-
-</div>
-
-  </header>
-
-  <p>
-  使用rn-packager拆分react-native的jsbundle(core.android.bundle + business.android.bundle)，然后在程序启动时分步加载拆分后的bundle，以达到热更新目的，注:本文档使用的react native版本为0.43。
-0x00 分步加载jsbundle 将rn-packager打包生成的jsbundle+图片资源统一放到assets目录中，应用程序启动时，复制到files目录，只要保持目录结构不变，js就可以正常访问图片资源。故而，如果需要热更新jsbundle和图片资源时，只需要直接更新files目录中的图片和jsbundle文件即可，具体可以看packager-bundle-split。
- 加载core.android.bundle
-ReactInstanceManagerBuilder builder = ReactInstanceManager.builder() .setApplication(mApplication) .setJSMainModuleName(getJSMainModuleName()) .setUseDeveloperSupport(getUseDeveloperSupport()) .setRedBoxHandler(getRedBoxHandler()) .setUIImplementationProvider(getUIImplementationProvider()) .setInitialLifecycleState(LifecycleState.BEFORE_CREATE); for (ReactPackage reactPackage : getPackages()) { builder.addPackage(reactPackage); } String jsBundleFile = getJSBundleFile(); if (jsBundleFile != null) { builder.setJSBundleFile(jsBundleFile); } else { builder.setBundleAssetName(Assertions.assertNotNull(getBundleAssetName())); } File coreBundleFile = new File(mApplication.getFilesDir(), &quot;rn/core.android.bundle&quot;); if (!coreBundleFile.exists()) { Log.e(&quot;ReactNativeHost&quot;, &quot;copy assets://core.android.bundle to &quot; + coreBundleFile); AssetsUtils.copyFile(mApplication, &quot;core.android.bundle&quot;, coreBundleFile.getAbsolutePath()); } // 加载core.android.bundle builder.setJSBundleLoader(JSBundleLoader.createFileLoader(coreBundleFile.getAbsolutePath())); Log.e(&quot;ReactNativeHost&quot;, &quot;set core bundle&quot;); return builder.
-  </p>
-
-  
-  <footer>
-    <a href="/post/react-native-bundle-split/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
-  </footer>
-  
-</article>
-
-  
-    <article>
-  <header>
     <h2><a href="http://coofee.github.io/post/tools/">常用命令</a></h2>
 
     <div class="post-meta">

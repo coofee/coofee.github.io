@@ -145,48 +145,6 @@
   
     <article>
   <header>
-    <h2><a href="http://coofee.github.io/post/how_to_write_sqlites_extension/">How to write sqlites extension</a></h2>
-
-    <div class="post-meta">
-
-  <div>
-    <i class="fa fa-calendar fa-fw"></i>
-    <time>26 Jul 2019, 19:18</time>
-  </div>
-
-  
-
-  
-
-  
-
-</div>
-
-  </header>
-
-  <p>
-  0x00 SQLite sqlite是一个使用c语音编写的库，其实现了一个的小巧、快速、自含、高可靠性、全功能的SQL数据库引擎。它仅依赖少数的几个系统调用。它是一个非常流行的数据库，几乎打包到了所有的移动设备中，同时有无数的应用程序内嵌了它。
-0x01 SQLite扩展 sqlite extension是可以在运行时被sqlite加载的库，其主要有以下作用：
- 扩展sqlite的功能，如提供sqlite本身不支持的函数。 运行时加载扩展，可以动态更新，也可以保证只在需要时加载扩展，减少内存消耗。 扩展可以独立于sqlite本身单独开发，测试。  0x02 启用扩展 由于一些安全性的问题，sqlite默认禁用扩展，当用户使用扩展时，首先需要启用扩展功能，开启的方式有以下两种：
- 编译sqlite时在编译选项中添加LOCAL_CFLAGS += -DSQLITE_ENABLE_LOAD_EXTENSION=1标志，直接启用扩展功能。 使用sqlite提供的接口sqlite3_enable_load_extension(db, 1);，直接开启扩展功能，其中1表示启用扩展，0表示禁用扩展。  0x03 加载扩展 加载扩展有两种方式，
- 使用sqlite内建的load_extension(libFileName, entryPoint)sql语句加载扩展，若加载失败会直接抛出异常，否则加载成功，如：
-select load_extension(distance, sqlite3_distance_init)  注意: 在java中使用sql语句加载扩展时，需要先使用System.loadLibrary(&quot;distance&quot;)加载动态库。
- 使用sqlite提供的api函数sqlite3_load_extension(db, libFilePath, entryPoint, pzErrMsg)加载扩展，当函数返回SQLITE_OK也就是0时表示扩展加载成功。
-注意：在java中使用函数加载扩展时，需要使用sqlite3-android-bindings库提供的jni接口来调用c接口。
-  0x04 编写扩展 编写扩展时，我们可以从sqlite的官网复制一份模板代码，整个模板代码如下所示：
-/* Add your header comment here */ #include &lt;sqlite3ext.h&gt; /* Do not use &lt;sqlite3.h&gt;! */ SQLITE_EXTENSION_INIT1 /* Insert your extension code here */ #ifdef _WIN32 __declspec(dllexport) #endif /* TODO: Change the entry point name so that &quot;extension&quot; is replaced by ** text derived from the shared library filename as follows: Copy every ** ASCII alphabetic character from the filename after the last &quot;/&quot; through ** the next following &quot;.
-  </p>
-
-  
-  <footer>
-    <a href="/post/how_to_write_sqlites_extension/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
-  </footer>
-  
-</article>
-
-  
-    <article>
-  <header>
     <h2><a href="http://coofee.github.io/post/auto_create_wx_acitivty_by_annotation/">auto_create_wx_acitivty_by_annotation</a></h2>
 
     <div class="post-meta">
@@ -581,6 +539,42 @@ E/AndroidRuntime: FATAL EXCEPTION: main Caused by: android.
   
   <footer>
     <a href="/post/android-fetch-add-custom-cookie/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
+  </footer>
+  
+</article>
+
+  
+    <article>
+  <header>
+    <h2><a href="http://coofee.github.io/post/react-native-bundle-split/">React Native Bundle Split</a></h2>
+
+    <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>18 May 2017, 19:28</time>
+  </div>
+
+  
+
+  
+
+  
+
+</div>
+
+  </header>
+
+  <p>
+  使用rn-packager拆分react-native的jsbundle(core.android.bundle + business.android.bundle)，然后在程序启动时分步加载拆分后的bundle，以达到热更新目的，注:本文档使用的react native版本为0.43。
+0x00 分步加载jsbundle 将rn-packager打包生成的jsbundle+图片资源统一放到assets目录中，应用程序启动时，复制到files目录，只要保持目录结构不变，js就可以正常访问图片资源。故而，如果需要热更新jsbundle和图片资源时，只需要直接更新files目录中的图片和jsbundle文件即可，具体可以看packager-bundle-split。
+ 加载core.android.bundle
+ReactInstanceManagerBuilder builder = ReactInstanceManager.builder() .setApplication(mApplication) .setJSMainModuleName(getJSMainModuleName()) .setUseDeveloperSupport(getUseDeveloperSupport()) .setRedBoxHandler(getRedBoxHandler()) .setUIImplementationProvider(getUIImplementationProvider()) .setInitialLifecycleState(LifecycleState.BEFORE_CREATE); for (ReactPackage reactPackage : getPackages()) { builder.addPackage(reactPackage); } String jsBundleFile = getJSBundleFile(); if (jsBundleFile != null) { builder.setJSBundleFile(jsBundleFile); } else { builder.setBundleAssetName(Assertions.assertNotNull(getBundleAssetName())); } File coreBundleFile = new File(mApplication.getFilesDir(), &quot;rn/core.android.bundle&quot;); if (!coreBundleFile.exists()) { Log.e(&quot;ReactNativeHost&quot;, &quot;copy assets://core.android.bundle to &quot; + coreBundleFile); AssetsUtils.copyFile(mApplication, &quot;core.android.bundle&quot;, coreBundleFile.getAbsolutePath()); } // 加载core.android.bundle builder.setJSBundleLoader(JSBundleLoader.createFileLoader(coreBundleFile.getAbsolutePath())); Log.e(&quot;ReactNativeHost&quot;, &quot;set core bundle&quot;); return builder.
+  </p>
+
+  
+  <footer>
+    <a href="/post/react-native-bundle-split/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
   </footer>
   
 </article>
