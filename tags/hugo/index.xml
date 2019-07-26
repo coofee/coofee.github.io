@@ -1,68 +1,25 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-      <title>Hugo on Simple... </title>
-      <generator uri="https://gohugo.io">Hugo</generator>
+    <title>hugo on Simple...</title>
     <link>http://coofee.github.io/tags/hugo/</link>
+    <description>Recent content in hugo on Simple...</description>
+    <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <author>Coofee</author>
+    <managingEditor>coffeerene.zhao@gmail.com (Coofee)</managingEditor>
+    <webMaster>coffeerene.zhao@gmail.com (Coofee)</webMaster>
+    <lastBuildDate>Mon, 11 Jul 2016 23:07:37 +0800</lastBuildDate>
     
-    <updated>Mon, 11 Jul 2016 23:07:37 CST</updated>
+	<atom:link href="http://coofee.github.io/tags/hugo/index.xml" rel="self" type="application/rss+xml" />
+    
     
     <item>
       <title>hugo help</title>
       <link>http://coofee.github.io/post/hugo-help/</link>
-      <pubDate>Mon, 11 Jul 2016 23:07:37 CST</pubDate>
-      <author>Coofee</author>
+      <pubDate>Mon, 11 Jul 2016 23:07:37 +0800</pubDate>
+      <author>coffeerene.zhao@gmail.com (Coofee)</author>
       <guid>http://coofee.github.io/post/hugo-help/</guid>
-      <description>
-
-&lt;h1 id=&#34;hugo&#34;&gt;Hugo&lt;/h1&gt;
-
-&lt;h2 id=&#34;1-1-创建文件&#34;&gt;1.1 创建文件&lt;/h2&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;
-# 切换到博客目录
-$ hugo new post/xxxxx.md
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2 id=&#34;1-2-发布到本地预览网站&#34;&gt;1.2 发布到本地预览网站&lt;/h2&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;
-$ hugo server --theme=greyshade --buildDrafts --watch
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2 id=&#34;1-3-发布网站到github&#34;&gt;1.3 发布网站到github&lt;/h2&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;
-$ hugo  --theme=greyshade --buildDrafts
-$ cd public
-$ git add * 
-$ git commit -a -m &#39;add all&#39;
-$ git push origin master
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2 id=&#34;1-4-添加图片到文件&#34;&gt;1.4 添加图片到文件&lt;/h2&gt;
-
-&lt;p&gt;The images should be put in the static folder, which will be copied to the root of the website (so their url is www.example.com/image.png) by Hugo.&lt;/p&gt;
-
-&lt;p&gt;所以在static目录中创建文件夹，然后在markdown中直接引用即可。&lt;/p&gt;
-
-&lt;p&gt;例子如下：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;static
-└── android-fetch-add-custom-cookie
-    └── react-native-fetch-0.44.png
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;在markdown中则需要如下方式引用:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;![](android-fetch-add-custom-cookie/react-native-fetch-0.44.png)
-&lt;/code&gt;&lt;/pre&gt;
-</description>
+      <description>Hugo 1.1 创建文件 # 切换到博客目录 $ hugo new post/xxxxx.md  1.2 发布到本地预览网站 $ hugo server --theme=greyshade --buildDrafts --watch  1.3 发布网站到github $ hugo --theme=greyshade --buildDrafts $ cd public $ git add * $ git commit -a -m &#39;add all&#39; $ git push origin master  1.4 添加图片到文件 The images should be put in the static folder, which will be copied to the root of the website (so their url is www.</description>
     </item>
     
   </channel>

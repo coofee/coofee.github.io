@@ -1,72 +1,25 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-      <title>Scp on Simple... </title>
-      <generator uri="https://gohugo.io">Hugo</generator>
+    <title>scp on Simple...</title>
     <link>http://coofee.github.io/tags/scp/</link>
+    <description>Recent content in scp on Simple...</description>
+    <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <author>Coofee</author>
+    <managingEditor>coffeerene.zhao@gmail.com (Coofee)</managingEditor>
+    <webMaster>coffeerene.zhao@gmail.com (Coofee)</webMaster>
+    <lastBuildDate>Fri, 30 Sep 2016 17:11:19 +0800</lastBuildDate>
     
-    <updated>Fri, 30 Sep 2016 17:11:19 CST</updated>
+	<atom:link href="http://coofee.github.io/tags/scp/index.xml" rel="self" type="application/rss+xml" />
+    
     
     <item>
       <title>常用命令</title>
       <link>http://coofee.github.io/post/tools/</link>
-      <pubDate>Fri, 30 Sep 2016 17:11:19 CST</pubDate>
-      <author>Coofee</author>
+      <pubDate>Fri, 30 Sep 2016 17:11:19 +0800</pubDate>
+      <author>coffeerene.zhao@gmail.com (Coofee)</author>
       <guid>http://coofee.github.io/post/tools/</guid>
-      <description>
-
-&lt;h1 id=&#34;1-golang跨平台编译&#34;&gt;1. golang跨平台编译&lt;/h1&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;// 如：
-env GOOS=linux GOARCH=amd64 go build  *.go
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h1 id=&#34;2-ssh&#34;&gt;2. ssh&lt;/h1&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;ssh -p port username@host
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h1 id=&#34;3-scp&#34;&gt;3. scp&lt;/h1&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;scp -P port local_file  username@host:remote_file
-
-scp -P port -r local_dir  username@host:remote_dir
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h1 id=&#34;4-github-pull-request&#34;&gt;4. github pull request&lt;/h1&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;# clone
-git clone https://github.com/coofee/tinker.git
-
-# 添加tinker
-git remote add tinker https://github.com/Tencent/tinker
-
-# 从tinker的dev分支创建功能分支
-git branch compat-gradle-plugin-3.x-dev tinker/dev
-git checkout compat-gradle-plugin-3.x-dev
-
-# push分支到origin
-git push -u origin compat-gradle-plugin-3.x-dev
-
-# 合并tinker的dev分支代码
-git pull tinker dev
-
-# 删除远程分支
-git push origin --delete compat-gradle-plugin-3.x
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h1 id=&#34;5-markdown&#34;&gt;5. markdown&lt;/h1&gt;
-
-&lt;p&gt;在markdown中直接显示dot绘制的图片pr&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&#39;https://g.gravizo.com/svg? 
-digraph G {
-    a -&gt; b -&amp;gt; c
-}
-&amp;lsquo;/&amp;gt;&lt;/p&gt;
-</description>
+      <description>1. golang跨平台编译 // 如： env GOOS=linux GOARCH=amd64 go build *.go  2. ssh ssh -p port username@host  3. scp scp -P port local_file username@host:remote_file scp -P port -r local_dir username@host:remote_dir  4. github pull request # clone git clone https://github.com/coofee/tinker.git # 添加tinker git remote add tinker https://github.com/Tencent/tinker # 从tinker的dev分支创建功能分支 git branch compat-gradle-plugin-3.x-dev tinker/dev git checkout compat-gradle-plugin-3.x-dev # push分支到origin git push -u origin compat-gradle-plugin-3.x-dev # 合并tinker的dev分支代码 git pull tinker dev # 删除远程分支 git push origin --delete compat-gradle-plugin-3.</description>
     </item>
     
   </channel>

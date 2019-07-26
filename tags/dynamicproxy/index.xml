@@ -1,111 +1,29 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-      <title>Dynamicproxy on Simple... </title>
-      <generator uri="https://gohugo.io">Hugo</generator>
+    <title>DynamicProxy on Simple...</title>
     <link>http://coofee.github.io/tags/dynamicproxy/</link>
+    <description>Recent content in DynamicProxy on Simple...</description>
+    <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <author>Coofee</author>
+    <managingEditor>coffeerene.zhao@gmail.com (Coofee)</managingEditor>
+    <webMaster>coffeerene.zhao@gmail.com (Coofee)</webMaster>
+    <lastBuildDate>Thu, 30 Jun 2016 00:04:39 +0800</lastBuildDate>
     
-    <updated>Thu, 30 Jun 2016 00:04:39 CST</updated>
+	<atom:link href="http://coofee.github.io/tags/dynamicproxy/index.xml" rel="self" type="application/rss+xml" />
+    
     
     <item>
       <title>groovy replace method</title>
       <link>http://coofee.github.io/post/groovy-replace-method/</link>
-      <pubDate>Thu, 30 Jun 2016 00:04:39 CST</pubDate>
-      <author>Coofee</author>
+      <pubDate>Thu, 30 Jun 2016 00:04:39 +0800</pubDate>
+      <author>coffeerene.zhao@gmail.com (Coofee)</author>
       <guid>http://coofee.github.io/post/groovy-replace-method/</guid>
-      <description>
-
-&lt;p&gt;[TOC]&lt;/p&gt;
-
-&lt;h1 id=&#34;groovy-动态代理即替换方法&#34;&gt;Groovy 动态代理即替换方法&lt;/h1&gt;
-
-&lt;p&gt;我们知道在Java中可以使用以下几种方法替换方法。&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;JDK自带的动态代理只支持修改某个类所实现的接口的方法。java只支持单继承，所有的代理类都是Proxy的子类，所以只能覆盖接口的方法。&lt;/li&gt;
-&lt;li&gt;asm直接修改字节码，直接修改字节码，直接修改类的方法和所实现接口的方法。&lt;/li&gt;
-&lt;li&gt;javassist直接修改字节码，直接修改类的方法和所实现接口的方法。&lt;/li&gt;
-&lt;li&gt;cglib基于asm封装，直接修改类的方法和所实现接口的方法。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;总的来说，使用jdk自带的方案有局限，使用第三方框架能够支持全部功能。下面我们就来看一下，groovy作为一门jvm语言如何更加方便的实现动态代理的。&lt;/p&gt;
-
-&lt;h2 id=&#34;1-1-演示类&#34;&gt;1.1 演示类&lt;/h2&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;class ReplaceMethod {
-    
-    // 用于演示替换实例方法
-    public List&amp;lt;String&amp;gt; getStreamInputs() {
-        List&amp;lt;String&amp;gt; strings = &amp;quot;a, b, c, d&amp;quot;.split(&amp;quot;, &amp;quot;);
-        return strings;
-    }
-
-    // 用于演示替换泛型方法，同时演示如何区分同名的方法。
-    public void genericMethod(List&amp;lt;String&amp;gt; strings) {
-        println strings
-    }
-
-    public void genericMethod(List&amp;lt;String&amp;gt; strings, boolean num) {
-        println strings
-    }
-
-}   
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2 id=&#34;2-如何替换方法&#34;&gt;2 如何替换方法？&lt;/h2&gt;
-
-&lt;ol&gt;
-&lt;li&gt;通过metaClass的&lt;code&gt;pickMethod&lt;/code&gt;获取到原始的方法引用。&lt;/li&gt;
-&lt;li&gt;使用闭包替换metaClass上要替换的方法即可。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;样例代码如下：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;def repalceMethod = new ReplaceMethod();
-println repalceMethod.getStreamInputs();
-def oldMethod = ReplaceMethod.metaClass.&amp;amp;pickMethod(&#39;getStreamInputs&#39;, (Class[]) null)
-repalceMethod.metaClass.getStreamInputs = {
-    println &amp;quot;replaced&amp;quot;
-    // 执行旧方法.
-    println oldMethod.invoke(repalceMethod);
-    List&amp;lt;String&amp;gt; strings = &amp;quot;1, 2, 3, 4&amp;quot;.split(&amp;quot;, &amp;quot;);
-    return strings;
-}
-println repalceMethod.getStreamInputs()
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3 id=&#34;2-1-通过class的meta直接替换方法&#34;&gt;2.1 通过class的meta直接替换方法&lt;/h3&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;Class.forName(&#39;com.coffee.groovy.metaclass.ReplaceMethod&#39;).metaClass.invokeMethod = { name, args -&amp;gt;
-    println &amp;quot;replaced: Called ${name} with ${args}&amp;quot;
-    println args.length
-    println args.class
-    println args.metaClass
-    // http://stackoverflow.com/questions/10125903/groovy-overriding-invokemethod-for-a-single-instance
-    delegate.class.metaClass.getMetaMethod(name, args)?.invoke(delegate, args)
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3 id=&#34;2-2-替换泛型方法-替换同名方法&#34;&gt;2.2 替换泛型方法&amp;amp;替换同名方法&lt;/h3&gt;
-
-&lt;p&gt;通过指定要替换的方法的参数类型，既可以通过&lt;code&gt;pickMethod&lt;/code&gt;获取到对应的正确函数。对泛型而言，无需指定其具体的类型。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;List&amp;lt;Class&amp;gt; argClasses = [];
-argClasses.add(List.class)
-argClasses.add(boolean.class)
-println argClasses
-def clazz = Class.forName(&#39;com.coffee.groovy.metaclass.ReplaceMethod&#39;);
-def oldGenericMethod = clazz.metaClass.&amp;amp;pickMethod(&#39;genericMethod&#39;,
-        argClasses.toArray(new Class[0]))
-clazz.metaClass.genericMethod = { strings, result -&amp;gt;
-    println &amp;quot;replaced: $strings : $result&amp;quot;
-}
-
-repalceMethod.genericMethod(&amp;quot;ac, sd, dc, dd&amp;quot;.split(&amp;quot;, &amp;quot;), true)
-&lt;/code&gt;&lt;/pre&gt;
-</description>
+      <description>[TOC]
+Groovy 动态代理即替换方法 我们知道在Java中可以使用以下几种方法替换方法。
+ JDK自带的动态代理只支持修改某个类所实现的接口的方法。java只支持单继承，所有的代理类都是Proxy的子类，所以只能覆盖接口的方法。 asm直接修改字节码，直接修改字节码，直接修改类的方法和所实现接口的方法。 javassist直接修改字节码，直接修改类的方法和所实现接口的方法。 cglib基于asm封装，直接修改类的方法和所实现接口的方法。  总的来说，使用jdk自带的方案有局限，使用第三方框架能够支持全部功能。下面我们就来看一下，groovy作为一门jvm语言如何更加方便的实现动态代理的。
+1.1 演示类 class ReplaceMethod { // 用于演示替换实例方法 public List&amp;lt;String&amp;gt; getStreamInputs() { List&amp;lt;String&amp;gt; strings = &amp;quot;a, b, c, d&amp;quot;.split(&amp;quot;, &amp;quot;); return strings; } // 用于演示替换泛型方法，同时演示如何区分同名的方法。 public void genericMethod(List&amp;lt;String&amp;gt; strings) { println strings } public void genericMethod(List&amp;lt;String&amp;gt; strings, boolean num) { println strings } }  2 如何替换方法？  通过metaClass的pickMethod获取到原始的方法引用。 使用闭包替换metaClass上要替换的方法即可。  样例代码如下：
+def repalceMethod = new ReplaceMethod(); println repalceMethod.getStreamInputs(); def oldMethod = ReplaceMethod.</description>
     </item>
     
   </channel>

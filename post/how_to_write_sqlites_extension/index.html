@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="generator" content="Hugo 0.56.0" />
+
+  <title>How to write sqlites extension &middot; Simple...</title>
+
+  
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/pure-min.css">
+
+  <!--[if lte IE 8]>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/grids-responsive-old-ie-min.css">
+  <![endif]-->
+  <!--[if gt IE 8]><!-->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/grids-responsive-min.css">
+  <!--<![endif]-->
+
+  <!--[if lte IE 8]>
+  <link rel="stylesheet" href="/css/side-menu-old-ie.css">
+  <![endif]-->
+  <!--[if gt IE 8]><!-->
+  <link rel="stylesheet" href="/css/side-menu.css">
+  <!--<![endif]-->
+
+  <link rel="stylesheet" href="/css/blackburn.css">
+
+  
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+
+  
+  <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet" type="text/css">
+
+  
+  <link rel="alternate" type="application/rss+xml" title="Simple..." href="http://coofee.github.ioindex.xml" />
+
+  
+
+  <link rel="shortcut icon" href="http://coofee.github.ioimg/favicon.ico" type="image/x-icon" />
+
+</head>
+
+
+<body>
+<div id="layout">
+
+  
+<a href="#menu" id="menuLink" class="menu-link">
+  
+  <span></span>
+</a>
+<div id="menu">
+
+  
+
+  <div class="pure-menu">
+    <ul class="pure-menu-list">
+      
+    </ul>
+  </div>
+
+  <div class="pure-menu social">
+  <ul class="pure-menu-list">
+
+    <li class="pure-menu-item">
+      <a class="pure-menu-link" href="http://coofee.github.ioindex.xml"><i class="fa fa-rss fa-fw"></i>RSS</a>
+    </li>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+  </ul>
+</div>
+
+
+  <div class="pure-g">
+  <div class="small-print pure-u-1 pure-u-md-1-1">
+    <small></small>
+  </div>
+  <div class="small-print pure-u-1 pure-u-md-1-1">
+    <small>Built with&nbsp;<a href="https://gohugo.io/" target="_blank">Hugo</a></small>
+    <small>Theme&nbsp;<a href="https://github.com/yoshiharuyamashita/blackburn" target="_blank">Blackburn</a></small>
+  </div>
+</div>
+
+</div>
+
+
+  <div id="main">
+
+
+<div class="header">
+  <h1>How to write sqlites extension</h1>
+  <h2></h2>
+</div>
+<div class="content">
+
+  <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>26 Jul 2019, 19:18</time>
+  </div>
+
+  
+
+  
+
+  
+
+</div>
+
+  
+
+<h1 id="0x00-sqlite">0x00 SQLite</h1>
+
+<p>sqlite是一个使用c语音编写的库，其实现了一个的小巧、快速、<a href="https://sqlite.org/selfcontained.html">自含</a>、高可靠性、全功能的SQL数据库引擎。它<a href="(https://sqlite.org/selfcontained.html)">仅依赖少数的几个系统调用</a>。它是一个非常流行的数据库，几乎打包到了所有的移动设备中，同时有无数的应用程序内嵌了它。</p>
+
+<h1 id="0x01-sqlite扩展">0x01 SQLite扩展</h1>
+
+<p>sqlite extension是可以在运行时被sqlite加载的库，其主要有以下作用：</p>
+
+<ul>
+<li>扩展sqlite的功能，如提供sqlite本身不支持的函数。</li>
+<li>运行时加载扩展，可以动态更新，也可以保证只在需要时加载扩展，减少内存消耗。</li>
+<li>扩展可以独立于sqlite本身单独开发，测试。</li>
+</ul>
+
+<h1 id="0x02-启用扩展">0x02 启用扩展</h1>
+
+<p>由于一些安全性的问题，<strong>sqlite默认禁用扩展</strong>，当用户使用扩展时，首先需要启用扩展功能，开启的方式有以下两种：</p>
+
+<ul>
+<li>编译sqlite时在编译选项中添加<code>LOCAL_CFLAGS += -DSQLITE_ENABLE_LOAD_EXTENSION=1</code>标志，直接启用扩展功能。</li>
+<li>使用sqlite提供的接口<code>sqlite3_enable_load_extension(db, 1);</code>，直接开启扩展功能，其中1表示启用扩展，0表示禁用扩展。</li>
+</ul>
+
+<h1 id="0x03-加载扩展">0x03 加载扩展</h1>
+
+<p>加载扩展有两种方式，</p>
+
+<ul>
+<li><p>使用sqlite内建的<a href="https://sqlite.org/lang_corefunc.html#load_extension">load_extension(libFileName, entryPoint)</a>sql语句加载扩展，若加载失败会直接抛出异常，否则加载成功，如：</p>
+
+<pre><code>select load_extension(distance, sqlite3_distance_init)
+</code></pre>
+
+<p>注意: 在java中使用sql语句加载扩展时，需要先使用<code>System.loadLibrary(&quot;distance&quot;)</code>加载动态库。</p></li>
+
+<li><p>使用sqlite提供的api函数<a href="https://sqlite.org/c3ref/load_extension.html"><code>sqlite3_load_extension(db, libFilePath, entryPoint, pzErrMsg)</code></a>加载扩展，当函数返回<code>SQLITE_OK</code>也就是<code>0</code>时表示扩展加载成功。</p>
+
+<p>注意：在java中使用函数加载扩展时，需要使用<code>sqlite3-android-bindings</code>库提供的jni接口来调用c接口。</p></li>
+</ul>
+
+<h1 id="0x04-编写扩展">0x04 编写扩展</h1>
+
+<p>编写扩展时，我们可以从<a href="https://sqlite.org/loadext.html#programming_loadable_extensions">sqlite的官网</a>复制一份模板代码，整个模板代码如下所示：</p>
+
+<pre><code class="language-c">/* Add your header comment here */
+#include &lt;sqlite3ext.h&gt; /* Do not use &lt;sqlite3.h&gt;! */
+SQLITE_EXTENSION_INIT1
+
+/* Insert your extension code here */
+
+#ifdef _WIN32
+__declspec(dllexport)
+#endif
+/* TODO: Change the entry point name so that &quot;extension&quot; is replaced by
+** text derived from the shared library filename as follows:  Copy every
+** ASCII alphabetic character from the filename after the last &quot;/&quot; through
+** the next following &quot;.&quot;, converting each character to lowercase, and
+** discarding the first three characters if they are &quot;lib&quot;.
+*/
+int sqlite3_extension_init(
+  sqlite3 *db, 
+  char **pzErrMsg, 
+  const sqlite3_api_routines *pApi
+){
+  int rc = SQLITE_OK;
+  SQLITE_EXTENSION_INIT2(pApi);
+  /* Insert here calls to
+  **     sqlite3_create_function(),
+  **     sqlite3_create_function_v2(),
+  **     sqlite3_create_collation_v2(),
+  **     sqlite3_create_module_v2(), and/or
+  **     sqlite3_vfs_register()
+  ** to register the new features that your extension adds.
+  */
+  return rc;
+}
+</code></pre>
+
+<ul>
+<li><code>sqlite3ext.h</code></li>
+</ul>
+
+<p>对于sqlite3的头文件，我们可以从<a href="https://sqlite.org/download.html">sqlite3 download</a>下载其对应版本的源码获取对应的头文件。也可以使用<code>Fossil</code>工具clone源代码。</p>
+
+<ul>
+<li>编写扩展函数实现</li>
+</ul>
+
+<p>下面<code>distance()</code>函数用于计算两个经纬度坐标之间的距离，<code>distanceFunc()</code>用于定义扩展函数可以参考<a href="https://sqlite.org/c3ref/create_function.html">sqlite3 create_function</a>进行定义。</p>
+
+<pre><code class="language-c">#include &lt;sqlite3ext.h&gt;
+#include &lt;math.h&gt;
+#include &lt;assert.h&gt;
+SQLITE_EXTENSION_INIT1
+
+// degrees * pi over 180
+#define DEG2RAD(degrees) (degrees * 0.01745329251994329) // degrees * pi over 180
+ 
+// same to AMapUtils.calculateLineDistance
+static int distance(double lat1, double lng1, double lat2, double lng2) {
+    double lng1rad = DEG2RAD(lng1);
+    double lat1rad = DEG2RAD(lat1);
+    double lng2rad = DEG2RAD(lng2);
+    double lat2rad = DEG2RAD(lat2);
+ 
+    double sinLng1Rad = sin(lng1rad);
+    double sinLat1Rad = sin(lat1rad);
+    double cosLng1Rad = cos(lng1rad);
+    double cosLat1Rad = cos(lat1rad);
+ 
+    double sinLng2Rad = sin(lng2rad);
+    double sinLat2Rad = sin(lat2rad);
+    double cosLng2Rad = cos(lng2rad);
+    double cosLat2Rad = cos(lat2rad);
+ 
+    double v1 = cosLat1Rad * cosLng1Rad;
+    double v2 = cosLat2Rad * cosLng2Rad;
+    double v3 = cosLat1Rad * sinLng1Rad;
+    double v4 = cosLat2Rad * sinLng2Rad;
+    double v =  sqrt((v1 - v2) * (v1 - v2) +
+        (v3 - v4) * (v3 - v4) +
+        (sinLat1Rad - sinLat2Rad) * (sinLat1Rad - sinLat2Rad)
+    );
+ 
+    return asin(v / 2.0) * 12742001.5798544;
+}
+
+static void distanceFunc(sqlite3_context *context, int argc, sqlite3_value **argv) {
+    // check that we have four arguments (lat1, lon1, lat2, lon2)
+    assert(argc == 4);
+    // check that all four arguments are non-null
+    if (sqlite3_value_type(argv[0]) == SQLITE_NULL || sqlite3_value_type(argv[1]) == SQLITE_NULL || sqlite3_value_type(argv[2]) == SQLITE_NULL || sqlite3_value_type(argv[3]) == SQLITE_NULL) {
+        sqlite3_result_null(context);
+        return;
+    }
+    // get the four argument values
+    double lat1 = sqlite3_value_double(argv[0]);
+    double lng1 = sqlite3_value_double(argv[1]);
+    double lat2 = sqlite3_value_double(argv[2]);
+    double lng2 = sqlite3_value_double(argv[3]);
+    sqlite3_result_int(context, distance(lat1, lng1, lat2, lng2));
+}
+</code></pre>
+
+<ul>
+<li>修改entry point（入口函数名）与注册扩展函数</li>
+</ul>
+
+<p>从模板代码和文档中我们可以知道，自定义扩展的入口函数默认为<code>sqlite3_extension_init</code>，不过为了防止冲突，一般使用自己库的名字作为入口函数名。以扩展库<code>libdistance.so</code>为例，它对应的入口函数名就是<code>sqlite3_distance_init</code>。</p>
+
+<p>注意：entry point扩展函数入口名只能是小写，即使扩展库名称包含大写。</p>
+
+<p>定义好入口函数之后，我们在入口函数中通过<code>sqlite3_create_function()</code>来注册刚才编写的扩展函数。</p>
+
+<pre><code class="language-c">#ifdef _WIN32
+__declspec(dllexport)
+#endif
+
+int sqlite3_distance_init(sqlite3 *db, char **pzErrMsg, const sqlite3_api_routines *pApi){
+  int rc = SQLITE_OK;
+  SQLITE_EXTENSION_INIT2(pApi);
+  (void)pzErrMsg;  /* Unused parameter */
+  rc = sqlite3_create_function(db, &quot;distance&quot;, 4, SQLITE_UTF8, 0, distanceFunc, 0, 0);
+  return rc;
+}
+</code></pre>
+
+<p>至此，扩展已经编写完毕了，代码详见: <a href="https://github.com/coofee/SqliteDistanceExtension">SqliteDistanceExtension</a>。</p>
+
+<h1 id="0x05-编译扩展">0x05 编译扩展</h1>
+
+<p>因为sqlite是跨平台的，对于不同的平台编译方式不同，具体可以参考<a href="https://sqlite.org/loadext.html#compiling_a_loadable_extension">sqlite3 compile_extension</a>。</p>
+
+<p>下面我们主要说明一下在android端如何编译扩展？</p>
+
+<p>首先需要安装android nkd套件</p>
+
+<ul>
+<li>编写makefile文件</li>
+</ul>
+
+<p>jni整体目录结构如下:</p>
+
+<pre><code>$ tree
+jni
+├── Android.mk
+├── Application.mk
+├── distance.c
+├── sqlite3.h
+└── sqlite3ext.h
+</code></pre>
+
+<p>Android.mk文件如下：</p>
+
+<pre><code class="language-make">LOCAL_PATH:= $(call my-dir)
+
+include $(CLEAR_VARS)
+
+LOCAL_MODULE:= distance
+
+LOCAL_SRC_FILES += distance.c
+
+LOCAL_LDLIBS += -ldl -llog -latomic
+
+include $(BUILD_SHARED_LIBRARY)
+</code></pre>
+
+<p>Application.mk文件内容如下：</p>
+
+<pre><code class="language-make">APP_STL:=c++_static
+APP_OPTIM := release
+APP_ABI := armeabi-v7a,arm64-v8a,x86,x86_64
+NDK_TOOLCHAIN_VERSION := clang
+NDK_APP_LIBS_OUT=../jniLibs
+</code></pre>
+
+<ul>
+<li><p>执行ndk-build生成扩展库</p>
+
+<pre><code class="language-bash">$ cd jni
+$ ndk-build
+</code></pre></li>
+</ul>
+
+<h1 id="0x06-使用扩展">0x06 使用扩展</h1>
+
+<p>我们知道android系统对外没有提供加载sqlite3扩展的java api。尽管在android的源代码中包含扩展函数相关代码，但是其提供的扩展函数没有返回值，同时其实隐藏api，所以也不可用。具体相关代码如下：</p>
+
+<pre><code class="language-java">// android.database.sqlite.SQLiteDatabase
+
+/**
+ * A callback interface for a custom sqlite3 function.
+ * This can be used to create a function that can be called from
+ * sqlite3 database triggers.
+ * @hide
+ */
+public interface CustomFunction {
+    public void callback(String[] args);
+}
+
+/**
+ * Registers a CustomFunction callback as a function that can be called from
+ * SQLite database triggers.
+ *
+ * @param name the name of the sqlite3 function
+ * @param numArgs the number of arguments for the function
+ * @param function callback to call when the function is executed
+ * @hide
+ */
+public void addCustomFunction(String name, int numArgs, CustomFunction function) {
+    // Create wrapper (also validates arguments).
+    SQLiteCustomFunction wrapper = new SQLiteCustomFunction(name, numArgs, function);
+
+    synchronized (mLock) {
+        throwIfNotOpenLocked();
+
+        mConfigurationLocked.customFunctions.add(wrapper);
+        try {
+            mConnectionPoolLocked.reconfigure(mConfigurationLocked);
+        } catch (RuntimeException ex) {
+            mConfigurationLocked.customFunctions.remove(wrapper);
+            throw ex;
+        }
+    }
+}
+</code></pre>
+
+<p>综上，为了使用sqlite扩展函数，必须自己内嵌一个的sqlite库，同时暴露出加载扩展函数接口，所以可以使用<a href="https://github.com/requery/sqlite-android">sqlite-android</a>库。</p>
+
+<p>添加扩展时，可以在<code>SQLiteOpenHelper</code>的<code>createConfiguration()</code>方法中添加扩展库即可，代码大致如下：</p>
+
+<pre><code class="language-java">override fun createConfiguration(path: String?, openFlags: Int): SQLiteDatabaseConfiguration {
+    val configuration = super.createConfiguration(path, openFlags)
+    val nativeLibraryDir = context.applicationInfo.nativeLibraryDir
+    TLog.d(TAG, &quot;nativeLibraryDir=$nativeLibraryDir&quot;)
+    configuration.customExtensions.add(SQLiteCustomExtension(&quot;$nativeLibraryDir/libdistance.so&quot;, &quot;sqlite3_distance_init&quot;))
+    return configuration
+}
+</code></pre>
+
+<p>在sql中使用扩展函数:</p>
+
+<pre><code class="language-sql">select * from location order by distance(lat, lng, 39.904211, 116.407394) limit 100;
+</code></pre>
+
+<h1 id="0x07-参考">0x07 参考</h1>
+
+<ul>
+<li><a href="https://sqlite.org/loadext.html">sqlite3 loadext</a></li>
+<li><a href="https://sqlite.org/c3ref/intro.html">sqlite3 api</a></li>
+<li><a href="https://github.com/requery/sqlite-android">sqlite-android</a></li>
+</ul>
+
+
+  
+<div class="prev-next-post pure-g">
+  <div class="pure-u-1 pure-u-md-1-2">
+    
+    <nav class="prev">
+      <a href="http://coofee.github.io/post/auto_create_wx_acitivty_by_annotation/"><i class="fa fa-arrow-circle-left fa-fw fa-lg"></i>auto_create_wx_acitivty_by_annotation</a>
+    </nav>
+    
+  </div>
+  <div class="pure-u-1 pure-u-md-1-2">
+    
+  </div>
+</div>
+
+
+
+  
+
+</div>
+
+</div>
+</div>
+<script src="http://coofee.github.iojs/ui.js"></script>
+
+
+
+
+</body>
+</html>
+

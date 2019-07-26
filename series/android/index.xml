@@ -1,584 +1,66 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-      <title>Android on Simple... </title>
-      <generator uri="https://gohugo.io">Hugo</generator>
+    <title>android on Simple...</title>
     <link>http://coofee.github.io/series/android/</link>
+    <description>Recent content in android on Simple...</description>
+    <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <author>Coofee</author>
+    <managingEditor>coffeerene.zhao@gmail.com (Coofee)</managingEditor>
+    <webMaster>coffeerene.zhao@gmail.com (Coofee)</webMaster>
+    <lastBuildDate>Tue, 25 Jul 2017 19:43:30 +0800</lastBuildDate>
     
-    <updated>Tue, 25 Jul 2017 19:43:30 CST</updated>
+	<atom:link href="http://coofee.github.io/series/android/index.xml" rel="self" type="application/rss+xml" />
+    
     
     <item>
       <title>android check app running foreground</title>
       <link>http://coofee.github.io/post/android-check-app-running-foreground/</link>
-      <pubDate>Tue, 25 Jul 2017 19:43:30 CST</pubDate>
-      <author>Coofee</author>
+      <pubDate>Tue, 25 Jul 2017 19:43:30 +0800</pubDate>
+      <author>coffeerene.zhao@gmail.com (Coofee)</author>
       <guid>http://coofee.github.io/post/android-check-app-running-foreground/</guid>
-      <description>
-
-&lt;h2 id=&#34;0x00-使用application-activitylifecyclecallbacks检测app运行在前台-后台&#34;&gt;0x00 使用Application.ActivityLifecycleCallbacks检测App运行在前台/后台&lt;/h2&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-java&#34;&gt;import android.app.Activity;
-import android.app.ActivityManager;
-import android.app.Application;
-import android.content.Context;
-import android.os.Bundle;
-import android.os.Handler;
-import android.util.Log;
-
-import java.util.List;
-
-
-public class ApplicationLifecycle implements Application.ActivityLifecycleCallbacks {
-
-    private Handler mHandler = new Handler();
-
-    private Runnable mCheck = new Runnable() {
-        @Override
-        public void run() {
-            Log.e(&amp;quot;ApplicationLifecycle&amp;quot;, &amp;quot;check task exec; mCounter=&amp;quot; + mCounter);
-
-            if (mCounter == 0) {
-                Log.e(&amp;quot;ApplicationLifecycle&amp;quot;, &amp;quot;check task exec; get runningAppProcessInfo.&amp;quot;);
-
-                final ActivityManager am = (ActivityManager) mAppContext.getSystemService(Context.ACTIVITY_SERVICE);
-                // NOTE: getRunningAppProcess() ONLY GIVE YOU THE PROCESS OF YOUR OWN PACKAGE IN ANDROID M
-                // BUT THAT&#39;S ENOUGH HERE
-                List&amp;lt;ActivityManager.RunningAppProcessInfo&amp;gt; runningAppProcesses = am.getRunningAppProcesses();
-                boolean foreground = false;
-                for (ActivityManager.RunningAppProcessInfo ai : am.getRunningAppProcesses()) {
-                    // KILL OTHER PROCESS OF MINE
-                    if (ai.uid == android.os.Process.myUid()
-                            &amp;amp;&amp;amp; ai.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
-                        Log.e(&amp;quot;ApplicationLifecycle&amp;quot;, ai.processName + &amp;quot; importance is IMPORTANCE_FOREGROUND.&amp;quot;);
-                        foreground = true;
-                        break;
-                    }
-                }
-
-                if (foreground) {
-                    Log.e(&amp;quot;ApplicationLifecycle&amp;quot;, &amp;quot;check task exec; background=false&amp;quot;);
-                } else {
-                 	Log.e(&amp;quot;ApplicationLifecycle&amp;quot;, &amp;quot;check task exec; background=true&amp;quot;);
-                 }
-            }
-        }
-    };
-
-
-    private int mCounter = 0;
-    private Context mAppContext = null;
-
-    public ApplicationLifecycle(Context context) {
-        mAppContext = context.getApplicationContext();
-    }
-
-    @Override
-    public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
-
-    }
-
-    @Override
-    public void onActivityStarted(Activity activity) {
-
-    }
-
-    @Override
-    public void onActivityResumed(Activity activity) {
-        mCounter++;
-        Log.e(&amp;quot;ApplicationLifecycle&amp;quot;, &amp;quot;onActivityResumed mCounter=&amp;quot; + mCounter);
-        mHandler.removeCallbacks(mCheck);
-    }
-
-    @Override
-    public void onActivityPaused(Activity activity) {
-        mCounter--;
-        Log.e(&amp;quot;ApplicationLifecycle&amp;quot;, &amp;quot;onActivityPaused post check task; mCounter=&amp;quot; + mCounter);
-
-        mHandler.removeCallbacks(mCheck);
-        mHandler.postDelayed(mCheck, 2000);
-    }
-
-    @Override
-    public void onActivityStopped(Activity activity) {
-
-    }
-
-    @Override
-    public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
-
-    }
-
-    @Override
-    public void onActivityDestroyed(Activity activity) {
-
-    }
-}
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2 id=&#34;0x01-杀进程的各种方法&#34;&gt;0x01 杀进程的各种方法&lt;/h2&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-java&#34;&gt;if (Build.VERSION.SDK_INT &amp;gt;= 21) {
-    finishAndRemoveTask();
-}
-
-if (Build.VERSION.SDK_INT &amp;gt;= 16) {
-    finishAffinity();
-}
-
-ActivityManager activityManager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
-activityManager.killBackgroundProcesses(getPackageName());
-
-android.os.Process.killProcess(android.os.Process.myPid());// kill process
-System.exit(-1);
-&lt;/code&gt;&lt;/pre&gt;
-</description>
+      <description>0x00 使用Application.ActivityLifecycleCallbacks检测App运行在前台/后台 import android.app.Activity; import android.app.ActivityManager; import android.app.Application; import android.content.Context; import android.os.Bundle; import android.os.Handler; import android.util.Log; import java.util.List; public class ApplicationLifecycle implements Application.ActivityLifecycleCallbacks { private Handler mHandler = new Handler(); private Runnable mCheck = new Runnable() { @Override public void run() { Log.e(&amp;quot;ApplicationLifecycle&amp;quot;, &amp;quot;check task exec; mCounter=&amp;quot; + mCounter); if (mCounter == 0) { Log.e(&amp;quot;ApplicationLifecycle&amp;quot;, &amp;quot;check task exec; get runningAppProcessInfo.&amp;quot;); final ActivityManager am = (ActivityManager) mAppContext.getSystemService(Context.ACTIVITY_SERVICE); // NOTE: getRunningAppProcess() ONLY GIVE YOU THE PROCESS OF YOUR OWN PACKAGE IN ANDROID M // BUT THAT&#39;S ENOUGH HERE List&amp;lt;ActivityManager.</description>
     </item>
     
     <item>
       <title>sha1-collision &amp; android signature algorithm</title>
       <link>http://coofee.github.io/post/upgrade-app-signature-algorithm/</link>
-      <pubDate>Fri, 21 Jul 2017 18:35:56 CST</pubDate>
-      <author>Coofee</author>
+      <pubDate>Fri, 21 Jul 2017 18:35:56 +0800</pubDate>
+      <author>coffeerene.zhao@gmail.com (Coofee)</author>
       <guid>http://coofee.github.io/post/upgrade-app-signature-algorithm/</guid>
-      <description>
-
-&lt;h1 id=&#34;sha1-collision-android-sign&#34;&gt;SHA1-Collision &amp;amp; Android Sign&lt;/h1&gt;
-
-&lt;p&gt;参看&lt;a href=&#34;https://security.googleblog.com/2017/02/announcing-first-sha1-collision.html&#34;&gt;SHA1-collision&lt;/a&gt;我们可以知道，SHA-1签名已经不安全了，签名算法可以考虑升级到SHA-2或者其他算法。&lt;/p&gt;
-
-&lt;h1 id=&#34;0x01-sha1-collision&#34;&gt;0x01 SHA1-Collision&lt;/h1&gt;
-
-&lt;h2 id=&#34;1-sha-1是什么&#34;&gt;1. SHA-1是什么？&lt;/h2&gt;
-
-&lt;p&gt;SHA-1（英语：Secure Hash Algorithm 1，中文名：安全散列算法1）是一种密码散列函数，美国国家安全局设计，并由美国国家标准技术研究所（NIST）发布为联邦数据处理标准（FIPS）[2]。SHA-1可以生成一个被称为消息摘要的160位（20字节）散列值，散列值通常的呈现形式为40个十六进制数，参考：&lt;a href=&#34;https://zh.wikipedia.org/wiki/SHA-1&#34;&gt;SHA-1&lt;/a&gt;&lt;/p&gt;
-
-&lt;h2 id=&#34;2-sha1-collision是什么&#34;&gt;2. SHA1-Collision是什么？&lt;/h2&gt;
-
-&lt;p&gt;两个内容不同的数据，SHA-1算法会生成相同的摘要信息，参考：&lt;a href=&#34;https://shattered.it/&#34;&gt;SHA1 collision Two PDF&lt;/a&gt;。&lt;/p&gt;
-
-&lt;h2 id=&#34;3-sha1-collision对android的影响&#34;&gt;3. SHA1-Collision对Android的影响&lt;/h2&gt;
-
-&lt;p&gt;Android SDK默认对apk使用SHA-1签名，在最坏的情况下，攻击者可以伪造SHA-1值相同的文件替换已签名apk中的文件来达到攻击的目的。&lt;/p&gt;
-
-&lt;h1 id=&#34;0x02-android的证书验证机制&#34;&gt;0x02 Android的证书验证机制&lt;/h1&gt;
-
-&lt;p&gt;我们知道Android的Apk文件是一个压缩文件，文件结构大致如下:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;.
-├── AndroidManifest.xml
-├── META-INF
-│   ├── CERT.RSA
-│   ├── CERT.SF
-│   └── MANIFEST.MF
-├── assets
-├── classes.dex
-├── classes2.dex
-├── classes3.dex
-├── lib
-├── res
-└── resources.arsc
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;apk相关的签名相关的文件在&lt;code&gt;META-INF&lt;/code&gt;目录中，其中：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;MANIFEST.MF&lt;br /&gt;
-  遍历APK包中除了&lt;code&gt;META-INF\&lt;/code&gt;文件夹以外的所有文件，利用SHA-1算法生成这些文件的消息摘要，然后转化为对应的base64编码。&lt;code&gt;MANIFEST.MF&lt;/code&gt;存储的是文件的摘要值，保证完整性，防止文件被篡改。&lt;/p&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;.SF&lt;br /&gt;
-  xx.SF文件（xx为使用者证书的自定义别名，默认为CERT，即CERT.SF），保存的是MANIFEST.MF的摘要值， 以及MANIFEST.MF中每一个摘要项的摘要值，然后转化成对应的base64编码。虽然该文件的后缀名.sf(SignatureFile)看起来是签名文件，但是并没有私钥参与运算，也不保存任何签名内容。&lt;/p&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;.RSA/.DSA&lt;br /&gt;
-  .RSA/.DSA文件（后缀不同采用的签名算法不同，.RSA使用的是RSA算法，.DSA使用的是数字签名算法DSA，目前APK主要使用的是这两种算法），保存的是第二项.SF文件的数字签名，同时还会包括签名采用的数字证书（公钥）。特别说明，当使用多重证书签名时，每一个.sf文件必须有一个.RSA/.DSA文件与之对应，也就是说使用证书CERT1签名时有CERT1.SF和CERT1.RSA，同时采用证书CERT2签名时又会生成CERT2.SF和CERT2.RSA。&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Android 系统不允许安装没有任何数字签名的应用APK程序，所有应用程序必须使用某个证书进行签名（一般为应用开发者自签名证书），&lt;br /&gt;
-APK源文件，首先由应用开发者使用自己的私钥，对整个文件进行签名，生成上述的三个文件，然后打包成签名后的APK文件；然后发布到市场。&lt;/p&gt;
-
-&lt;p&gt;用户从市场下载APK安装文件，在真正安装APK前，会首先验证数字签名。具体步骤：&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;首先计算除META-INF\ 文件夹以外所有文件的SHA1摘要值，同MANIFEST.MF文件中的摘要值做比对。如果不同，则证明源文件被篡改，验证不通过，拒绝安装。&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;计算MANIFEST.MF的摘要值， 以及MANIFEST.MF中每一个摘要项的摘要值，同.SF文件中的摘要值做比对。如果不同，则证明.SF被篡改，验证不通过，拒绝安装。&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;从.RSA 文件中取出开发者证书，然后从证书中提取开发者公钥，用该公钥对.SF文件做数字签名，并将结果同.RSA文件中的.SF签名进行比对。如果不同，则验证不通过，拒绝安装。&lt;br /&gt;&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;摘自:&lt;a href=&#34;https://jaq.alibaba.com/blog.htm?id=65&#34;&gt;Shadows Everywhere&lt;/a&gt;&lt;/p&gt;
-
-&lt;h1 id=&#34;0x03-android支持的签名算法&#34;&gt;0x03 Android支持的签名算法&lt;/h1&gt;
-
-&lt;p&gt;android 4.3之前不支持SHA1之外的其他签名算法，在4.3之后支持了SHA2等算法，详见：&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;There is security vs compatibility trade off a few might be interested in. Pre-4.3, Android did not support any signature algorithms except SHA1. With Android &amp;gt;= 4.3, SHA256 support was fixed, and SHA384, SHA512, and ECDSA were added (source). There are still android 2.3.3 (android-10) devices being sold, so anyone interested in backwards compatibility will have to heed this.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;测试例子详见：&lt;a href=&#34;https://guardianproject.info/2015/12/29/how-to-migrate-your-android-apps-signing-key/&#34;&gt;how-to-migrate-your-android-apps-signing-key&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;下面是提交给google的bug链接：&lt;a href=&#34;https://issuetracker.google.com/issues/36956587&#34;&gt;APKs signed using SHA256withRSA or with individual files hashed using SHA-256 fail to install&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;在android 4.3版本之前的手机上面安装使用sha-256签名的app时，错误日志信息大致如下:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;adb install -r Downloads/notepad-sha256withrsa-sha256.apk
-~/Downloads/notepad-sha256withrsa-sha256.apk: 1 file pushed. 4.3 MB/s (62395 bytes in 0.014s)
-  pkg: /data/local/tmp/notepad-sha256withrsa-sha256.apk
-Failure [INSTALL_PARSE_FAILED_NO_CERTIFICATES]
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h1 id=&#34;0x04-签名生成与查看&#34;&gt;0x04 签名生成与查看&lt;/h1&gt;
-
-&lt;ul&gt;
-&lt;li&gt;生成keystore&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;keytool -genkey -v -keystore test.keystore -alias testkey -keyalg RSA -keysize 2048 -sigalg SHA256withRSA -dname &amp;quot;cn=Test,ou=Test,c=CA&amp;quot; -validity 10000
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;ul&gt;
-&lt;li&gt;查看APK的签名算法&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;keytool -printcert -jarfile notepad-sha1withrsa-sha1.apk
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;ul&gt;
-&lt;li&gt;查看keystore&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;pre&gt;&lt;code&gt;keytool -list -v -keystore test.keystore
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;ul&gt;
-&lt;li&gt;jarsigner签名&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;pre&gt;&lt;code&gt;jarsigner -keystore mykeystore -storepass password -sigalg SHA256withRSA -digestalg SHA256 my.apk test 
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h1 id=&#34;0x05-jarsigner与apksigner的区别&#34;&gt;0x05 jarsigner与apksigner的区别&lt;/h1&gt;
-
-&lt;p&gt;jarsigner是jdk自带的工具，apksigner是android sdk自带的工具（build-tools 24.0.3+版本才拥有）。在android build-tools 24.0.3以前默认使用jarsigner对app进行签名，在24.0.3版本以及之后使用apksigner进行签名，其中apksigner签名算法根据android的最低版本的不同而不同，jarsigner则可以直接指定签名算法(见: 上面的jarsigner签名)。&lt;/p&gt;
-
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th align=&#34;center&#34;&gt;tool&lt;/th&gt;
-&lt;th align=&#34;center&#34;&gt;minSdkVersion &amp;lt; 18&lt;/th&gt;
-&lt;th align=&#34;center&#34;&gt;minSdkVersion &amp;gt;= 18&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td align=&#34;center&#34;&gt;apksigner&lt;/td&gt;
-&lt;td align=&#34;center&#34;&gt;SHA1withRSA&lt;/td&gt;
-&lt;td align=&#34;center&#34;&gt;SHA256withRSA&lt;/td&gt;
-&lt;/tr&gt;
-
-&lt;tr&gt;
-&lt;td align=&#34;center&#34;&gt;apksigner&lt;/td&gt;
-&lt;td align=&#34;center&#34;&gt;SHA1withDSA&lt;/td&gt;
-&lt;td align=&#34;center&#34;&gt;SHA256withDSA&lt;/td&gt;
-&lt;/tr&gt;
-
-&lt;tr&gt;
-&lt;td align=&#34;center&#34;&gt;apksigner&lt;/td&gt;
-&lt;td align=&#34;center&#34;&gt;&lt;/td&gt;
-&lt;td align=&#34;center&#34;&gt;SHA256withEC&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-
-&lt;p&gt;代码详见&lt;code&gt;com.android.apksig.internal.apk.v1.V1SchemeSigner&lt;/code&gt;:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-java&#34;&gt;public static DigestAlgorithm getSuggestedSignatureDigestAlgorithm(PublicKey signingKey, int minSdkVersion)
-  throws InvalidKeyException
-{
-  String keyAlgorithm = signingKey.getAlgorithm();
-  if (&amp;quot;RSA&amp;quot;.equalsIgnoreCase(keyAlgorithm))
-  {
-    if (minSdkVersion &amp;lt; 18) {
-      return DigestAlgorithm.SHA1;
-    }
-    return DigestAlgorithm.SHA256;
-  }
-  if (&amp;quot;DSA&amp;quot;.equalsIgnoreCase(keyAlgorithm))
-  {
-    if (minSdkVersion &amp;lt; 21) {
-      return DigestAlgorithm.SHA1;
-    }
-    return DigestAlgorithm.SHA256;
-  }
-  if (&amp;quot;EC&amp;quot;.equalsIgnoreCase(keyAlgorithm))
-  {
-    if (minSdkVersion &amp;lt; 18) {
-      throw new InvalidKeyException(&amp;quot;ECDSA signatures only supported for minSdkVersion 18 and higher&amp;quot;);
-    }
-    return DigestAlgorithm.SHA256;
-  }
-  throw new InvalidKeyException(&amp;quot;Unsupported key algorithm: &amp;quot; + keyAlgorithm);
-}  
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;&lt;a href=&#34;https://developer.android.com/studio/command-line/apksigner.html&#34;&gt;关于ApkSigner更多信息，请戳~&lt;/a&gt;&lt;/p&gt;
-
-&lt;h1 id=&#34;0x06-升级签名算法为sha-2&#34;&gt;0x06 升级签名算法为SHA-2&lt;/h1&gt;
-
-&lt;p&gt;综上所示，我们可以知道App使用签名算法的地方有两处，分别是：&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;使用keytools生成keystore时指定的算法。&lt;/li&gt;
-&lt;li&gt;使用jarsigner/apksigner和keystore对app进行签名时指定的算法。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;这里我们&lt;strong&gt;不修改签名文件keystore的签名算法&lt;/strong&gt;，我们只修改签名App时使用的签名算法为SHA-2，鉴于上面的原因我们需要升级android app的&lt;code&gt;minSdkVersion &amp;gt;= 18&lt;/code&gt;，下面介绍两种升级SHA-2的方法:&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;升级buildToolsVersion的版本大于等于24.0.3，gradle打包时会自动调用apksigner使用SHA256withRSA对app进行签名。&lt;/li&gt;
-&lt;li&gt;使用jarsigner对app进行签名，然后在命令参数中直接指定签名算法即可。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h1 id=&#34;0x07-遗留问题&#34;&gt;0x07 遗留问题&lt;/h1&gt;
-
-&lt;p&gt;由于keystore未发生变化，所以使用不同签名算法的app是可以互相覆盖的，故而攻击者也可以使用旧版本的apk(使用SHA-1)覆盖新版本apk(使用SHA-2)继续进行攻击，所以为了避免被攻击者进行攻击的最好更换keystore，但是这样就没法覆盖安装了，详细请参考&lt;a href=&#34;https://android-developers.googleblog.com/2011/06/things-that-cannot-change.html&#34;&gt;things-that-cannot-change&lt;/a&gt;。&lt;/p&gt;
-
-&lt;h1 id=&#34;0x08-参考引用&#34;&gt;0x08 参考引用&lt;/h1&gt;
-
-&lt;ol&gt;
-&lt;li&gt;&lt;a href=&#34;https://security.googleblog.com/2017/02/announcing-first-sha1-collision.html&#34;&gt;Announcing the first SHA1 collision&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://shattered.it/&#34;&gt;SHA1 collision Two PDF&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://android-developers.googleblog.com/2011/06/things-that-cannot-change.html&#34;&gt;things-that-cannot-change&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://zh.wikipedia.org/wiki/SHA-1&#34;&gt;SHA-1&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://jaq.alibaba.com/blog.htm?id=65&#34;&gt;Shadows Everywhere&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://developer.android.com/studio/command-line/apksigner.html&#34;&gt;apksigner&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://jokester.io/post/2017-02/sha1-collision-and-apk-signing/&#34;&gt;sha1-collision-and-apk-signing&lt;/a&gt;&lt;/li&gt;
-&lt;/ol&gt;
-</description>
+      <description>SHA1-Collision &amp;amp; Android Sign 参看SHA1-collision我们可以知道，SHA-1签名已经不安全了，签名算法可以考虑升级到SHA-2或者其他算法。
+0x01 SHA1-Collision 1. SHA-1是什么？ SHA-1（英语：Secure Hash Algorithm 1，中文名：安全散列算法1）是一种密码散列函数，美国国家安全局设计，并由美国国家标准技术研究所（NIST）发布为联邦数据处理标准（FIPS）[2]。SHA-1可以生成一个被称为消息摘要的160位（20字节）散列值，散列值通常的呈现形式为40个十六进制数，参考：SHA-1
+2. SHA1-Collision是什么？ 两个内容不同的数据，SHA-1算法会生成相同的摘要信息，参考：SHA1 collision Two PDF。
+3. SHA1-Collision对Android的影响 Android SDK默认对apk使用SHA-1签名，在最坏的情况下，攻击者可以伪造SHA-1值相同的文件替换已签名apk中的文件来达到攻击的目的。
+0x02 Android的证书验证机制 我们知道Android的Apk文件是一个压缩文件，文件结构大致如下:
+. ├── AndroidManifest.xml ├── META-INF │ ├── CERT.RSA │ ├── CERT.SF │ └── MANIFEST.MF ├── assets ├── classes.dex ├── classes2.dex ├── classes3.dex ├── lib ├── res └── resources.arsc  apk相关的签名相关的文件在META-INF目录中，其中：
+ MANIFEST.MF
+遍历APK包中除了META-INF\文件夹以外的所有文件，利用SHA-1算法生成这些文件的消息摘要，然后转化为对应的base64编码。MANIFEST.MF存储的是文件的摘要值，保证完整性，防止文件被篡改。
+ .SF
+xx.SF文件（xx为使用者证书的自定义别名，默认为CERT，即CERT.SF），保存的是MANIFEST.MF的摘要值， 以及MANIFEST.MF中每一个摘要项的摘要值，然后转化成对应的base64编码。虽然该文件的后缀名.sf(SignatureFile)看起来是签名文件，但是并没有私钥参与运算，也不保存任何签名内容。
+ .RSA/.DSA
+.RSA/.DSA文件（后缀不同采用的签名算法不同，.RSA使用的是RSA算法，.DSA使用的是数字签名算法DSA，目前APK主要使用的是这两种算法），保存的是第二项.SF文件的数字签名，同时还会包括签名采用的数字证书（公钥）。特别说明，当使用多重证书签名时，每一个.sf文件必须有一个.RSA/.DSA文件与之对应，也就是说使用证书CERT1签名时有CERT1.SF和CERT1.RSA，同时采用证书CERT2签名时又会生成CERT2.SF和CERT2.RSA。
+  Android 系统不允许安装没有任何数字签名的应用APK程序，所有应用程序必须使用某个证书进行签名（一般为应用开发者自签名证书），</description>
     </item>
     
     <item>
       <title>upgrade android support library to 25.4.0</title>
       <link>http://coofee.github.io/post/upgrade-android-sdk-android-support-library/</link>
-      <pubDate>Thu, 13 Jul 2017 19:52:39 CST</pubDate>
-      <author>Coofee</author>
+      <pubDate>Thu, 13 Jul 2017 19:52:39 +0800</pubDate>
+      <author>coffeerene.zhao@gmail.com (Coofee)</author>
       <guid>http://coofee.github.io/post/upgrade-android-sdk-android-support-library/</guid>
-      <description>
-
-&lt;p&gt;Android升级Support库版本至25.4.0&lt;/p&gt;
-
-&lt;p&gt;[TOC]&lt;/p&gt;
-
-&lt;h1 id=&#34;0x00-背景&#34;&gt;0x00 背景&lt;/h1&gt;
-
-&lt;p&gt;support库是google官方提供的支持库，其主要功能在于兼容android高/低版本系统（如：&lt;code&gt;support-v4&lt;/code&gt;、&lt;code&gt;support-v7&lt;/code&gt;库），同时伴随着support库的不同版本，也会发布同版本的各种UI组件库（如&lt;code&gt;Design&lt;/code&gt;、&lt;code&gt;RecyclerView&lt;/code&gt;等）。support库的每次更新升级，一般都会包括bug修复、性能优化以及功能改进等等。&lt;/p&gt;
-
-&lt;p&gt;目前我们App使用的版本是&lt;strong&gt;&lt;a href=&#34;https://developer.android.com/topic/libraries/support-library/rev-archive.html#rev23-0-1&#34;&gt;23.0.1&lt;/a&gt;&lt;/strong&gt;，截止目前google发布的最新稳定版本是&lt;strong&gt;&lt;a href=&#34;https://developer.android.com/topic/libraries/support-library/revisions.html#25-4-0&#34;&gt;25.4.0&lt;/a&gt;&lt;/strong&gt;，中间相差了将近&lt;strong&gt;20&lt;/strong&gt;个版本，其中包含大量的bug修复；同时又因为&lt;code&gt;Design&lt;/code&gt;、&lt;code&gt;RecyclerView&lt;/code&gt;等UI库的很多新组件也依赖于support库的升级，所以我们计划将&lt;code&gt;support-v4&lt;/code&gt;、&lt;code&gt;support-v7&lt;/code&gt;、&lt;code&gt;Design&lt;/code&gt;、&lt;code&gt;RecyclerView&lt;/code&gt;等库统一升级至25.4.0版本。&lt;/p&gt;
-
-&lt;h1 id=&#34;0x01-打包环境的影响及解决方案&#34;&gt;0x01 打包环境的影响及解决方案&lt;/h1&gt;
-
-&lt;h2 id=&#34;1-升级jdk-android-sdk&#34;&gt;1. 升级JDK &amp;amp; Android SDK&lt;/h2&gt;
-
-&lt;ul&gt;
-&lt;li&gt;升级JDK到1.8&lt;/li&gt;
-&lt;li&gt;升级Android SDK到25&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&#34;2-升级centos或glibc&#34;&gt;2. 升级CentOS或GLIBC&lt;/h2&gt;
-
-&lt;p&gt;由于我们的jenkins打包服务器的系统是CentOS 6.5，其默认支持的GLIBC库版本最高为2.12，而android sdk高版本需要的GLIBC版本为2.14，所以要么升级系统CentOS到7.x版本，要么升级GLIBC版本到2.14.&lt;/p&gt;
-
-&lt;p&gt;当Android SDK需要的GLIBC版本不匹配时，出错信息大致如下:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;[exec] /data0/android-tools/android-sdk-linux/build-tools/24.0.2/aapt: /lib64/libc.so.6: version `GLIBC_2.14&#39; not found (required by /data0/android-tools/android-sdk-linux/build-tools/24.0.2/aapt)
-
-[exec] /data0/android-tools/android-sdk-linux/build-tools/24.0.2/aapt: /lib64/libc.so.6: version `GLIBC_2.14&#39; not found (required by /data0/android-tools/android-sdk-linux/build-tools/24.0.2/lib64/libc++.so)
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;在CentOS系统中，使用&lt;code&gt;strings /lib64/libc.so.6 | grep GLIBC&lt;/code&gt;命令可以查看其支持的GLIBC库的版本。&lt;/p&gt;
-
-&lt;h2 id=&#34;3-指定gradle使用jdk1-8&#34;&gt;3. 指定gradle使用jdk1.8&lt;/h2&gt;
-
-&lt;p&gt;由于android sdk需要在jdk1.8环境才能正常编译、打包，所以要么在系统中配置java环境变量为jdk1.8版本；要么在执行gradle时指定其运行环境为jdk1.8。&lt;/p&gt;
-
-&lt;p&gt;指定gradle使用jdk1.8，具体配置如下：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;gradlew clean -Dorg.gradle.java.home=/usr/java/jdk1.8
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;也可以直接在&lt;code&gt;gradle.properties&lt;/code&gt;中指定jdk版本，如下所示：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;org.gradle.java.home=/usr/java/jdk1.8
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2 id=&#34;4-support库与build-tools版本&#34;&gt;4. support库与build-tools版本&lt;/h2&gt;
-
-&lt;p&gt;由于我们app原本使用的build-tools版本是22.0.1，当保持build-tools版本不变，只升级support库版本时，在HUAWEI P7-L00 4.4.2上面运行时，会出现如下错误，推测是因为support库版本和build-tools主版本号不一致导致，所以如果升级support库版本，最好保持和build-tools主版本号一致，防止各种诡异问题。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;E/AndroidRuntime: FATAL EXCEPTION: main
-Caused by: android.content.res.Resources$NotFoundException: File res/drawable/abc_vector_test.xml from drawable resource ID #0x7f820053
-  at android.content.res.Resources.loadDrawable(Resources.java:2154)
-  at com.huawei.android.content.res.ResourcesEx.loadDrawable(ResourcesEx.java:723)
-  at android.content.res.Resources.getDrawable(Resources.java:741)
-  at android.support.v4.content.ContextCompat.getDrawable(ContextCompat.java:374)
-  at android.support.v7.widget.AppCompatDrawableManager.getDrawable(AppCompatDrawableManager.java:202)
-  at android.support.v7.widget.AppCompatDrawableManager.getDrawable(AppCompatDrawableManager.java:190)
-  at android.support.v7.widget.AppCompatDrawableManager.checkVectorDrawableSetup(AppCompatDrawableManager.java:711)
-  at android.support.v7.widget.AppCompatDrawableManager.getDrawable(AppCompatDrawableManager.java:195)
-  at android.support.v7.widget.AppCompatDrawableManager.getDrawable(AppCompatDrawableManager.java:190)
-  at android.support.v7.content.res.AppCompatResources
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h1 id=&#34;0x02-相关代码的影响及解决方案&#34;&gt;0x02 相关代码的影响及解决方案&lt;/h1&gt;
-
-&lt;h2 id=&#34;1-使用google官方的maven仓库&#34;&gt;1. 使用google官方的Maven仓库&lt;/h2&gt;
-
-&lt;p&gt;support库升级到25.4.0时，需要使用google官方的maven仓库(&lt;a href=&#34;https://maven.google.com)需要翻墙，解决方案如下:&#34;&gt;https://maven.google.com)需要翻墙，解决方案如下:&lt;/a&gt;&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;allprojects {
-    repositories {
-        maven {
-            url &amp;quot;https://dl.google.com/dl/android/maven2/&amp;quot;
-        }
-        jcenter()
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2 id=&#34;2-targetsdkversion&#34;&gt;2. targetSdkVersion&lt;/h2&gt;
-
-&lt;p&gt;当我们将app的targetSdkVersion升级到25时，由于libssl.so已经被系统移除了，此时当我们的So依赖该库时，在App运行时会直接崩溃，所以targetSdkVersion可以仍然保持为23，也可以自己做兼容。注: android 6.0已经使用&lt;code&gt;BoringSSL&lt;/code&gt;替换了&lt;code&gt;OpenSSL&lt;/code&gt;。&lt;/p&gt;
-
-&lt;h2 id=&#34;3-coordinatorlayout&#34;&gt;3. CoordinatorLayout&lt;/h2&gt;
-
-&lt;p&gt;support库升级到25.4.0时，使用&lt;code&gt;CoordinatorLayout&lt;/code&gt;控件的页面，Activity的主题必须继承&lt;code&gt;Theme.AppCompat&lt;/code&gt;，否则会直接崩溃，错误日志如下：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-java&#34;&gt;Caused by: java.lang.IllegalArgumentException: You need to use a Theme.AppCompat theme (or descendant) with the design library.
-  at android.support.design.widget.ThemeUtils.checkAppCompatTheme(ThemeUtils.java:33)
-  at android.support.design.widget.CoordinatorLayout.&amp;lt;init&amp;gt;(CoordinatorLayout.java:206)
-  at android.support.design.widget.CoordinatorLayout.&amp;lt;init&amp;gt;(CoordinatorLayout.java:200)
-  at java.lang.reflect.Constructor.newInstance0(Native Method) 
-  at java.lang.reflect.Constructor.newInstance(Constructor.java:430) 
-  at android.view.LayoutInflater.createView(LayoutInflater.java:656) 
-  at android.view.LayoutInflater.createViewFromTag(LayoutInflater.java:798) 
-  at android.view.LayoutInflater.createViewFromTag(LayoutInflater.java:738) 
-  at android.view.LayoutInflater.inflate(LayoutInflater.java:495) 
-  at android.view.LayoutInflater.inflate(LayoutInflater.java:426) 
-  at android.view.LayoutInflater.inflate(LayoutInflater.java:377) 
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2 id=&#34;4-recyclerview&#34;&gt;4. RecyclerView&lt;/h2&gt;
-
-&lt;ul&gt;
-&lt;li&gt;ItemView高度占满RecyclerView&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;RecyclerView在&lt;strong&gt;23.2&lt;/strong&gt;版本支持&lt;code&gt;setAutoMeasureEnabled()&lt;/code&gt;，当item布局是&lt;code&gt;match_parent&lt;/code&gt;时，这个item会占满整个RecyclerView的高度/宽度，所以当从低版本升级到高版本时需要将&lt;code&gt;match_parent&lt;/code&gt;替换为精确的宽度/高度，或者使用&lt;code&gt;wrap_content&lt;/code&gt;。&lt;/p&gt;
-
-&lt;p&gt;原因如下:&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;The RecyclerView widget provides an advanced and flexible base for creating lists and grids as well as supporting animations. This release brings an exciting new feature to the LayoutManager API: auto-measurement! This allows a RecyclerView to size itself based on the size of its contents. This means that previously unavailable scenarios, such as using WRAP_CONTENT for a dimension of the RecyclerView, are now possible. You’ll find all built in LayoutManagers now support auto-measurement.&lt;/p&gt;
-
-&lt;p&gt;Due to this change, make sure to double check the layout parameters of your item views: previously ignored layout parameters (such as MATCH_PARENT in the scroll direction) will now be fully respected.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;&lt;a href=&#34;https://android-developers.googleblog.com/2016/02/android-support-library-232.html&#34;&gt;详见: RecyclerView 23.2.0&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;如果布局xml非常多，修改麻烦的话，可以考虑在&lt;code&gt;Adapter.onCreateViewHolder()&lt;/code&gt;方法中直接修改itemView的属性即可，下面是一个竖直RecyclerView的样例：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-java&#34;&gt;ViewGroup.LayoutParams layoutParams = itemView.getLayoutParams();
-if (layoutParams == null) {
-    layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-    itemView.setLayoutParams(layoutParams);
-
-} else if (layoutParams.height == ViewGroup.LayoutParams.MATCH_PARENT) {
-    layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT;
-    itemView.setLayoutParams(layoutParams);
-
-}
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;ul&gt;
-&lt;li&gt;隐藏ItemView&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;在RecyclerView中即使itemView整个设置了GONE，仍然会占据空间，所以如果需要隐藏整个itemView的话，需要设置其宽度、高度为0.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-java&#34;&gt;public static void hideItemView(View itemView) {
-    if (itemView == null) {
-        return;
-    }
-
-    itemView.setVisibility(View.GONE);
-    ViewGroup.LayoutParams layoutParams = itemView.getLayoutParams();
-    if (layoutParams == null) {
-        layoutParams = new ViewGroup.LayoutParams(0, 0);
-    }
-
-    layoutParams.height = 0;
-    layoutParams.width = 0;
-    itemView.setLayoutParams(layoutParams);
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h1 id=&#34;0x03-后续升级建议&#34;&gt;0x03 后续升级建议&lt;/h1&gt;
-
-&lt;h2 id=&#34;1-multidex&#34;&gt;1. multidex&lt;/h2&gt;
-
-&lt;p&gt;升级multidex库到1.0.2版本。&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;ol&gt;
-&lt;li&gt;Allows multidexing of instrumentation APK.
-Deprecates MultiDexTestRunner (AndroidJUnitRunner should be used instead).&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;Provides better protection against some bad archive extraction management of the app.&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;Fixes a bug that could lead to abandoned temporary files.&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;Provides faster installation when done in concurrent process.&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;Fixes an installation bug on API 19 and 20.&lt;br /&gt;&lt;/li&gt;
-&lt;/ol&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;升级1.0.2之后直接编译，会出现以下问题:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;Error:Conflict with dependency &#39;com.android.support:multidex&#39;. Resolved versions for app (1.0.2) and test app (1.0.1) differ. 
-See http://g.co/androidstudio/app-test-app-conflict for details.
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;解决这个问题，则需要在test依赖中手动指定&lt;code&gt;multidex&lt;/code&gt;的依赖是1.0.2&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;dependencies {
-    androidTestCompile &#39;com.android.support:multidex:1.0.2&#39;
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;也可以在全部依赖中强制使用1.0.2版本即可。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;configurations.all {
-  resolutionStrategy {
-    force &#39;com.android.support:multidex:1.0.2&#39;
-  }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2 id=&#34;2-fragment&#34;&gt;2. Fragment&lt;/h2&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;可以考虑使用Fragment的&lt;code&gt;commitNow()&lt;/code&gt;同步方法代替异步&lt;code&gt;commit()&lt;/code&gt;，避免异步导致出现&lt;code&gt;Can not perform this action after onSaveInstanceState&lt;/code&gt;异常。&lt;/p&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;可以考虑使用FragmentTransaction.setAllowOptimization()优化fragment操作。&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h1 id=&#34;0x04-参考&#34;&gt;0x04 参考&lt;/h1&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://developer.android.com/topic/libraries/support-library/revisions.html#25-4-0&#34;&gt;support-library-25.4.0&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://android-developers.googleblog.com/2016/02/android-support-library-232.html&#34;&gt;RecyclerView 23.2.0&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-</description>
+      <description>Android升级Support库版本至25.4.0
+[TOC]
+0x00 背景 support库是google官方提供的支持库，其主要功能在于兼容android高/低版本系统（如：support-v4、support-v7库），同时伴随着support库的不同版本，也会发布同版本的各种UI组件库（如Design、RecyclerView等）。support库的每次更新升级，一般都会包括bug修复、性能优化以及功能改进等等。
+目前我们App使用的版本是23.0.1，截止目前google发布的最新稳定版本是25.4.0，中间相差了将近20个版本，其中包含大量的bug修复；同时又因为Design、RecyclerView等UI库的很多新组件也依赖于support库的升级，所以我们计划将support-v4、support-v7、Design、RecyclerView等库统一升级至25.4.0版本。
+0x01 打包环境的影响及解决方案 1. 升级JDK &amp;amp; Android SDK  升级JDK到1.8 升级Android SDK到25  2. 升级CentOS或GLIBC 由于我们的jenkins打包服务器的系统是CentOS 6.5，其默认支持的GLIBC库版本最高为2.12，而android sdk高版本需要的GLIBC版本为2.14，所以要么升级系统CentOS到7.x版本，要么升级GLIBC版本到2.14.
+当Android SDK需要的GLIBC版本不匹配时，出错信息大致如下:
+[exec] /data0/android-tools/android-sdk-linux/build-tools/24.0.2/aapt: /lib64/libc.so.6: version `GLIBC_2.14&#39; not found (required by /data0/android-tools/android-sdk-linux/build-tools/24.0.2/aapt) [exec] /data0/android-tools/android-sdk-linux/build-tools/24.0.2/aapt: /lib64/libc.so.6: version `GLIBC_2.14&#39; not found (required by /data0/android-tools/android-sdk-linux/build-tools/24.0.2/lib64/libc++.so)  在CentOS系统中，使用strings /lib64/libc.so.6 | grep GLIBC命令可以查看其支持的GLIBC库的版本。
+3. 指定gradle使用jdk1.8 由于android sdk需要在jdk1.8环境才能正常编译、打包，所以要么在系统中配置java环境变量为jdk1.8版本；要么在执行gradle时指定其运行环境为jdk1.8。
+指定gradle使用jdk1.8，具体配置如下：
+gradlew clean -Dorg.gradle.java.home=/usr/java/jdk1.8  也可以直接在gradle.properties中指定jdk版本，如下所示：
+org.gradle.java.home=/usr/java/jdk1.8  4. support库与build-tools版本 由于我们app原本使用的build-tools版本是22.0.1，当保持build-tools版本不变，只升级support库版本时，在HUAWEI P7-L00 4.4.2上面运行时，会出现如下错误，推测是因为support库版本和build-tools主版本号不一致导致，所以如果升级support库版本，最好保持和build-tools主版本号一致，防止各种诡异问题。
+E/AndroidRuntime: FATAL EXCEPTION: main Caused by: android.</description>
     </item>
     
   </channel>
