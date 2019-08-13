@@ -8,46 +8,9 @@
     <language>en-us</language>
     <managingEditor>coffeerene.zhao@gmail.com (Coofee)</managingEditor>
     <webMaster>coffeerene.zhao@gmail.com (Coofee)</webMaster>
-    <lastBuildDate>Tue, 25 Jul 2017 19:43:30 +0800</lastBuildDate>
     
 	<atom:link href="http://coofee.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
     
-    
-    <item>
-      <title>android</title>
-      <link>http://coofee.github.io/categories/android/</link>
-      <pubDate>Tue, 25 Jul 2017 19:43:30 +0800</pubDate>
-      <author>coffeerene.zhao@gmail.com (Coofee)</author>
-      <guid>http://coofee.github.io/categories/android/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>react-native</title>
-      <link>http://coofee.github.io/categories/react-native/</link>
-      <pubDate>Fri, 21 Jul 2017 17:44:38 +0800</pubDate>
-      <author>coffeerene.zhao@gmail.com (Coofee)</author>
-      <guid>http://coofee.github.io/categories/react-native/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Groovy</title>
-      <link>http://coofee.github.io/categories/groovy/</link>
-      <pubDate>Thu, 30 Jun 2016 00:04:39 +0800</pubDate>
-      <author>coffeerene.zhao@gmail.com (Coofee)</author>
-      <guid>http://coofee.github.io/categories/groovy/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>proxy</title>
-      <link>http://coofee.github.io/categories/proxy/</link>
-      <pubDate>Fri, 25 Mar 2016 13:14:08 +0800</pubDate>
-      <author>coffeerene.zhao@gmail.com (Coofee)</author>
-      <guid>http://coofee.github.io/categories/proxy/</guid>
-      <description></description>
-    </item>
     
   </channel>
 </rss>

@@ -7,7 +7,7 @@
   <meta name="description" content="Less is more">
   <meta name="generator" content="Hugo 0.56.0" />
 
-  <title>Series &middot; Simple...</title>
+  <title>sqlite3 extension &middot; Simple...</title>
 
   
   
@@ -137,13 +137,63 @@
 
 
 <div class="header">
-  <h1>Series</h1>
+  <h1>sqlite3 extension</h1>
 </div>
+
 <div class="content">
-  <ul>
+  
+    <article>
+  <header>
+    <h2><a href="http://coofee.github.io/post/how_to_write_sqlites_extension/">How to write sqlites extension</a></h2>
+
+    <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>12 Aug 2019, 19:18</time>
+  </div>
+
+  
+
+  
+
   
   
-  </ul>
+  
+  <div>
+    <i class="fa fa-tags fa-fw"></i>
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/android">android</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/sqlite3">sqlite3</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/sqlite3-extension">sqlite3 extension</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/latitude-and-longitude-distance">latitude and longitude distance</a>
+    
+  </div>
+  
+  
+
+</div>
+
+  </header>
+
+  <p>
+  0x00 SQLite sqlite是一个使用c语音编写的库，其实现了一个的小巧、快速、自含、高可靠性、全功能的SQL数据库引擎。它仅依赖少数的几个系统调用。它是一个非常流行的数据库，几乎打包到了所有的移动设备中，同时有无数的应用程序内嵌了它。
+0x01 SQLite扩展 sqlite extension是可以在运行时被sqlite加载的库，其主要有以下作用：
+ 扩展sqlite的功能，如提供sqlite本身不支持的函数。 运行时加载扩展，可以动态更新，也可以保证只在需要时加载扩展，减少内存消耗。 扩展可以独立于sqlite本身单独开发，测试。  0x02 编写扩展 编写扩展时，我们可以从sqlite的官网复制一份模板代码，整个模板代码如下所示：
+/* Add your header comment here */ #include &lt;sqlite3ext.h&gt; /* Do not use &lt;sqlite3.h&gt;! */ SQLITE_EXTENSION_INIT1 /* Insert your extension code here */ #ifdef _WIN32 __declspec(dllexport) #endif /* TODO: Change the entry point name so that &quot;extension&quot; is replaced by ** text derived from the shared library filename as follows: Copy every ** ASCII alphabetic character from the filename after the last &quot;/&quot; through ** the next following &quot;.
+  </p>
+
+  
+  <footer>
+    <a href="/post/how_to_write_sqlites_extension/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
+  </footer>
+  
+</article>
+
+  
 </div>
 
 </div>

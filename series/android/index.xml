@@ -8,10 +8,22 @@
     <language>en-us</language>
     <managingEditor>coffeerene.zhao@gmail.com (Coofee)</managingEditor>
     <webMaster>coffeerene.zhao@gmail.com (Coofee)</webMaster>
-    <lastBuildDate>Tue, 25 Jul 2017 19:43:30 +0800</lastBuildDate>
+    <lastBuildDate>Mon, 12 Aug 2019 19:18:58 +0800</lastBuildDate>
     
 	<atom:link href="http://coofee.github.io/series/android/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>How to write sqlites extension</title>
+      <link>http://coofee.github.io/post/how_to_write_sqlites_extension/</link>
+      <pubDate>Mon, 12 Aug 2019 19:18:58 +0800</pubDate>
+      <author>coffeerene.zhao@gmail.com (Coofee)</author>
+      <guid>http://coofee.github.io/post/how_to_write_sqlites_extension/</guid>
+      <description>0x00 SQLite sqlite是一个使用c语音编写的库，其实现了一个的小巧、快速、自含、高可靠性、全功能的SQL数据库引擎。它仅依赖少数的几个系统调用。它是一个非常流行的数据库，几乎打包到了所有的移动设备中，同时有无数的应用程序内嵌了它。
+0x01 SQLite扩展 sqlite extension是可以在运行时被sqlite加载的库，其主要有以下作用：
+ 扩展sqlite的功能，如提供sqlite本身不支持的函数。 运行时加载扩展，可以动态更新，也可以保证只在需要时加载扩展，减少内存消耗。 扩展可以独立于sqlite本身单独开发，测试。  0x02 编写扩展 编写扩展时，我们可以从sqlite的官网复制一份模板代码，整个模板代码如下所示：
+/* Add your header comment here */ #include &amp;lt;sqlite3ext.h&amp;gt; /* Do not use &amp;lt;sqlite3.h&amp;gt;! */ SQLITE_EXTENSION_INIT1 /* Insert your extension code here */ #ifdef _WIN32 __declspec(dllexport) #endif /* TODO: Change the entry point name so that &amp;quot;extension&amp;quot; is replaced by ** text derived from the shared library filename as follows: Copy every ** ASCII alphabetic character from the filename after the last &amp;quot;/&amp;quot; through ** the next following &amp;quot;.</description>
+    </item>
     
     <item>
       <title>android check app running foreground</title>

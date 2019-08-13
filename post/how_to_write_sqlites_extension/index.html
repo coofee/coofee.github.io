@@ -146,13 +146,29 @@
 
   <div>
     <i class="fa fa-calendar fa-fw"></i>
-    <time>26 Jul 2019, 19:18</time>
+    <time>12 Aug 2019, 19:18</time>
   </div>
 
   
 
   
 
+  
+  
+  
+  <div>
+    <i class="fa fa-tags fa-fw"></i>
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/android">android</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/sqlite3">sqlite3</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/sqlite3-extension">sqlite3 extension</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/latitude-and-longitude-distance">latitude and longitude distance</a>
+    
+  </div>
+  
   
 
 </div>
@@ -173,33 +189,7 @@
 <li>扩展可以独立于sqlite本身单独开发，测试。</li>
 </ul>
 
-<h1 id="0x02-启用扩展">0x02 启用扩展</h1>
-
-<p>由于一些安全性的问题，<strong>sqlite默认禁用扩展</strong>，当用户使用扩展时，首先需要启用扩展功能，开启的方式有以下两种：</p>
-
-<ul>
-<li>编译sqlite时在编译选项中添加<code>LOCAL_CFLAGS += -DSQLITE_ENABLE_LOAD_EXTENSION=1</code>标志，直接启用扩展功能。</li>
-<li>使用sqlite提供的接口<code>sqlite3_enable_load_extension(db, 1);</code>，直接开启扩展功能，其中1表示启用扩展，0表示禁用扩展。</li>
-</ul>
-
-<h1 id="0x03-加载扩展">0x03 加载扩展</h1>
-
-<p>加载扩展有两种方式，</p>
-
-<ul>
-<li><p>使用sqlite内建的<a href="https://sqlite.org/lang_corefunc.html#load_extension">load_extension(libFileName, entryPoint)</a>sql语句加载扩展，若加载失败会直接抛出异常，否则加载成功，如：</p>
-
-<pre><code>select load_extension(distance, sqlite3_distance_init)
-</code></pre>
-
-<p>注意: 在java中使用sql语句加载扩展时，需要先使用<code>System.loadLibrary(&quot;distance&quot;)</code>加载动态库。</p></li>
-
-<li><p>使用sqlite提供的api函数<a href="https://sqlite.org/c3ref/load_extension.html"><code>sqlite3_load_extension(db, libFilePath, entryPoint, pzErrMsg)</code></a>加载扩展，当函数返回<code>SQLITE_OK</code>也就是<code>0</code>时表示扩展加载成功。</p>
-
-<p>注意：在java中使用函数加载扩展时，需要使用<code>sqlite3-android-bindings</code>库提供的jni接口来调用c接口。</p></li>
-</ul>
-
-<h1 id="0x04-编写扩展">0x04 编写扩展</h1>
+<h1 id="0x02-编写扩展">0x02 编写扩展</h1>
 
 <p>编写扩展时，我们可以从<a href="https://sqlite.org/loadext.html#programming_loadable_extensions">sqlite的官网</a>复制一份模板代码，整个模板代码如下所示：</p>
 
@@ -328,7 +318,7 @@ int sqlite3_distance_init(sqlite3 *db, char **pzErrMsg, const sqlite3_api_routin
 
 <p>至此，扩展已经编写完毕了，代码详见: <a href="https://github.com/coofee/SqliteDistanceExtension">SqliteDistanceExtension</a>。</p>
 
-<h1 id="0x05-编译扩展">0x05 编译扩展</h1>
+<h1 id="0x03-编译扩展">0x03 编译扩展</h1>
 
 <p>因为sqlite是跨平台的，对于不同的平台编译方式不同，具体可以参考<a href="https://sqlite.org/loadext.html#compiling_a_loadable_extension">sqlite3 compile_extension</a>。</p>
 
@@ -383,9 +373,37 @@ $ ndk-build
 </code></pre></li>
 </ul>
 
-<h1 id="0x06-使用扩展">0x06 使用扩展</h1>
+<h1 id="0x04-使用扩展">0x04 使用扩展</h1>
 
-<p>我们知道android系统对外没有提供加载sqlite3扩展的java api。尽管在android的源代码中包含扩展函数相关代码，但是其提供的扩展函数没有返回值，同时其实隐藏api，所以也不可用。具体相关代码如下：</p>
+<h2 id="1-启用扩展">1. 启用扩展</h2>
+
+<p>由于一些安全性的问题，<strong>sqlite默认禁用扩展</strong>，当用户使用扩展时，首先需要启用扩展功能，开启的方式有以下两种：</p>
+
+<ul>
+<li>编译sqlite时在编译选项中添加<code>LOCAL_CFLAGS += -DSQLITE_ENABLE_LOAD_EXTENSION=1</code>标志，直接启用扩展功能。</li>
+<li>使用sqlite提供的接口<code>sqlite3_enable_load_extension(db, 1);</code>，直接开启扩展功能，其中1表示启用扩展，0表示禁用扩展。</li>
+</ul>
+
+<h2 id="2-加载扩展">2. 加载扩展</h2>
+
+<p>加载扩展有两种方式，</p>
+
+<ul>
+<li><p>使用sqlite内建的<a href="https://sqlite.org/lang_corefunc.html#load_extension">load_extension(libFileName, entryPoint)</a>sql语句加载扩展，若加载失败会直接抛出异常，否则加载成功，如：</p>
+
+<pre><code>select load_extension(distance, sqlite3_distance_init)
+</code></pre>
+
+<p>注意: 在java中使用sql语句加载扩展时，需要先使用<code>System.loadLibrary(&quot;distance&quot;)</code>加载动态库。</p></li>
+
+<li><p>使用sqlite提供的api函数<a href="https://sqlite.org/c3ref/load_extension.html"><code>sqlite3_load_extension(db, libFilePath, entryPoint, pzErrMsg)</code></a>加载扩展，当函数返回<code>SQLITE_OK</code>也就是<code>0</code>时表示扩展加载成功。</p>
+
+<p>注意：在java中使用函数加载扩展时，需要通过jni方法来调用c接口，如：<code>sqlite3-android-bindings</code>库。</p></li>
+</ul>
+
+<h3 id="1-android-sdk不支持自定义扩展方法">1. android sdk不支持自定义扩展方法</h3>
+
+<p>我们知道android系统对外没有提供加载sqlite3扩展的java api。尽管在android的源代码中包含扩展函数相关代码，但是其提供的扩展函数没有返回值，同时其又是隐藏api，所以也不可用。具体相关代码如下：</p>
 
 <pre><code class="language-java">// android.database.sqlite.SQLiteDatabase
 
@@ -426,7 +444,9 @@ public void addCustomFunction(String name, int numArgs, CustomFunction function)
 }
 </code></pre>
 
-<p>综上，为了使用sqlite扩展函数，必须自己内嵌一个的sqlite库，同时暴露出加载扩展函数接口，所以可以使用<a href="https://github.com/requery/sqlite-android">sqlite-android</a>库。</p>
+<h3 id="2-使用-sqlite-android-https-github-com-requery-sqlite-android-添加自定义扩展方法">2. 使用<a href="https://github.com/requery/sqlite-android">sqlite-android</a>添加自定义扩展方法</h3>
+
+<p>所以为了使用sqlite扩展函数，必须自己内嵌一个的sqlite库，同时暴露出加载扩展方法接口，在此我们选用了<a href="https://github.com/requery/sqlite-android">sqlite-android</a>库。</p>
 
 <p>添加扩展时，可以在<code>SQLiteOpenHelper</code>的<code>createConfiguration()</code>方法中添加扩展库即可，代码大致如下：</p>
 
@@ -439,12 +459,14 @@ public void addCustomFunction(String name, int numArgs, CustomFunction function)
 }
 </code></pre>
 
+<h2 id="3-调用扩展方法">3. 调用扩展方法</h2>
+
 <p>在sql中使用扩展函数:</p>
 
 <pre><code class="language-sql">select * from location order by distance(lat, lng, 39.904211, 116.407394) limit 100;
 </code></pre>
 
-<h1 id="0x07-参考">0x07 参考</h1>
+<h1 id="0x05-参考">0x05 参考</h1>
 
 <ul>
 <li><a href="https://sqlite.org/loadext.html">sqlite3 loadext</a></li>
