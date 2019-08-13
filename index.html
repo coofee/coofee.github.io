@@ -143,8 +143,469 @@
 
 <div class="content">
   
+    <article>
+  <header>
+    <h2><a href="http://coofee.github.io/post/how_to_write_sqlites_extension/">How to write sqlites extension</a></h2>
+
+    <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>12 Aug 2019, 19:18</time>
+  </div>
 
   
+
+  
+
+  
+  
+  
+  <div>
+    <i class="fa fa-tags fa-fw"></i>
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/android">android</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/sqlite3">sqlite3</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/sqlite3-extension">sqlite3 extension</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/latitude-and-longitude-distance">latitude and longitude distance</a>
+    
+  </div>
+  
+  
+
+</div>
+
+  </header>
+
+  <p>
+  0x00 SQLite sqlite是一个使用c语音编写的库，其实现了一个的小巧、快速、自含、高可靠性、全功能的SQL数据库引擎。它仅依赖少数的几个系统调用。它是一个非常流行的数据库，几乎打包到了所有的移动设备中，同时有无数的应用程序内嵌了它。
+0x01 SQLite扩展 sqlite extension是可以在运行时被sqlite加载的库，其主要有以下作用：
+ 扩展sqlite的功能，如提供sqlite本身不支持的函数。 运行时加载扩展，可以动态更新，也可以保证只在需要时加载扩展，减少内存消耗。 扩展可以独立于sqlite本身单独开发，测试。  0x02 编写扩展 编写扩展时，我们可以从sqlite的官网复制一份模板代码，整个模板代码如下所示：
+/* Add your header comment here */ #include &lt;sqlite3ext.h&gt; /* Do not use &lt;sqlite3.h&gt;! */ SQLITE_EXTENSION_INIT1 /* Insert your extension code here */ #ifdef _WIN32 __declspec(dllexport) #endif /* TODO: Change the entry point name so that &quot;extension&quot; is replaced by ** text derived from the shared library filename as follows: Copy every ** ASCII alphabetic character from the filename after the last &quot;/&quot; through ** the next following &quot;.
+  </p>
+
+  
+  <footer>
+    <a href="/post/how_to_write_sqlites_extension/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
+  </footer>
+  
+</article>
+
+  
+    <article>
+  <header>
+    <h2><a href="http://coofee.github.io/post/auto_create_wx_acitivty_by_annotation/">auto_create_wx_acitivty_by_annotation</a></h2>
+
+    <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>10 Sep 2018, 15:05</time>
+  </div>
+
+  
+
+  
+
+  
+
+</div>
+
+  </header>
+
+  <p>
+  如何使用注解生成WXEntryActivity? 在Android中使用注解时，需要创建java模块，否则无法导入javax.annotation.processing.AbstractProcessor;相关依赖。
+1. android注解配置 1. 使用annotationProcessor设置参数 a) /gradle/wrapper/gradle-wrapper.properties
+distributionUrl = https\://services.gradle.org/distributions/gradle-4.4-all.zip  b) 配置annotationProcessor
+buildscript { repositories { // Gradle 4.1 and higher include support for Google's Maven repo using // the google() method. And you need to include this repo to download // Android plugin 3.0.0 or higher. google() ... } dependencies { classpath 'com.android.tools.build:gradle:3.1.0' } } android { defaultConfig { javaCompileOptions { annotationProcessorOptions { arguments = [ key1 : 'key1Value', key2 : 'key2Value' ] } } } } dependencies { annotationProcessor 'xxx:xx:xxx' }  2.
+  </p>
+
+  
+  <footer>
+    <a href="/post/auto_create_wx_acitivty_by_annotation/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
+  </footer>
+  
+</article>
+
+  
+    <article>
+  <header>
+    <h2><a href="http://coofee.github.io/post/golang-dev/">golang dev</a></h2>
+
+    <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>06 Sep 2018, 19:36</time>
+  </div>
+
+  
+
+  
+
+  
+
+</div>
+
+  </header>
+
+  <p>
+  配置Golang开发环境（仅介绍Mac平台） install Homebrew $ /usr/bin/ruby -e &quot;$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)&quot;  install golang $ brew install go $ go version go version go1.11 darwin/amd64 # 配置GOROOT $ printf &quot;\n\nexport GOROOT=/usr/local/Cellar/go/1.11/libexec \n&quot; &gt;&gt; ~/.bash_profile # 配置GOPATH $ mkdir -p ~/go/gopath $ printf &quot;export GOPATH=~/go/gopath \n&quot; &gt;&gt; ~/.bash_profile # 追加到PATH $ printf &quot;export GOBIN=$GOROOT/bin \n&quot; &gt;&gt; ~/.bash_profile $ printf &quot;export PATH=$PATH:$GOBIN:$GOPATH/bin \n\n&quot; &gt;&gt; ~/.bash_profile $ source ~/.bash_profile  install privoxy privoxy可以将http请求代理到socks5，下面将 privoxy + shadowsocks 搭配使用
+  </p>
+
+  
+  <footer>
+    <a href="/post/golang-dev/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
+  </footer>
+  
+</article>
+
+  
+    <article>
+  <header>
+    <h2><a href="http://coofee.github.io/post/flutter/">flutter</a></h2>
+
+    <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>06 Sep 2018, 19:33</time>
+  </div>
+
+  
+
+  
+
+  
+
+</div>
+
+  </header>
+
+  <p>
+  [TOC]
+0x00 Flutter flutter是google开发的移动端UI框架，支持android和ios。该框架使用dart语言进行开发，在skia的基础上开发了一套公共组件达到android与ios共用代码的目的。
+1. Flutter系统架构 2. Platform Channels flutter使用methodChannel/flutterMethodChannel来访问系统原生api。 0x01 使用Flutter开发应用程序 1. 下载配置Flutter SDK  由于众所周知的原因，我们首先需要进行如下配置，让flutter通过国内镜像下载sdk等依赖。
+export PUB_HOSTED_URL=https://pub.flutter-io.cn export FLUTTER_STORAGE_BASE_URL=https://storage.flutter-io.cn  安装sdk
+$ git clone -b beta https://github.com/flutter/flutter.git $ export PATH=`pwd`/flutter/bin:$PATH  使用flutter doctor检测本机环境，然后根据提示安装依赖软件。
+$ flutter doctor Doctor summary (to see all details, run flutter doctor -v): [✓] Flutter (Channel beta, v0.1.5, on Mac OS X 10.11.6 15G19009, locale zh-Hans) [✓] Android toolchain - develop for Android devices (Android SDK 27.
+  </p>
+
+  
+  <footer>
+    <a href="/post/flutter/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
+  </footer>
+  
+</article>
+
+  
+    <article>
+  <header>
+    <h2><a href="http://coofee.github.io/post/upgrade-android-studio-gradle/">Gradle plugin 3.0 &amp; Android Studio 3.0</a></h2>
+
+    <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>15 Sep 2017, 18:59</time>
+  </div>
+
+  
+
+  
+
+  
+
+</div>
+
+  </header>
+
+  <p>
+  Gradle plugin 3.0 &amp; Android Studio 3.0 我们主要讲一下升级gradle plugin 3.0过程中遇到的问题与解决方案。
+Gradle Plugin 3.0 1. 升级gradle plugin插件版本为3.x buildscript { repositories { mavenLocal() jcenter() // You need to add the following repository to download the // for new plugin. google() } dependencies { classpath 'com.android.tools.build:gradle:3.0.0-beta2' } }  2. 升级gradle版本为4.1 修改gradle/wrapper/gradle-wrapper.properties中的distributionUrl为gradle-4.1-all。
+distributionUrl=https\://services.gradle.org/distributions/gradle-4.1-all.zip  3. 升级build-tools为25.0.3  The specified Android SDK Build Tools version (22.0.1) is ignored, as it is below the minimum supported version (25.
+  </p>
+
+  
+  <footer>
+    <a href="/post/upgrade-android-studio-gradle/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
+  </footer>
+  
+</article>
+
+  
+    <article>
+  <header>
+    <h2><a href="http://coofee.github.io/post/android-check-app-running-foreground/">android check app running foreground</a></h2>
+
+    <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>25 Jul 2017, 19:43</time>
+  </div>
+
+  
+
+  
+
+  
+  
+  
+  <div>
+    <i class="fa fa-tags fa-fw"></i>
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/android">android</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/app-running-background">app running background</a>
+    
+  </div>
+  
+  
+
+</div>
+
+  </header>
+
+  <p>
+  0x00 使用Application.ActivityLifecycleCallbacks检测App运行在前台/后台 import android.app.Activity; import android.app.ActivityManager; import android.app.Application; import android.content.Context; import android.os.Bundle; import android.os.Handler; import android.util.Log; import java.util.List; public class ApplicationLifecycle implements Application.ActivityLifecycleCallbacks { private Handler mHandler = new Handler(); private Runnable mCheck = new Runnable() { @Override public void run() { Log.e(&quot;ApplicationLifecycle&quot;, &quot;check task exec; mCounter=&quot; + mCounter); if (mCounter == 0) { Log.e(&quot;ApplicationLifecycle&quot;, &quot;check task exec; get runningAppProcessInfo.&quot;); final ActivityManager am = (ActivityManager) mAppContext.getSystemService(Context.ACTIVITY_SERVICE); // NOTE: getRunningAppProcess() ONLY GIVE YOU THE PROCESS OF YOUR OWN PACKAGE IN ANDROID M // BUT THAT'S ENOUGH HERE List&lt;ActivityManager.
+  </p>
+
+  
+  <footer>
+    <a href="/post/android-check-app-running-foreground/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
+  </footer>
+  
+</article>
+
+  
+    <article>
+  <header>
+    <h2><a href="http://coofee.github.io/post/upgrade-app-signature-algorithm/">sha1-collision &amp; android signature algorithm</a></h2>
+
+    <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>21 Jul 2017, 18:35</time>
+  </div>
+
+  
+
+  
+
+  
+  
+  
+  <div>
+    <i class="fa fa-tags fa-fw"></i>
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/android-sign-algorithm">android sign algorithm</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/sha-1-collision">sha-1 collision</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/shaa-256">shaa-256</a>
+    
+  </div>
+  
+  
+
+</div>
+
+  </header>
+
+  <p>
+  SHA1-Collision &amp; Android Sign 参看SHA1-collision我们可以知道，SHA-1签名已经不安全了，签名算法可以考虑升级到SHA-2或者其他算法。
+0x01 SHA1-Collision 1. SHA-1是什么？ SHA-1（英语：Secure Hash Algorithm 1，中文名：安全散列算法1）是一种密码散列函数，美国国家安全局设计，并由美国国家标准技术研究所（NIST）发布为联邦数据处理标准（FIPS）[2]。SHA-1可以生成一个被称为消息摘要的160位（20字节）散列值，散列值通常的呈现形式为40个十六进制数，参考：SHA-1
+2. SHA1-Collision是什么？ 两个内容不同的数据，SHA-1算法会生成相同的摘要信息，参考：SHA1 collision Two PDF。
+3. SHA1-Collision对Android的影响 Android SDK默认对apk使用SHA-1签名，在最坏的情况下，攻击者可以伪造SHA-1值相同的文件替换已签名apk中的文件来达到攻击的目的。
+0x02 Android的证书验证机制 我们知道Android的Apk文件是一个压缩文件，文件结构大致如下:
+. ├── AndroidManifest.xml ├── META-INF │ ├── CERT.RSA │ ├── CERT.SF │ └── MANIFEST.MF ├── assets ├── classes.dex ├── classes2.dex ├── classes3.dex ├── lib ├── res └── resources.arsc  apk相关的签名相关的文件在META-INF目录中，其中：
+ MANIFEST.MF
+遍历APK包中除了META-INF\文件夹以外的所有文件，利用SHA-1算法生成这些文件的消息摘要，然后转化为对应的base64编码。MANIFEST.MF存储的是文件的摘要值，保证完整性，防止文件被篡改。
+ .SF
+xx.SF文件（xx为使用者证书的自定义别名，默认为CERT，即CERT.SF），保存的是MANIFEST.MF的摘要值， 以及MANIFEST.MF中每一个摘要项的摘要值，然后转化成对应的base64编码。虽然该文件的后缀名.sf(SignatureFile)看起来是签名文件，但是并没有私钥参与运算，也不保存任何签名内容。
+ .RSA/.DSA
+.RSA/.DSA文件（后缀不同采用的签名算法不同，.RSA使用的是RSA算法，.DSA使用的是数字签名算法DSA，目前APK主要使用的是这两种算法），保存的是第二项.SF文件的数字签名，同时还会包括签名采用的数字证书（公钥）。特别说明，当使用多重证书签名时，每一个.sf文件必须有一个.RSA/.DSA文件与之对应，也就是说使用证书CERT1签名时有CERT1.SF和CERT1.RSA，同时采用证书CERT2签名时又会生成CERT2.SF和CERT2.RSA。
+  Android 系统不允许安装没有任何数字签名的应用APK程序，所有应用程序必须使用某个证书进行签名（一般为应用开发者自签名证书），
+  </p>
+
+  
+  <footer>
+    <a href="/post/upgrade-app-signature-algorithm/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
+  </footer>
+  
+</article>
+
+  
+    <article>
+  <header>
+    <h2><a href="http://coofee.github.io/post/catch-react-native-illegalviewoperationexception/">catch react native IllegalViewOperationException</a></h2>
+
+    <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>21 Jul 2017, 17:44</time>
+  </div>
+
+  
+
+  
+
+  
+  
+  
+  <div>
+    <i class="fa fa-tags fa-fw"></i>
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/android">android</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/react-native">react-native</a>
+    
+  </div>
+  
+  
+
+</div>
+
+  </header>
+
+  <p>
+  0x00 React Native Default Exception Handler React Native官方支持在生成ReactInstanceManager时使用NativeModuleCallExceptionHandler接口来设置自己的异常处理器，防止js/react-native代码异常导致native端直接崩溃，样例代码如下：
+ReactInstanceManagerBuilder builder = ReactInstanceManager.builder() .setApplication(context.getApplicationContext()) .addPackage(new MainReactPackage()) .setInitialLifecycleState(LifecycleState.BEFORE_CREATE) .setNativeModuleCallExceptionHandler(new NativeModuleCallExceptionHandler { @Override public void handleException(Exception e) { // 自己处理react-native异常. } });  0x01 com.facebook.react.uimanager.IllegalViewOperationException app发布到线上之后，仍然出现了少部分未能捕获的异常，堆栈信息如下:
+com.facebook.react.uimanager.IllegalViewOperationException Trying to add unknown view tag: 500 detail: View tag:496 children(2): [ 497,498, ], viewsToAdd(1): [ [2,500], ], 1 com.facebook.react.uimanager.NativeViewHierarchyManager.manageChildren(NativeViewHierarchyManager.java:387) 2 com.facebook.react.uimanager.UIViewOperationQueue$ManageChildrenOperation.execute(UIViewOperationQueue.java:179) 3 com.facebook.react.uimanager.UIViewOperationQueue$2.run(UIViewOperationQueue.java:787) 4 com.facebook.react.uimanager.UIViewOperationQueue.flushPendingBatches(UIViewOperationQueue.java:843) 5 com.facebook.react.uimanager.UIViewOperationQueue.access$1600(UIViewOperationQueue.java:48) 6 com.facebook.react.uimanager.UIViewOperationQueue$DispatchUIFrameCallback.doFrameGuarded(UIViewOperationQueue.java:889) 7 com.facebook.react.uimanager.GuardedFrameCallback.doFrame(GuardedFrameCallback.java:31) 8 com.facebook.react.modules.core.ReactChoreographer$ReactChoreographerDispatcher.doFrame(ReactChoreographer.java:129) 9 com.
+  </p>
+
+  
+  <footer>
+    <a href="/post/catch-react-native-illegalviewoperationexception/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
+  </footer>
+  
+</article>
+
+  
+    <article>
+  <header>
+    <h2><a href="http://coofee.github.io/post/upgrade-android-sdk-android-support-library/">upgrade android support library to 25.4.0</a></h2>
+
+    <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>13 Jul 2017, 19:52</time>
+  </div>
+
+  
+
+  
+
+  
+  
+  
+  <div>
+    <i class="fa fa-tags fa-fw"></i>
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/android">android</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/gradle">gradle</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/centos">centOS</a>
+    
+  </div>
+  
+  
+
+</div>
+
+  </header>
+
+  <p>
+  Android升级Support库版本至25.4.0
+[TOC]
+0x00 背景 support库是google官方提供的支持库，其主要功能在于兼容android高/低版本系统（如：support-v4、support-v7库），同时伴随着support库的不同版本，也会发布同版本的各种UI组件库（如Design、RecyclerView等）。support库的每次更新升级，一般都会包括bug修复、性能优化以及功能改进等等。
+目前我们App使用的版本是23.0.1，截止目前google发布的最新稳定版本是25.4.0，中间相差了将近20个版本，其中包含大量的bug修复；同时又因为Design、RecyclerView等UI库的很多新组件也依赖于support库的升级，所以我们计划将support-v4、support-v7、Design、RecyclerView等库统一升级至25.4.0版本。
+0x01 打包环境的影响及解决方案 1. 升级JDK &amp; Android SDK  升级JDK到1.8 升级Android SDK到25  2. 升级CentOS或GLIBC 由于我们的jenkins打包服务器的系统是CentOS 6.5，其默认支持的GLIBC库版本最高为2.12，而android sdk高版本需要的GLIBC版本为2.14，所以要么升级系统CentOS到7.x版本，要么升级GLIBC版本到2.14.
+当Android SDK需要的GLIBC版本不匹配时，出错信息大致如下:
+[exec] /data0/android-tools/android-sdk-linux/build-tools/24.0.2/aapt: /lib64/libc.so.6: version `GLIBC_2.14' not found (required by /data0/android-tools/android-sdk-linux/build-tools/24.0.2/aapt) [exec] /data0/android-tools/android-sdk-linux/build-tools/24.0.2/aapt: /lib64/libc.so.6: version `GLIBC_2.14' not found (required by /data0/android-tools/android-sdk-linux/build-tools/24.0.2/lib64/libc++.so)  在CentOS系统中，使用strings /lib64/libc.so.6 | grep GLIBC命令可以查看其支持的GLIBC库的版本。
+3. 指定gradle使用jdk1.8 由于android sdk需要在jdk1.8环境才能正常编译、打包，所以要么在系统中配置java环境变量为jdk1.8版本；要么在执行gradle时指定其运行环境为jdk1.8。
+指定gradle使用jdk1.8，具体配置如下：
+gradlew clean -Dorg.gradle.java.home=/usr/java/jdk1.8  也可以直接在gradle.properties中指定jdk版本，如下所示：
+org.gradle.java.home=/usr/java/jdk1.8  4. support库与build-tools版本 由于我们app原本使用的build-tools版本是22.0.1，当保持build-tools版本不变，只升级support库版本时，在HUAWEI P7-L00 4.4.2上面运行时，会出现如下错误，推测是因为support库版本和build-tools主版本号不一致导致，所以如果升级support库版本，最好保持和build-tools主版本号一致，防止各种诡异问题。
+E/AndroidRuntime: FATAL EXCEPTION: main Caused by: android.
+  </p>
+
+  
+  <footer>
+    <a href="/post/upgrade-android-sdk-android-support-library/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
+  </footer>
+  
+</article>
+
+  
+    <article>
+  <header>
+    <h2><a href="http://coofee.github.io/post/android-fetch-add-custom-cookie/">android fetch add custom cookie</a></h2>
+
+    <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>29 Jun 2017, 11:14</time>
+  </div>
+
+  
+
+  
+
+  
+  
+  
+  <div>
+    <i class="fa fa-tags fa-fw"></i>
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/fetch">fetch</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/cookie">cookie</a>
+    
+  </div>
+  
+  
+
+</div>
+
+  </header>
+
+  <p>
+  [TOC]
+0x00 为React Native的网络请求添加公共Cookie 本文分析基于React Native 0.44版本分析。
+由于我们在使用React Native编写应用时，内部的网络请求均使用了fetch函数，所以下面我们主要分析一下fetch函数的整个调用流程。
+0x01 Fetch追根溯源 从React Native的源代码我们可以知道fetch函数最终也是由native端的NetworkingModule.java（Android）或RCTNetworking.mm（iOS）实现。
+1. 其调用流程如下 2. 代码分析如下 1. 将fetch函数添加到全局变量 在react-native/Libraries/Core/InitializeCore.js的全部变量global中定义了fetch函数。
+// Set up XHR // The native XMLHttpRequest in Chrome dev tools is CORS aware and won't // let you fetch anything from the internet defineProperty(global, 'XMLHttpRequest', () =&gt; require('XMLHttpRequest')); defineProperty(global, 'FormData', () =&gt; require('FormData')); defineProperty(global, 'fetch', () =&gt; require('fetch').fetch); defineProperty(global, 'Headers', () =&gt; require('fetch').Headers); defineProperty(global, 'Request', () =&gt; require('fetch').
+  </p>
+
+  
+  <footer>
+    <a href="/post/android-fetch-add-custom-cookie/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
+  </footer>
+  
+</article>
+
+  
+
+  
+<nav class="pagination" role="pagination">
+  
+  <span>1 / 2</span>
+  
+  <a href="/page/2/"><i class="fa fa-angle-double-right"></i></a>
+  
+</nav>
+
 
 
 </div>
