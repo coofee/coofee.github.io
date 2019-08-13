@@ -196,6 +196,106 @@
   
     <article>
   <header>
+    <h2><a href="http://coofee.github.io/post/rxjava-distinguish-user-cancel-from-others/">rxjava distinguish user cancel from others</a></h2>
+
+    <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>06 Nov 2017, 20:35</time>
+  </div>
+
+  
+
+  
+
+  
+  
+  
+  <div>
+    <i class="fa fa-tags fa-fw"></i>
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/android">android</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/rxjava">rxjava</a>
+    
+  </div>
+  
+  
+
+</div>
+
+  </header>
+
+  <p>
+  RxJava区分用户主动取消 0x00 取消订阅 首先我们知道使用rxjava执行操作的时候，基本流程大致如下，取消操作时只需要调用subscription.unsubscribe()即可：
+Subscription subscription = Observable.&lt;String&gt;create(new Observable.OnSubscribe&lt;String&gt;() { @Override public void call(Subscriber&lt;? super String&gt; subscriber) { try { Thread.sleep(5 * 1000); } catch (InterruptedException e) { } println(&quot;call...&quot;); subscriber.onNext(&quot;aaaaaaa&quot;); subscriber.onCompleted(); } }).subscribeOn(Schedulers.io()) .observeOn(Schedulers.newThread()) .unsubscribeOn(Schedulers.newThread()) .subscribe(new PrintSubscriber&lt;&gt;());  那么我们在执行操作的过程中，如何知道一个操作被取消了呢？熟悉rxjava的童鞋可能一下子就会想到，直接使用doOnUnsubscribe()不就可以了吗？这有什么好纠结的。
+Subscription subscription = Observable.&lt;String&gt;create(new Observable.OnSubscribe&lt;String&gt;() { @Override public void call(Subscriber&lt;? super String&gt; subscriber) { try { Thread.sleep(5 * 1000); } catch (InterruptedException e) { } println(&quot;call...&quot;); subscriber.onNext(&quot;aaaaaaa&quot;); subscriber.onCompleted(); } }).
+  </p>
+
+  
+  <footer>
+    <a href="/post/rxjava-distinguish-user-cancel-from-others/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
+  </footer>
+  
+</article>
+
+  
+    <article>
+  <header>
+    <h2><a href="http://coofee.github.io/post/rxjava2/">rxjava 2.0 head first</a></h2>
+
+    <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>10 Oct 2017, 20:35</time>
+  </div>
+
+  
+
+  
+
+  
+  
+  
+  <div>
+    <i class="fa fa-tags fa-fw"></i>
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/android">android</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/rxjava">rxjava</a>
+    
+  </div>
+  
+  
+
+</div>
+
+  </header>
+
+  <p>
+  RxJava 2.0 简单介绍 一年一年有一年，RxJava也新增了2.0版本，那么为什么是新增版本而不说升级版本呢？
+因为2.0版本和1.0版本两者并不兼容，2.0版本是基于Reactive-Streams规范重新设计而来；同时1.x版本和2.x版本两者会并行开发维护，但是1.x版本只维护到2018-03-31。
+下面我们简单介绍一下两者的不同。
+0x00 依赖&amp;包名不同 使用rxjava 1.x、2.x版本的依赖如下：
+// rxjava 1.x compile 'io.reactivex:rxjava:1.1.6' // rxjava 2.x compile &quot;io.reactivex.rxjava2:rxjava:2.x.y&quot;  包名修改如下：
+// 1.x -&gt; 2.x rx.** -&gt; io.reactivex.**  0x01 Observable与Flowable Observable在2.0版本不支持backpressure，它会缓存全部的数据，一一发送给消费者，如果消费不及时，会产生OOM。于此对应，在2.x版本新增了Flowable，支持设置/自定义backpressure，同时在创建时必须制定backpressure。
+Flowable.create(new FlowableOnSubscribe&lt;Object&gt;() { @Override public void subscribe(FlowableEmitter&lt;Object&gt; e) throws Exception { for (int i = 0; i &lt; 256; i++) { e.onNext(i); } e.onComplete(); } }, BackpressureStrategy.BUFFER).subscribe(System.out::println, Throwable::printStackTrace);  0x02 Single 当使用Single时，生产者调用onSuccess()通知订阅者，同时终止整个事件流，生产者只能发送一个success事件，订阅者也只能收到一个success事件，适用于网络请求等确定只有单个事件的事件流。对于1.x版本而言，则需要主动调用onComplete()来终止事件流。
+注意: Single没有onComplete()方法；只能产生success、error两种事件。
+Single.create(s -&gt; s.
+  </p>
+
+  
+  <footer>
+    <a href="/post/rxjava2/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
+  </footer>
+  
+</article>
+
+  
+    <article>
+  <header>
     <h2><a href="http://coofee.github.io/post/android-check-app-running-foreground/">android check app running foreground</a></h2>
 
     <div class="post-meta">

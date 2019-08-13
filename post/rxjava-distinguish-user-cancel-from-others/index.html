@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="generator" content="Hugo 0.56.0" />
+
+  <title>rxjava distinguish user cancel from others &middot; Simple...</title>
+
+  
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/pure-min.css">
+
+  <!--[if lte IE 8]>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/grids-responsive-old-ie-min.css">
+  <![endif]-->
+  <!--[if gt IE 8]><!-->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/grids-responsive-min.css">
+  <!--<![endif]-->
+
+  <!--[if lte IE 8]>
+  <link rel="stylesheet" href="/css/side-menu-old-ie.css">
+  <![endif]-->
+  <!--[if gt IE 8]><!-->
+  <link rel="stylesheet" href="/css/side-menu.css">
+  <!--<![endif]-->
+
+  <link rel="stylesheet" href="/css/blackburn.css">
+
+  
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+
+  
+  <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet" type="text/css">
+
+  
+  <link rel="alternate" type="application/rss+xml" title="Simple..." href="http://coofee.github.ioindex.xml" />
+
+  
+
+  <link rel="shortcut icon" href="http://coofee.github.ioimg/favicon.ico" type="image/x-icon" />
+
+</head>
+
+
+<body>
+<div id="layout">
+
+  
+<a href="#menu" id="menuLink" class="menu-link">
+  
+  <span></span>
+</a>
+<div id="menu">
+
+  
+
+  <div class="pure-menu">
+    <ul class="pure-menu-list">
+      
+    </ul>
+  </div>
+
+  <div class="pure-menu social">
+  <ul class="pure-menu-list">
+
+    <li class="pure-menu-item">
+      <a class="pure-menu-link" href="http://coofee.github.ioindex.xml"><i class="fa fa-rss fa-fw"></i>RSS</a>
+    </li>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+  </ul>
+</div>
+
+
+  <div class="pure-g">
+  <div class="small-print pure-u-1 pure-u-md-1-1">
+    <small></small>
+  </div>
+  <div class="small-print pure-u-1 pure-u-md-1-1">
+    <small>Built with&nbsp;<a href="https://gohugo.io/" target="_blank">Hugo</a></small>
+    <small>Theme&nbsp;<a href="https://github.com/yoshiharuyamashita/blackburn" target="_blank">Blackburn</a></small>
+  </div>
+</div>
+
+</div>
+
+
+  <div id="main">
+
+
+<div class="header">
+  <h1>rxjava distinguish user cancel from others</h1>
+  <h2></h2>
+</div>
+<div class="content">
+
+  <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>06 Nov 2017, 20:35</time>
+  </div>
+
+  
+
+  
+
+  
+  
+  
+  <div>
+    <i class="fa fa-tags fa-fw"></i>
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/android">android</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/rxjava">rxjava</a>
+    
+  </div>
+  
+  
+
+</div>
+
+  
+
+<h1 id="rxjava区分用户主动取消">RxJava区分用户主动取消</h1>
+
+<h2 id="0x00-取消订阅">0x00 取消订阅</h2>
+
+<p>首先我们知道使用rxjava执行操作的时候，基本流程大致如下，取消操作时只需要调用<code>subscription.unsubscribe()</code>即可：</p>
+
+<pre><code class="language-java">Subscription subscription = Observable.&lt;String&gt;create(new Observable.OnSubscribe&lt;String&gt;() {
+	    @Override
+	    public void call(Subscriber&lt;? super String&gt; subscriber) {
+	        try {
+	            Thread.sleep(5 * 1000);
+	        } catch (InterruptedException e) {
+
+	        }
+	
+	        println(&quot;call...&quot;);
+	        subscriber.onNext(&quot;aaaaaaa&quot;);
+	        subscriber.onCompleted();
+	    }
+	}).subscribeOn(Schedulers.io())
+    .observeOn(Schedulers.newThread())
+    .unsubscribeOn(Schedulers.newThread())
+    .subscribe(new PrintSubscriber&lt;&gt;());
+</code></pre>
+
+<p>那么我们在执行操作的过程中，如何知道一个操作被取消了呢？熟悉rxjava的童鞋可能一下子就会想到，直接使用<code>doOnUnsubscribe()</code>不就可以了吗？这有什么好纠结的。</p>
+
+<pre><code class="language-java">Subscription subscription = Observable.&lt;String&gt;create(new Observable.OnSubscribe&lt;String&gt;() {
+	    @Override
+	    public void call(Subscriber&lt;? super String&gt; subscriber) {
+	        try {
+	            Thread.sleep(5 * 1000);
+	        } catch (InterruptedException e) {
+
+	        }
+	
+	        println(&quot;call...&quot;);
+	        subscriber.onNext(&quot;aaaaaaa&quot;);
+	        subscriber.onCompleted();
+	    }
+	}).doOnUnsubscribe(new Action0() {
+		 @Override
+        public void call() {
+            System.out.println(&quot;doOnUnsubscribe&quot;);
+        }
+	}).subscribeOn(Schedulers.io())
+    .observeOn(Schedulers.newThread())
+    .unsubscribeOn(Schedulers.newThread())
+    .subscribe(new PrintSubscriber&lt;&gt;());
+</code></pre>
+
+<p>我们直接执行上述代码片段，就会发现当一个Observable执行完成（无论是正常执行完成，还是异常执行完成）后，都会调用<code>unsubscribe</code>的全部hook，为什么呢？</p>
+
+<h2 id="0x01-doonunsubscribe-调用时机">0x01 doOnUnsubscribe()调用时机</h2>
+
+<p>我们知道在RxJava中，所有的<code>Subscriber</code>最终都会被包裹成一个<code>SafeSubscriber</code>来执行，而在<code>SafeSubscriber</code>中，只要其执行完<code>onCompleted()</code>、<code>onError()</code>都会在finally函数块中调用<code>unsubscribe()</code>，进而回调到用户先前通过<code>doOnUnsubscribe</code>注册的回调。</p>
+
+<pre><code class="language-java">
+
+ @Override
+public void onCompleted() {
+    if (!done) {
+        done = true;
+        try {
+            actual.onCompleted();
+        } catch (Throwable e) {
+            // we handle here instead of another method so we don't add stacks to the frame
+            // which can prevent it from being able to handle StackOverflow
+            Exceptions.throwIfFatal(e);
+            RxJavaPluginUtils.handleException(e);
+            throw new OnCompletedFailedException(e.getMessage(), e);
+        } finally {
+            try {
+                // Similarly to onError if failure occurs in unsubscribe then Rx contract is broken
+                // and we throw an UnsubscribeFailureException.
+                unsubscribe();
+            } catch (Throwable e) {
+                RxJavaPluginUtils.handleException(e);
+                throw new UnsubscribeFailedException(e.getMessage(), e);
+            }
+        }
+    }
+}
+
+protected void _onError(Throwable e) {
+    RxJavaPluginUtils.handleException(e);
+    try {
+        actual.onError(e);
+    } catch (Throwable e2) {
+        if (e2 instanceof OnErrorNotImplementedException) {
+            /*
+             * onError isn't implemented so throw
+             * 
+             * https://github.com/ReactiveX/RxJava/issues/198
+             * 
+             * Rx Design Guidelines 5.2
+             * 
+             * &quot;when calling the Subscribe method that only has an onNext argument, the OnError behavior
+             * will be to rethrow the exception on the thread that the message comes out from the observable
+             * sequence. The OnCompleted behavior in this case is to do nothing.&quot;
+             */
+            try {
+                unsubscribe();
+            } catch (Throwable unsubscribeException) {
+                RxJavaPluginUtils.handleException(unsubscribeException);
+                throw new RuntimeException(&quot;Observer.onError not implemented and error while unsubscribing.&quot;, new CompositeException(Arrays.asList(e, unsubscribeException)));
+            }
+            throw (OnErrorNotImplementedException) e2;
+        } else {
+            /*
+             * throw since the Rx contract is broken if onError failed
+             * 
+             * https://github.com/ReactiveX/RxJava/issues/198
+             */
+            RxJavaPluginUtils.handleException(e2);
+            try {
+                unsubscribe();
+            } catch (Throwable unsubscribeException) {
+                RxJavaPluginUtils.handleException(unsubscribeException);
+                throw new OnErrorFailedException(&quot;Error occurred when trying to propagate error to Observer.onError and during unsubscription.&quot;, new CompositeException(Arrays.asList(e, e2, unsubscribeException)));
+            }
+
+            throw new OnErrorFailedException(&quot;Error occurred when trying to propagate error to Observer.onError&quot;, new CompositeException(Arrays.asList(e, e2)));
+        }
+    }
+    // if we did not throw above we will unsubscribe here, if onError failed then unsubscribe happens in the catch
+    try {
+        unsubscribe();
+    } catch (RuntimeException unsubscribeException) {
+        RxJavaPluginUtils.handleException(unsubscribeException);
+        throw new OnErrorFailedException(unsubscribeException);
+    }
+}
+</code></pre>
+
+<p>那么问题来了，既然无论什么情况下<code>doOnUnsubscribe()</code>注册的回调都会被调用，我们如何区分一个Observable是正常执行完成了，还是被主动取消了呢？</p>
+
+<h2 id="0x02-区分主动取消与被动取消">0x02 区分主动取消与被动取消</h2>
+
+<p>我们知道Rxjava包含很多的hook，可以从<code>doOnUnsubscribe()</code>、<code>doOnCompleted()</code>、<code>doOnError()</code>这些hook入手，然后在各个hook中区分好执行顺序即可，大致代码如下：</p>
+
+<pre><code class="language-java">import rx.Observable;
+import rx.Subscriber;
+import rx.Subscription;
+import rx.functions.Action0;
+import rx.functions.Action1;
+import rx.schedulers.Schedulers;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+
+public class UserCancelDemo {
+    public static void main(String[] args) {
+        final UserCancelDemo userCancelDemo = new UserCancelDemo();
+        Subscription subscription = userCancelDemo.create()
+                .subscribeOn(Schedulers.io())
+                .observeOn(Schedulers.newThread())
+                .unsubscribeOn(Schedulers.newThread())
+                .subscribe();
+
+        subscription.unsubscribe();
+
+        while (true) ;
+    }
+
+    private AtomicBoolean mCompleteOccurs = new AtomicBoolean(false);
+
+    private AtomicBoolean mErrorOccurs = new AtomicBoolean(false);
+
+    private Subscriber mSubscriber;
+
+    public Observable&lt;String&gt; create() {
+        return Observable.&lt;String&gt;create(new Observable.OnSubscribe&lt;String&gt;() {
+            @Override
+            public void call(Subscriber&lt;? super String&gt; subscriber) {
+                try {
+                    Thread.sleep(5 * 1000);
+                } catch (InterruptedException e) {
+
+                }
+
+                System.out.println(&quot;call...&quot;);
+                subscriber.onNext(&quot;aaaaaaa&quot;);
+                subscriber.onCompleted();
+            }
+        }).doOnError(new Action1&lt;Throwable&gt;() {
+            @Override
+            public void call(Throwable throwable) {
+                if (mSubscriber.isUnsubscribed()) {
+                    System.out.println(&quot;doOnError: user have cancel subscription...&quot;);
+                    return;
+                }
+
+                System.out.println(&quot;doOnError: error occurs &quot; + throwable);
+
+                mErrorOccurs.set(true);
+            }
+        }).doOnCompleted(new Action0() {
+            @Override
+            public void call() {
+                if (mSubscriber.isUnsubscribed()) {
+                    System.out.println(&quot;doOnCompleted: user have cancel subscription...&quot;);
+                    return;
+                }
+                System.out.println(&quot;doOnCompleted: onCompleted.&quot;);
+                mCompleteOccurs.set(true);
+            }
+        }).doOnUnsubscribe(new Action0() {
+            @Override
+            public void call() {
+                if (mErrorOccurs.get() || mCompleteOccurs.get()) {
+                    System.out.println(&quot;doOnUnsubscribe: rxjava auto unsubscribe...&quot;);
+                } else {
+                    System.out.println(&quot;doOnUnsubscribe: user cancel subscription...&quot;);
+                }
+            }
+        }).lift(new Observable.Operator&lt;String, String&gt;() {
+            @Override
+            public Subscriber&lt;? super String&gt; call(Subscriber&lt;? super String&gt; subscriber) {
+                mSubscriber = subscriber;
+                return mSubscriber;
+            }
+        });
+    }
+}
+
+</code></pre>
+
+<h2 id="0x03-为什么要使用原子操作">0x03 为什么要使用原子操作?</h2>
+
+<p>我们在使用RxJava时，可以使用<code>subscribeOn()</code>、<code>observeOn()</code>、<code>unsubscribeOn()</code>指定不同内容运行的线程，而<code>doOnUnsubscribe()</code>、<code>doOnCompleted()</code>、<code>doOnError()</code>三个hook则分别运行在上面三个函数指定的线程中。</p>
+
+<pre><code class="language-java">	.subscribeOn(Schedulers.io()) // 指定Observable、doOnCompleted()、doOnError()的线程。
+	.observeOn(Schedulers.newThread()) // 指定Subscriber的订阅者的线程。
+	.unsubscribeOn(Schedulers.newThread()) // 指定doOnUnsubscribe()的线程。
+</code></pre>
+
+
+  
+<div class="prev-next-post pure-g">
+  <div class="pure-u-1 pure-u-md-1-2">
+    
+    <nav class="prev">
+      <a href="http://coofee.github.io/post/rxjava2/"><i class="fa fa-arrow-circle-left fa-fw fa-lg"></i>rxjava 2.0 head first</a>
+    </nav>
+    
+  </div>
+  <div class="pure-u-1 pure-u-md-1-2">
+    
+    <nav class="next">
+      <a href="http://coofee.github.io/post/flutter/">flutter<i class="fa fa-arrow-circle-right fa-fw fa-lg"></i></a>
+    </nav>
+    
+  </div>
+</div>
+
+
+
+  
+
+</div>
+
+</div>
+</div>
+<script src="http://coofee.github.iojs/ui.js"></script>
+
+
+
+
+</body>
+</html>
+

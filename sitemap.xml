@@ -38,6 +38,12 @@
   </url>
   
   <url>
+    <loc>http://coofee.github.io/series/android/</loc>
+    <lastmod>2019-08-12T19:18:58+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>http://coofee.github.io/tags/android/</loc>
     <lastmod>2019-08-12T19:18:58+08:00</lastmod>
     <priority>0</priority>
@@ -45,12 +51,6 @@
   
   <url>
     <loc>http://coofee.github.io/categories/android/</loc>
-    <lastmod>2019-08-12T19:18:58+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://coofee.github.io/series/android/</loc>
     <lastmod>2019-08-12T19:18:58+08:00</lastmod>
     <priority>0</priority>
   </url>
@@ -92,6 +92,28 @@
   <url>
     <loc>http://coofee.github.io/post/flutter/</loc>
     <lastmod>2018-09-06T19:33:10+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://coofee.github.io/tags/rxjava/</loc>
+    <lastmod>2017-11-06T20:35:58+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://coofee.github.io/categories/rxjava/</loc>
+    <lastmod>2017-11-06T20:35:58+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://coofee.github.io/post/rxjava-distinguish-user-cancel-from-others/</loc>
+    <lastmod>2017-11-06T20:35:58+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://coofee.github.io/post/rxjava2/</loc>
+    <lastmod>2017-10-10T20:35:58+08:00</lastmod>
   </url>
   
   <url>
@@ -139,6 +161,12 @@
   </url>
   
   <url>
+    <loc>http://coofee.github.io/series/react-native/</loc>
+    <lastmod>2017-07-21T17:44:38+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>http://coofee.github.io/tags/react-native/</loc>
     <lastmod>2017-07-21T17:44:38+08:00</lastmod>
     <priority>0</priority>
@@ -146,12 +174,6 @@
   
   <url>
     <loc>http://coofee.github.io/categories/react-native/</loc>
-    <lastmod>2017-07-21T17:44:38+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://coofee.github.io/series/react-native/</loc>
     <lastmod>2017-07-21T17:44:38+08:00</lastmod>
     <priority>0</priority>
   </url>

@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="generator" content="Hugo 0.56.0" />
+
+  <title>rxjava 2.0 head first &middot; Simple...</title>
+
+  
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/pure-min.css">
+
+  <!--[if lte IE 8]>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/grids-responsive-old-ie-min.css">
+  <![endif]-->
+  <!--[if gt IE 8]><!-->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/grids-responsive-min.css">
+  <!--<![endif]-->
+
+  <!--[if lte IE 8]>
+  <link rel="stylesheet" href="/css/side-menu-old-ie.css">
+  <![endif]-->
+  <!--[if gt IE 8]><!-->
+  <link rel="stylesheet" href="/css/side-menu.css">
+  <!--<![endif]-->
+
+  <link rel="stylesheet" href="/css/blackburn.css">
+
+  
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+
+  
+  <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet" type="text/css">
+
+  
+  <link rel="alternate" type="application/rss+xml" title="Simple..." href="http://coofee.github.ioindex.xml" />
+
+  
+
+  <link rel="shortcut icon" href="http://coofee.github.ioimg/favicon.ico" type="image/x-icon" />
+
+</head>
+
+
+<body>
+<div id="layout">
+
+  
+<a href="#menu" id="menuLink" class="menu-link">
+  
+  <span></span>
+</a>
+<div id="menu">
+
+  
+
+  <div class="pure-menu">
+    <ul class="pure-menu-list">
+      
+    </ul>
+  </div>
+
+  <div class="pure-menu social">
+  <ul class="pure-menu-list">
+
+    <li class="pure-menu-item">
+      <a class="pure-menu-link" href="http://coofee.github.ioindex.xml"><i class="fa fa-rss fa-fw"></i>RSS</a>
+    </li>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+  </ul>
+</div>
+
+
+  <div class="pure-g">
+  <div class="small-print pure-u-1 pure-u-md-1-1">
+    <small></small>
+  </div>
+  <div class="small-print pure-u-1 pure-u-md-1-1">
+    <small>Built with&nbsp;<a href="https://gohugo.io/" target="_blank">Hugo</a></small>
+    <small>Theme&nbsp;<a href="https://github.com/yoshiharuyamashita/blackburn" target="_blank">Blackburn</a></small>
+  </div>
+</div>
+
+</div>
+
+
+  <div id="main">
+
+
+<div class="header">
+  <h1>rxjava 2.0 head first</h1>
+  <h2></h2>
+</div>
+<div class="content">
+
+  <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>10 Oct 2017, 20:35</time>
+  </div>
+
+  
+
+  
+
+  
+  
+  
+  <div>
+    <i class="fa fa-tags fa-fw"></i>
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/android">android</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/rxjava">rxjava</a>
+    
+  </div>
+  
+  
+
+</div>
+
+  
+
+<h2 id="rxjava-2-0-简单介绍">RxJava 2.0 简单介绍</h2>
+
+<p>一年一年有一年，RxJava也新增了2.0版本，那么为什么是新增版本而不说升级版本呢？</p>
+
+<p>因为2.0版本和1.0版本两者并不兼容，2.0版本是基于Reactive-Streams规范重新设计而来；同时1.x版本和2.x版本两者会并行开发维护，但是1.x版本只维护到<strong>2018-03-31</strong>。</p>
+
+<p>下面我们简单介绍一下两者的不同。</p>
+
+<h3 id="0x00-依赖-包名不同">0x00 依赖&amp;包名不同</h3>
+
+<p>使用rxjava 1.x、2.x版本的依赖如下：</p>
+
+<pre><code class="language-groovy">// rxjava 1.x
+compile 'io.reactivex:rxjava:1.1.6'
+
+// rxjava 2.x
+compile &quot;io.reactivex.rxjava2:rxjava:2.x.y&quot;
+</code></pre>
+
+<p>包名修改如下：</p>
+
+<pre><code class="language-groovy">// 1.x -&gt; 2.x
+rx.** -&gt; io.reactivex.**
+</code></pre>
+
+<h3 id="0x01-observable与flowable">0x01 Observable与Flowable</h3>
+
+<p><code>Observable</code>在2.0版本不支持backpressure，它会缓存全部的数据，一一发送给消费者，如果消费不及时，会产生OOM。于此对应，在2.x版本新增了<code>Flowable</code>，支持设置/自定义backpressure，同时在创建时必须制定backpressure。</p>
+
+<pre><code class="language-java"> Flowable.create(new FlowableOnSubscribe&lt;Object&gt;() {
+            @Override
+            public void subscribe(FlowableEmitter&lt;Object&gt; e) throws Exception {
+                for (int i = 0; i &lt; 256; i++) {
+                    e.onNext(i);
+                }
+                e.onComplete();
+            }
+        }, BackpressureStrategy.BUFFER).subscribe(System.out::println, Throwable::printStackTrace);
+
+
+</code></pre>
+
+<h3 id="0x02-single">0x02 Single</h3>
+
+<p>当使用<code>Single</code>时，生产者调用<code>onSuccess()</code>通知订阅者，同时终止整个事件流，生产者只能发送一个success事件，订阅者也只能收到一个success事件，适用于网络请求等确定只有单个事件的事件流。对于1.x版本而言，则需要主动调用onComplete()来终止事件流。</p>
+
+<p><strong>注意: Single没有onComplete()方法；只能产生success、error两种事件。</strong></p>
+
+<pre><code class="language-java">  Single.create(s -&gt; s.onSuccess(&quot;aaaa&quot;))
+                .subscribe(System.out::println, Throwable::printStackTrace);
+</code></pre>
+
+<h3 id="0x03-completable">0x03 Completable</h3>
+
+<p>当使用<code>Completable</code>时，生产者通过调用<code>onComplete()</code>终止事件流，订阅者会收到事件结束回调，适用于订阅者仅需要知道事件结束，而不需要执行结果的情形。</p>
+
+<p><strong>注意: Completable没有onSuccess()方法；只能产生complete、error两种事件。</strong></p>
+
+<pre><code class="language-java">Completable.create(new CompletableOnSubscribe() {
+            @Override
+            public void subscribe(CompletableEmitter e) throws Exception {
+                // do something;
+                e.onComplete();
+            }
+        }).subscribe();
+</code></pre>
+
+<h3 id="0x04-maybe">0x04 Maybe</h3>
+
+<p><code>Maybe</code>是<code>Single</code>和<code>Completable</code>的组合体，相较于<code>Single</code>只能发送一次item，<code>Completable</code>只能通知事件结束，<code>Maybe</code>可以发送最多一个item，也就是可以发送一个item或者直接终止事件流。</p>
+
+<p>当<code>Maybe</code>调用<code>onSuccess()</code>结束事件流时，订阅者收到一次success事件；当<code>Maybe</code>调用<code>onComplete()</code>结束事件流时，订阅者只能收到事件结束事件。</p>
+
+<ul>
+<li><p>onSuccess()收到一次事件:</p>
+
+<pre><code class="language-java">Maybe.create(new MaybeOnSubscribe&lt;Object&gt;() {
+        @Override
+        public void subscribe(MaybeEmitter&lt;Object&gt; e) throws Exception {
+            e.onSuccess(&quot;aaa&quot;);
+        }
+    }).subscribe(System.out::println, Throwable::printStackTrace, () -&gt; {
+        System.out.println(&quot;onCompletable...&quot;);
+    });
+</code></pre></li>
+
+<li><p>onComplete()收到结束事件:</p>
+
+<pre><code class="language-java">Maybe.create(new MaybeOnSubscribe&lt;Object&gt;() {
+        @Override
+        public void subscribe(MaybeEmitter&lt;Object&gt; e) throws Exception {
+            e.onComplete();
+        }
+    }).subscribe(System.out::println, Throwable::printStackTrace, () -&gt; {
+        System.out.println(&quot;onCompletable...&quot;);
+    });
+
+</code></pre></li>
+</ul>
+
+<p><strong>注意: Maybe拥有onSuccess()和onComplete()方法；可以产生success、complete、error三种事件，其中success和complete是对立的。</strong></p>
+
+<h3 id="0x05-null">0x05 Null</h3>
+
+<p>2.0x版本<strong>不支持传递null事件，会抛出<code>NullPointerException</code>终止整个事件流。</strong></p>
+
+<pre><code class="language-java">Single.create(new SingleOnSubscribe&lt;Object&gt;() {
+            @Override
+            public void subscribe(SingleEmitter&lt;Object&gt; e) throws Exception {
+                e.onSuccess(null);
+            }
+        }).subscribe(System.out::println, Throwable::printStackTrace);
+</code></pre>
+
+<p>错误日志如下:</p>
+
+<pre><code>java.lang.NullPointerException: onSuccess called with null. Null values are generally not allowed in 2.x operators and sources.
+</code></pre>
+
+<h3 id="0x06-取消订阅">0x06 取消订阅</h3>
+
+<h4 id="1-接口改变">1. 接口改变</h4>
+
+<p>2.x版本由于按照Reactive-Streams规范进行开发，而在Reactive-Streams中已经定义了<code>org.reactivestreams.Subscription</code>接口</p>
+
+<pre><code class="language-java">package org.reactivestreams;
+
+public interface Subscription {
+    void request(long var1);
+
+    void cancel();
+}
+
+</code></pre>
+
+<p>，而1.x版本也定义了一个<code>rx.Subscription</code>接口</p>
+
+<pre><code class="language-java">package rx;
+
+public interface Subscription {
+    void unsubscribe();
+
+    boolean isUnsubscribed();
+}
+
+</code></pre>
+
+<h4 id="2-简单取消订阅">2. 简单取消订阅</h4>
+
+<p>可以看到两个类名一样，但是接口方法并不一样，含义也不相同，所以为了避免歧义，2.x版本中干掉了旧的<code>Subscription</code>，同时使用<code>Disposable</code>接口来替代旧的<code>Subscription</code>。具体代码如下:</p>
+
+<pre><code class="language-java">// 1.x 调用unsubscribe()方法来取消订阅
+final rx.Subscription subscription = rx.Observable.just(1, 2, 3).subscribe();
+subscription.unsubscribe();
+
+// 2.x 调用dispose()方法来取消订阅
+final Disposable subscriber = Flowable.just(1, 2, 3).subscribe();
+subscriber.dispose();
+</code></pre>
+
+<h4 id="3-使用subscriber取消订阅">3. 使用Subscriber取消订阅</h4>
+
+<p>在1.x版本中，我们调用<code>subscribe()</code>后会返回一个<code>rx.Subscription</code>，我们可以使用它进行操作；在2.x版本中，我们调用<code>subscribe()</code>时，如果传入的是<code>Subscriber</code>，那就返回值是<code>void</code>，需要大家自己保存引用。</p>
+
+<pre><code class="language-java">
+// 1.x 
+rx.Subscription subscription = rx.Observable.just(1, 2, 3)
+  .subscribe(new rx.Subscriber&lt;Integer&gt;() {
+            @Override
+            public void onNext(Integer integer) {
+
+            }
+
+            @Override
+            public void onError(Throwable t) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        });
+subscription.unsubscribe();
+
+
+// 2.x
+ResourceSubscriber&lt;Integer&gt; resourceSubscriber = new ResourceSubscriber&lt;Integer&gt;() {
+            @Override
+            public void onNext(Integer integer) {
+
+            }
+
+            @Override
+            public void onError(Throwable t) {
+              // must dispose;
+				  dispose();
+            }
+
+            @Override
+            public void onComplete() {
+              // must dispose;
+				  dispose();
+            }
+        };
+// 注意当传入subscriber进行订阅时，返回值是void，所以需要自己保存;
+Flowable.just(1, 2, 3).subscribe(resourceSubscriber);
+resourceSubscriber.dispose();
+
+</code></pre>
+
+<h4 id="4-批量取消订阅">4. 批量取消订阅</h4>
+
+<p>1.x版本使用<code>rx.CompositeSubscription</code>批量取消订阅；2.x版本使用<code>io.reactivex.disposables.CompositeDisposable</code>批量取消订阅。</p>
+
+<h3 id="0x07-subject-processor">0x07 Subject &amp; Processor</h3>
+
+<p>按照Reactive-Streams规范，<code>Subject</code>是一种行为，既是消费者，同时也是生成者，最终被定义为<code>org.reactivestreams.Processor</code>接口，故而，在1.x版本中的<code>subject</code>，在2.x版本中就变成了<code>processor</code>，并且支持backpressure。同时2.x版本中保留了1.x版本的<code>subject</code>，配合<code>Observable</code>使用，不过也不支持backpressure。如:</p>
+
+<pre><code class="language-java">// 1.x
+Subject&lt;Object, Object&gt; subject= new SerializedSubject&lt;&gt;(PublishSubject.&lt;Object&gt;create());
+subject.onNext(&quot;aaa&quot;);
+subject.onError(&quot;aaa&quot;);
+subject.onComplete();
+
+
+// 2.x
+final FlowableProcessor&lt;Object&gt; objectFlowableProcessor =
+            PublishProcessor.create().toSerialized();
+objectFlowableProcessor.onNext(&quot;aa&quot;);
+objectFlowableProcessor.onError(new Throwable());
+objectFlowableProcessor.onComplete();
+</code></pre>
+
+<h2 id="参考">参考</h2>
+
+<ol>
+<li><a href="https://github.com/ReactiveX/RxJava/wiki/What's-different-in-2.0#subscription">RxJava 2.0</a></li>
+</ol>
+
+
+  
+<div class="prev-next-post pure-g">
+  <div class="pure-u-1 pure-u-md-1-2">
+    
+    <nav class="prev">
+      <a href="http://coofee.github.io/post/upgrade-android-studio-gradle/"><i class="fa fa-arrow-circle-left fa-fw fa-lg"></i>Gradle plugin 3.0 &amp; Android Studio 3.0</a>
+    </nav>
+    
+  </div>
+  <div class="pure-u-1 pure-u-md-1-2">
+    
+    <nav class="next">
+      <a href="http://coofee.github.io/post/rxjava-distinguish-user-cancel-from-others/">rxjava distinguish user cancel from others<i class="fa fa-arrow-circle-right fa-fw fa-lg"></i></a>
+    </nav>
+    
+  </div>
+</div>
+
+
+
+  
+
+</div>
+
+</div>
+</div>
+<script src="http://coofee.github.iojs/ui.js"></script>
+
+
+
+
+</body>
+</html>
+

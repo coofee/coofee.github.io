@@ -61,6 +61,34 @@ $ flutter doctor Doctor summary (to see all details, run flutter doctor -v): [�
     </item>
     
     <item>
+      <title>rxjava distinguish user cancel from others</title>
+      <link>http://coofee.github.io/post/rxjava-distinguish-user-cancel-from-others/</link>
+      <pubDate>Mon, 06 Nov 2017 20:35:58 +0800</pubDate>
+      <author>coffeerene.zhao@gmail.com (Coofee)</author>
+      <guid>http://coofee.github.io/post/rxjava-distinguish-user-cancel-from-others/</guid>
+      <description>RxJava区分用户主动取消 0x00 取消订阅 首先我们知道使用rxjava执行操作的时候，基本流程大致如下，取消操作时只需要调用subscription.unsubscribe()即可：
+Subscription subscription = Observable.&amp;lt;String&amp;gt;create(new Observable.OnSubscribe&amp;lt;String&amp;gt;() { @Override public void call(Subscriber&amp;lt;? super String&amp;gt; subscriber) { try { Thread.sleep(5 * 1000); } catch (InterruptedException e) { } println(&amp;quot;call...&amp;quot;); subscriber.onNext(&amp;quot;aaaaaaa&amp;quot;); subscriber.onCompleted(); } }).subscribeOn(Schedulers.io()) .observeOn(Schedulers.newThread()) .unsubscribeOn(Schedulers.newThread()) .subscribe(new PrintSubscriber&amp;lt;&amp;gt;());  那么我们在执行操作的过程中，如何知道一个操作被取消了呢？熟悉rxjava的童鞋可能一下子就会想到，直接使用doOnUnsubscribe()不就可以了吗？这有什么好纠结的。
+Subscription subscription = Observable.&amp;lt;String&amp;gt;create(new Observable.OnSubscribe&amp;lt;String&amp;gt;() { @Override public void call(Subscriber&amp;lt;? super String&amp;gt; subscriber) { try { Thread.sleep(5 * 1000); } catch (InterruptedException e) { } println(&amp;quot;call...&amp;quot;); subscriber.onNext(&amp;quot;aaaaaaa&amp;quot;); subscriber.onCompleted(); } }).</description>
+    </item>
+    
+    <item>
+      <title>rxjava 2.0 head first</title>
+      <link>http://coofee.github.io/post/rxjava2/</link>
+      <pubDate>Tue, 10 Oct 2017 20:35:58 +0800</pubDate>
+      <author>coffeerene.zhao@gmail.com (Coofee)</author>
+      <guid>http://coofee.github.io/post/rxjava2/</guid>
+      <description>RxJava 2.0 简单介绍 一年一年有一年，RxJava也新增了2.0版本，那么为什么是新增版本而不说升级版本呢？
+因为2.0版本和1.0版本两者并不兼容，2.0版本是基于Reactive-Streams规范重新设计而来；同时1.x版本和2.x版本两者会并行开发维护，但是1.x版本只维护到2018-03-31。
+下面我们简单介绍一下两者的不同。
+0x00 依赖&amp;amp;包名不同 使用rxjava 1.x、2.x版本的依赖如下：
+// rxjava 1.x compile &#39;io.reactivex:rxjava:1.1.6&#39; // rxjava 2.x compile &amp;quot;io.reactivex.rxjava2:rxjava:2.x.y&amp;quot;  包名修改如下：
+// 1.x -&amp;gt; 2.x rx.** -&amp;gt; io.reactivex.**  0x01 Observable与Flowable Observable在2.0版本不支持backpressure，它会缓存全部的数据，一一发送给消费者，如果消费不及时，会产生OOM。于此对应，在2.x版本新增了Flowable，支持设置/自定义backpressure，同时在创建时必须制定backpressure。
+Flowable.create(new FlowableOnSubscribe&amp;lt;Object&amp;gt;() { @Override public void subscribe(FlowableEmitter&amp;lt;Object&amp;gt; e) throws Exception { for (int i = 0; i &amp;lt; 256; i++) { e.onNext(i); } e.onComplete(); } }, BackpressureStrategy.BUFFER).subscribe(System.out::println, Throwable::printStackTrace);  0x02 Single 当使用Single时，生产者调用onSuccess()通知订阅者，同时终止整个事件流，生产者只能发送一个success事件，订阅者也只能收到一个success事件，适用于网络请求等确定只有单个事件的事件流。对于1.x版本而言，则需要主动调用onComplete()来终止事件流。
+注意: Single没有onComplete()方法；只能产生success、error两种事件。
+Single.create(s -&amp;gt; s.</description>
+    </item>
+    
+    <item>
       <title>Gradle plugin 3.0 &amp; Android Studio 3.0</title>
       <link>http://coofee.github.io/post/upgrade-android-studio-gradle/</link>
       <pubDate>Fri, 15 Sep 2017 18:59:41 +0800</pubDate>

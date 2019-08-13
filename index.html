@@ -304,6 +304,106 @@ $ flutter doctor Doctor summary (to see all details, run flutter doctor -v): [�
   
     <article>
   <header>
+    <h2><a href="http://coofee.github.io/post/rxjava-distinguish-user-cancel-from-others/">rxjava distinguish user cancel from others</a></h2>
+
+    <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>06 Nov 2017, 20:35</time>
+  </div>
+
+  
+
+  
+
+  
+  
+  
+  <div>
+    <i class="fa fa-tags fa-fw"></i>
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/android">android</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/rxjava">rxjava</a>
+    
+  </div>
+  
+  
+
+</div>
+
+  </header>
+
+  <p>
+  RxJava区分用户主动取消 0x00 取消订阅 首先我们知道使用rxjava执行操作的时候，基本流程大致如下，取消操作时只需要调用subscription.unsubscribe()即可：
+Subscription subscription = Observable.&lt;String&gt;create(new Observable.OnSubscribe&lt;String&gt;() { @Override public void call(Subscriber&lt;? super String&gt; subscriber) { try { Thread.sleep(5 * 1000); } catch (InterruptedException e) { } println(&quot;call...&quot;); subscriber.onNext(&quot;aaaaaaa&quot;); subscriber.onCompleted(); } }).subscribeOn(Schedulers.io()) .observeOn(Schedulers.newThread()) .unsubscribeOn(Schedulers.newThread()) .subscribe(new PrintSubscriber&lt;&gt;());  那么我们在执行操作的过程中，如何知道一个操作被取消了呢？熟悉rxjava的童鞋可能一下子就会想到，直接使用doOnUnsubscribe()不就可以了吗？这有什么好纠结的。
+Subscription subscription = Observable.&lt;String&gt;create(new Observable.OnSubscribe&lt;String&gt;() { @Override public void call(Subscriber&lt;? super String&gt; subscriber) { try { Thread.sleep(5 * 1000); } catch (InterruptedException e) { } println(&quot;call...&quot;); subscriber.onNext(&quot;aaaaaaa&quot;); subscriber.onCompleted(); } }).
+  </p>
+
+  
+  <footer>
+    <a href="/post/rxjava-distinguish-user-cancel-from-others/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
+  </footer>
+  
+</article>
+
+  
+    <article>
+  <header>
+    <h2><a href="http://coofee.github.io/post/rxjava2/">rxjava 2.0 head first</a></h2>
+
+    <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>10 Oct 2017, 20:35</time>
+  </div>
+
+  
+
+  
+
+  
+  
+  
+  <div>
+    <i class="fa fa-tags fa-fw"></i>
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/android">android</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/rxjava">rxjava</a>
+    
+  </div>
+  
+  
+
+</div>
+
+  </header>
+
+  <p>
+  RxJava 2.0 简单介绍 一年一年有一年，RxJava也新增了2.0版本，那么为什么是新增版本而不说升级版本呢？
+因为2.0版本和1.0版本两者并不兼容，2.0版本是基于Reactive-Streams规范重新设计而来；同时1.x版本和2.x版本两者会并行开发维护，但是1.x版本只维护到2018-03-31。
+下面我们简单介绍一下两者的不同。
+0x00 依赖&amp;包名不同 使用rxjava 1.x、2.x版本的依赖如下：
+// rxjava 1.x compile 'io.reactivex:rxjava:1.1.6' // rxjava 2.x compile &quot;io.reactivex.rxjava2:rxjava:2.x.y&quot;  包名修改如下：
+// 1.x -&gt; 2.x rx.** -&gt; io.reactivex.**  0x01 Observable与Flowable Observable在2.0版本不支持backpressure，它会缓存全部的数据，一一发送给消费者，如果消费不及时，会产生OOM。于此对应，在2.x版本新增了Flowable，支持设置/自定义backpressure，同时在创建时必须制定backpressure。
+Flowable.create(new FlowableOnSubscribe&lt;Object&gt;() { @Override public void subscribe(FlowableEmitter&lt;Object&gt; e) throws Exception { for (int i = 0; i &lt; 256; i++) { e.onNext(i); } e.onComplete(); } }, BackpressureStrategy.BUFFER).subscribe(System.out::println, Throwable::printStackTrace);  0x02 Single 当使用Single时，生产者调用onSuccess()通知订阅者，同时终止整个事件流，生产者只能发送一个success事件，订阅者也只能收到一个success事件，适用于网络请求等确定只有单个事件的事件流。对于1.x版本而言，则需要主动调用onComplete()来终止事件流。
+注意: Single没有onComplete()方法；只能产生success、error两种事件。
+Single.create(s -&gt; s.
+  </p>
+
+  
+  <footer>
+    <a href="/post/rxjava2/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
+  </footer>
+  
+</article>
+
+  
+    <article>
+  <header>
     <h2><a href="http://coofee.github.io/post/upgrade-android-studio-gradle/">Gradle plugin 3.0 &amp; Android Studio 3.0</a></h2>
 
     <div class="post-meta">
@@ -483,114 +583,6 @@ com.facebook.react.uimanager.IllegalViewOperationException Trying to add unknown
   
   <footer>
     <a href="/post/catch-react-native-illegalviewoperationexception/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
-  </footer>
-  
-</article>
-
-  
-    <article>
-  <header>
-    <h2><a href="http://coofee.github.io/post/upgrade-android-sdk-android-support-library/">upgrade android support library to 25.4.0</a></h2>
-
-    <div class="post-meta">
-
-  <div>
-    <i class="fa fa-calendar fa-fw"></i>
-    <time>13 Jul 2017, 19:52</time>
-  </div>
-
-  
-
-  
-
-  
-  
-  
-  <div>
-    <i class="fa fa-tags fa-fw"></i>
-    
-      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/android">android</a>&nbsp;&#47;
-    
-      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/gradle">gradle</a>&nbsp;&#47;
-    
-      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/centos">centOS</a>
-    
-  </div>
-  
-  
-
-</div>
-
-  </header>
-
-  <p>
-  Android升级Support库版本至25.4.0
-[TOC]
-0x00 背景 support库是google官方提供的支持库，其主要功能在于兼容android高/低版本系统（如：support-v4、support-v7库），同时伴随着support库的不同版本，也会发布同版本的各种UI组件库（如Design、RecyclerView等）。support库的每次更新升级，一般都会包括bug修复、性能优化以及功能改进等等。
-目前我们App使用的版本是23.0.1，截止目前google发布的最新稳定版本是25.4.0，中间相差了将近20个版本，其中包含大量的bug修复；同时又因为Design、RecyclerView等UI库的很多新组件也依赖于support库的升级，所以我们计划将support-v4、support-v7、Design、RecyclerView等库统一升级至25.4.0版本。
-0x01 打包环境的影响及解决方案 1. 升级JDK &amp; Android SDK  升级JDK到1.8 升级Android SDK到25  2. 升级CentOS或GLIBC 由于我们的jenkins打包服务器的系统是CentOS 6.5，其默认支持的GLIBC库版本最高为2.12，而android sdk高版本需要的GLIBC版本为2.14，所以要么升级系统CentOS到7.x版本，要么升级GLIBC版本到2.14.
-当Android SDK需要的GLIBC版本不匹配时，出错信息大致如下:
-[exec] /data0/android-tools/android-sdk-linux/build-tools/24.0.2/aapt: /lib64/libc.so.6: version `GLIBC_2.14' not found (required by /data0/android-tools/android-sdk-linux/build-tools/24.0.2/aapt) [exec] /data0/android-tools/android-sdk-linux/build-tools/24.0.2/aapt: /lib64/libc.so.6: version `GLIBC_2.14' not found (required by /data0/android-tools/android-sdk-linux/build-tools/24.0.2/lib64/libc++.so)  在CentOS系统中，使用strings /lib64/libc.so.6 | grep GLIBC命令可以查看其支持的GLIBC库的版本。
-3. 指定gradle使用jdk1.8 由于android sdk需要在jdk1.8环境才能正常编译、打包，所以要么在系统中配置java环境变量为jdk1.8版本；要么在执行gradle时指定其运行环境为jdk1.8。
-指定gradle使用jdk1.8，具体配置如下：
-gradlew clean -Dorg.gradle.java.home=/usr/java/jdk1.8  也可以直接在gradle.properties中指定jdk版本，如下所示：
-org.gradle.java.home=/usr/java/jdk1.8  4. support库与build-tools版本 由于我们app原本使用的build-tools版本是22.0.1，当保持build-tools版本不变，只升级support库版本时，在HUAWEI P7-L00 4.4.2上面运行时，会出现如下错误，推测是因为support库版本和build-tools主版本号不一致导致，所以如果升级support库版本，最好保持和build-tools主版本号一致，防止各种诡异问题。
-E/AndroidRuntime: FATAL EXCEPTION: main Caused by: android.
-  </p>
-
-  
-  <footer>
-    <a href="/post/upgrade-android-sdk-android-support-library/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
-  </footer>
-  
-</article>
-
-  
-    <article>
-  <header>
-    <h2><a href="http://coofee.github.io/post/android-fetch-add-custom-cookie/">android fetch add custom cookie</a></h2>
-
-    <div class="post-meta">
-
-  <div>
-    <i class="fa fa-calendar fa-fw"></i>
-    <time>29 Jun 2017, 11:14</time>
-  </div>
-
-  
-
-  
-
-  
-  
-  
-  <div>
-    <i class="fa fa-tags fa-fw"></i>
-    
-      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/fetch">fetch</a>&nbsp;&#47;
-    
-      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/cookie">cookie</a>
-    
-  </div>
-  
-  
-
-</div>
-
-  </header>
-
-  <p>
-  [TOC]
-0x00 为React Native的网络请求添加公共Cookie 本文分析基于React Native 0.44版本分析。
-由于我们在使用React Native编写应用时，内部的网络请求均使用了fetch函数，所以下面我们主要分析一下fetch函数的整个调用流程。
-0x01 Fetch追根溯源 从React Native的源代码我们可以知道fetch函数最终也是由native端的NetworkingModule.java（Android）或RCTNetworking.mm（iOS）实现。
-1. 其调用流程如下 2. 代码分析如下 1. 将fetch函数添加到全局变量 在react-native/Libraries/Core/InitializeCore.js的全部变量global中定义了fetch函数。
-// Set up XHR // The native XMLHttpRequest in Chrome dev tools is CORS aware and won't // let you fetch anything from the internet defineProperty(global, 'XMLHttpRequest', () =&gt; require('XMLHttpRequest')); defineProperty(global, 'FormData', () =&gt; require('FormData')); defineProperty(global, 'fetch', () =&gt; require('fetch').fetch); defineProperty(global, 'Headers', () =&gt; require('fetch').Headers); defineProperty(global, 'Request', () =&gt; require('fetch').
-  </p>
-
-  
-  <footer>
-    <a href="/post/android-fetch-add-custom-cookie/">Read more<i class="fa fa-angle-double-right fa-fw"></i></a>
   </footer>
   
 </article>
