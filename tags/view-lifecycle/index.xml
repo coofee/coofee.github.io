@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>view lifecycle on Simple...</title>
+    <link>http://coofee.github.io/tags/view-lifecycle/</link>
+    <description>Recent content in view lifecycle on Simple...</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <managingEditor>coffeerene.zhao@gmail.com (Coofee)</managingEditor>
+    <webMaster>coffeerene.zhao@gmail.com (Coofee)</webMaster>
+    <lastBuildDate>Thu, 12 Sep 2019 15:40:14 +0800</lastBuildDate>
+    
+	<atom:link href="http://coofee.github.io/tags/view-lifecycle/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>view visibility</title>
+      <link>http://coofee.github.io/post/view-visibility/</link>
+      <pubDate>Thu, 12 Sep 2019 15:40:14 +0800</pubDate>
+      <author>coffeerene.zhao@gmail.com (Coofee)</author>
+      <guid>http://coofee.github.io/post/view-visibility/</guid>
+      <description>View的hide埋点缺失 通常针对一个View进行埋点时，一般会有show/hide两个埋点，分别对应于View的展现和消失。
+而在View的生命周期中，其onAttachedToWindow()回调方法表示View即将展现；与之相对的onDetachedFromWindow()回调方法则表示View即将消失。所以，一般针对show/hide两个埋点，直接在onAttachedToWindow()和onDetachedFromWindow()中埋点即可。
+然而当我们打开一个新的Activity页面时，我们会发现此时View已经看不到了，但是由于其onDetachedFromWindow()方法没有被系统回调，所以我们只有show埋点，而没有hide埋点，那么问题就来了，如果让show/hide这两个埋点就对应上呢？
+View的生命周期 对于一个View来说，其本身涉及的回调函数有很多，在此我们只关注与View的展现/消失相关的回调函数，为了方便描述，我们将该类函数统称为View的生命周期函数。其主要包括如下函数：
+// View被添加到Window时被调用，View开始绘制。 // View是可见的。 protected void onAttachedToWindow() {} // View所属于的Window展现/消失时被调用。 // View的展现/消失由visibility决定。 protected void onWindowVisibilityChanged(int visibility) {} // View或其祖先View的visibility发生改变时被调用。 // View的展现/消失由visibility决定。 // 注意: 滑动RecyclerView，当一个item view消失时该方法不会被调用。 protected void onVisibilityChanged(@NonNull View changedView, int visibility) {} // View从Window移除时被调用，View不再绘制。 // View不可见。 protected void onDetachedFromWindow() {}  通过以上方法，我们就可以知道一个View的可见状态是显示还是隐藏了。
+获取View的可见状态 获取View的可见状态整体流程如下：
+LifecycleView -&amp;gt; ViewLifecycle -&amp;gt; ViewVisibilityObserver -&amp;gt; OnViewVisibilityChangedListener   首先通过重写View的上述生命周期函数来监听View的状态并将其分发出去。
+public class LifecycleView extends View implements ViewLifecycleOwner { @Override protected void onWindowVisibilityChanged(int visibility) { super.</description>
+    </item>
+    
+  </channel>
+</rss>

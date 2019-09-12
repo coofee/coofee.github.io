@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="generator" content="Hugo 0.56.0" />
+
+  <title>view visibility &middot; Simple...</title>
+
+  
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/pure-min.css">
+
+  <!--[if lte IE 8]>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/grids-responsive-old-ie-min.css">
+  <![endif]-->
+  <!--[if gt IE 8]><!-->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/grids-responsive-min.css">
+  <!--<![endif]-->
+
+  <!--[if lte IE 8]>
+  <link rel="stylesheet" href="/css/side-menu-old-ie.css">
+  <![endif]-->
+  <!--[if gt IE 8]><!-->
+  <link rel="stylesheet" href="/css/side-menu.css">
+  <!--<![endif]-->
+
+  <link rel="stylesheet" href="/css/blackburn.css">
+
+  
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+
+  
+  <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet" type="text/css">
+
+  
+  <link rel="alternate" type="application/rss+xml" title="Simple..." href="http://coofee.github.ioindex.xml" />
+
+  
+
+  <link rel="shortcut icon" href="http://coofee.github.ioimg/favicon.ico" type="image/x-icon" />
+
+</head>
+
+
+<body>
+<div id="layout">
+
+  
+<a href="#menu" id="menuLink" class="menu-link">
+  
+  <span></span>
+</a>
+<div id="menu">
+
+  
+
+  <div class="pure-menu">
+    <ul class="pure-menu-list">
+      
+    </ul>
+  </div>
+
+  <div class="pure-menu social">
+  <ul class="pure-menu-list">
+
+    <li class="pure-menu-item">
+      <a class="pure-menu-link" href="http://coofee.github.ioindex.xml"><i class="fa fa-rss fa-fw"></i>RSS</a>
+    </li>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+  </ul>
+</div>
+
+
+  <div class="pure-g">
+  <div class="small-print pure-u-1 pure-u-md-1-1">
+    <small></small>
+  </div>
+  <div class="small-print pure-u-1 pure-u-md-1-1">
+    <small>Built with&nbsp;<a href="https://gohugo.io/" target="_blank">Hugo</a></small>
+    <small>Theme&nbsp;<a href="https://github.com/yoshiharuyamashita/blackburn" target="_blank">Blackburn</a></small>
+  </div>
+</div>
+
+</div>
+
+
+  <div id="main">
+
+
+<div class="header">
+  <h1>view visibility</h1>
+  <h2></h2>
+</div>
+<div class="content">
+
+  <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>12 Sep 2019, 15:40</time>
+  </div>
+
+  
+
+  
+
+  
+  
+  
+  <div>
+    <i class="fa fa-tags fa-fw"></i>
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/android">android</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/view">view</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="http://coofee.github.iotags/view-lifecycle">view lifecycle</a>
+    
+  </div>
+  
+  
+
+</div>
+
+  
+
+<h1 id="view的-hide-埋点缺失">View的<code>hide</code>埋点缺失</h1>
+
+<p>通常针对一个<code>View</code>进行埋点时，一般会有<code>show/hide</code>两个埋点，分别对应于<code>View</code>的展现和消失。</p>
+
+<p>而在<code>View</code>的生命周期中，其<code>onAttachedToWindow()</code>回调方法表示<code>View</code>即将展现；与之相对的<code>onDetachedFromWindow()</code>回调方法则表示<code>View</code>即将消失。所以，一般针对<code>show/hide</code>两个埋点，直接在<code>onAttachedToWindow()</code>和<code>onDetachedFromWindow()</code>中埋点即可。</p>
+
+<p>然而当我们打开一个新的<code>Activity</code>页面时，我们会发现此时<code>View</code>已经看不到了，但是由于其<code>onDetachedFromWindow()</code>方法没有被系统回调，所以我们只有<code>show</code>埋点，而没有<code>hide</code>埋点，那么问题就来了，如果让<code>show/hide</code>这两个埋点就对应上呢？</p>
+
+<h1 id="view的生命周期">View的生命周期</h1>
+
+<p>对于一个<code>View</code>来说，其本身涉及的回调函数有很多，在此我们只关注与<code>View</code>的展现/消失相关的回调函数，为了方便描述，我们将该类函数统称为<code>View</code>的生命周期函数。其主要包括如下函数：</p>
+
+<pre><code class="language-java">// View被添加到Window时被调用，View开始绘制。
+// View是可见的。
+protected void onAttachedToWindow() {}
+
+// View所属于的Window展现/消失时被调用。
+// View的展现/消失由visibility决定。
+protected void onWindowVisibilityChanged(int visibility) {}
+
+// View或其祖先View的visibility发生改变时被调用。
+// View的展现/消失由visibility决定。
+// 注意: 滑动RecyclerView，当一个item view消失时该方法不会被调用。
+protected void onVisibilityChanged(@NonNull View changedView, int visibility) {}
+
+// View从Window移除时被调用，View不再绘制。
+// View不可见。
+protected void onDetachedFromWindow() {}
+</code></pre>
+
+<p>通过以上方法，我们就可以知道一个<code>View</code>的可见状态是显示还是隐藏了。</p>
+
+<h1 id="获取view的可见状态">获取View的可见状态</h1>
+
+<p>获取<code>View</code>的可见状态整体流程如下：</p>
+
+<pre><code>LifecycleView -&gt; ViewLifecycle -&gt; ViewVisibilityObserver -&gt; OnViewVisibilityChangedListener
+</code></pre>
+
+<ul>
+<li><p>首先通过重写<code>View</code>的上述生命周期函数来监听<code>View</code>的状态并将其分发出去。</p>
+
+<pre><code class="language-java">public class LifecycleView extends View implements ViewLifecycleOwner {
+@Override
+protected void onWindowVisibilityChanged(int visibility) {
+    super.onWindowVisibilityChanged(visibility);
+    mViewLifecycleRegistry.onWindowVisibilityChanged(this, visibility);
+}
+
+@Override
+protected void onVisibilityChanged(@NonNull View changedView, int visibility) {
+    super.onVisibilityChanged(changedView, visibility);
+    mViewLifecycleRegistry.onVisibilityChanged(this, changedView, visibility);
+}
+
+@Override
+protected void onAttachedToWindow() {
+    super.onAttachedToWindow();
+    mViewLifecycleRegistry.onAttachedToWindow(this);
+}
+
+@Override
+protected void onDetachedFromWindow() {
+    mViewLifecycleRegistry.onDetachedFromWindow(this);
+    super.onDetachedFromWindow();
+}
+
+@Override
+public ViewLifecycle getViewLifecycle() {
+    return mViewLifecycleRegistry;
+}
+
+private final ViewLifecycleRegistry mViewLifecycleRegistry = new ViewLifecycleRegistry(this);
+}
+</code></pre></li>
+
+<li><p>然后在<code>ViewVisibilityObserver</code>的<code>onAttachedToWindow()/onDetachedFromWindow()</code>方法中对View设置正确的<code>visibility</code>，同时在<code>setVisibility()</code>中过滤掉重复的状态，避免多次调用。</p>
+
+<pre><code class="language-java">public final class ViewVisibilityObserver implements ViewLifecycleObserver {
+
+private static final String TAG = &quot;ViewVisibilityObserver&quot;;
+
+private final List&lt;OnViewVisibilityChangedListener&gt; mOnViewVisibilityChangedListener = new ArrayList&lt;&gt;();
+
+private int mViewVisibility = ViewLifecycle.VIEW_VISIBILITY_UNKNOWN;
+
+@Override
+public void onWindowVisibilityChanged(View thisView, int visibility) {
+    setVisibility(thisView, visibility);
+}
+
+@Override
+public void onVisibilityChanged(View thisView, @NonNull View changedView, int visibility) {
+    setVisibility(thisView, visibility);
+}
+
+@Override
+public void onAttachedToWindow(View thisView) {
+    setVisibility(thisView, ViewLifecycle.VIEW_VISIBILITY_VISIBLE);
+}
+
+@Override
+public void onDetachedFromWindow(View thisView) {
+    setVisibility(thisView, ViewLifecycle.VIEW_VISIBILITY_GONE);
+}
+
+private void setVisibility(View thisView, int visibility) {
+    if (visibility == ViewLifecycle.VIEW_VISIBILITY_UNKNOWN) {
+        return;
+    }
+
+    if (visibility == ViewLifecycle.VIEW_VISIBILITY_INVISIBLE) {
+        visibility = ViewLifecycle.VIEW_VISIBILITY_GONE;
+    }
+
+    if (mViewVisibility == visibility) {
+        return;
+    }
+
+    mViewVisibility = visibility;
+    TLog.e(TAG, thisView + &quot; visibility=&quot; + ViewLifecycleUtil.resolveVisibilityName(visibility));
+
+    for (OnViewVisibilityChangedListener listener : mOnViewVisibilityChangedListener) {
+        listener.onViewVisibilityChanged(thisView, visibility);
+    }
+}
+}
+</code></pre></li>
+
+<li><p>最后通过添加<code>OnViewVisibilityChangedListener</code>来监听<code>View</code>的可见性状态。</p>
+
+<pre><code class="language-java">public interface OnViewVisibilityChangedListener {
+
+/**
+ * our custom method and filter duplicate View# visibility event;
+ *
+ * @param thisView
+ * @param visibility
+ */
+void onViewVisibilityChanged(View thisView, @ViewLifecycle.ViewVisibility int visibility);
+}
+</code></pre></li>
+</ul>
+
+<h1 id="如何使用">如何使用?</h1>
+
+<p>我们可以在需要获取<code>View</code>状态的容器中添加一个和容器大小相同的<code>LifecycleView</code>，然后在添加监听器即可。</p>
+
+<pre><code class="language-java">LifecycleView lifecycleView = new LifecycleView(context);
+lifecycleView.setId(R.id.view_lifecycle_id);
+container.addView(lifecycleView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+final ViewVisibilityObserver viewVisibilityObserver = new ViewVisibilityObserver();
+lifecycleView.getViewLifecycle().addViewLifecycleObserver(viewVisibilityObserver);
+
+viewVisibilityObserver.addOnViewVisibilityChangedListener((thisView, visibility) -&gt; {
+    TLog.DEBUG(&quot;ViewLifecycleListener&quot;, &quot;onVisibilityChanged; visibility=&quot; + ViewLifecycleUtil.resolveVisibilityName(visibility));
+});
+</code></pre>
+
+<p>当在RecyclerView中使用时，建议将<code>ViewVisibilityObserver</code>定义在<code>ViewHolder</code>中，然后在<code>onBindViewHolder()</code>方法中添加/移除<code>OnViewVisibilityChangedListener</code>，代码如下：</p>
+
+<pre><code class="language-java">
+class AAdapter : RecyclerView.Adapter&lt;NameViewHolder&gt;() {
+
+    override fun onBindViewHolder(holder: NameViewHolder, position: Int) {
+        TLog.e(ViewLifecycleRegistry.TAG, &quot;onBindViewHolder; position=$position&quot;)
+        holder.viewVisibilityObserver.apply {
+            clearAllOnViewVisibilityChangedListener()
+            addOnViewVisibilityChangedListener { thisView, visibility -&gt;
+                TLog.e(ViewLifecycleRegistry.TAG, &quot;onBindViewHolder; item at position=${holder.adapterPosition} ${ViewLifecycleUtil.resolveVisibilityName(visibility)}&quot;)
+            }
+        }
+    }
+}
+
+class NameViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+
+    val nameView: TextView = itemView.findViewById(android.R.id.text1)
+
+    val viewVisibilityObserver: ViewVisibilityObserver = ViewVisibilityObserver()
+
+    init {
+        val viewLifecycleOwner : ViewLifecycleOwner = when(itemView) {
+            is ViewLifecycleOwner -&gt; {
+                itemView
+            }
+
+            is ViewGroup -&gt; {
+                val lifecycleView = LifecycleView(itemView.context)
+                lifecycleView.id = R.id.view_lifecycle_id
+                itemView.addView(lifecycleView, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+                lifecycleView
+            }
+
+            else -&gt; {
+                val lifecycleFrameLayout = LifecycleFrameLayout(itemView.context)
+                lifecycleFrameLayout.id = R.id.view_lifecycle_id
+                lifecycleFrameLayout.addView(itemView, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+                lifecycleFrameLayout
+            }
+        }
+
+        viewLifecycleOwner.viewLifecycle.addViewLifecycleObserver(viewVisibilityObserver)
+    }
+}
+
+
+</code></pre>
+
+
+  
+<div class="prev-next-post pure-g">
+  <div class="pure-u-1 pure-u-md-1-2">
+    
+    <nav class="prev">
+      <a href="http://coofee.github.io/post/how_to_write_sqlites_extension/"><i class="fa fa-arrow-circle-left fa-fw fa-lg"></i>How to write sqlites extension</a>
+    </nav>
+    
+  </div>
+  <div class="pure-u-1 pure-u-md-1-2">
+    
+  </div>
+</div>
+
+
+
+  
+
+</div>
+
+</div>
+</div>
+<script src="http://coofee.github.iojs/ui.js"></script>
+
+
+
+
+</body>
+</html>
+

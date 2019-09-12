@@ -4,55 +4,78 @@
   
   <url>
     <loc>http://coofee.github.io/categories/</loc>
-    <lastmod>2019-08-12T19:18:58+08:00</lastmod>
+    <lastmod>2019-09-12T15:40:14+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>http://coofee.github.io/post/how_to_write_sqlites_extension/</loc>
-    <lastmod>2019-08-12T19:18:58+08:00</lastmod>
-  </url>
-  
-  <url>
     <loc>http://coofee.github.io/post/</loc>
-    <lastmod>2019-08-12T19:18:58+08:00</lastmod>
+    <lastmod>2019-09-12T15:40:14+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>http://coofee.github.io/series/</loc>
-    <lastmod>2019-08-12T19:18:58+08:00</lastmod>
+    <lastmod>2019-09-12T15:40:14+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>http://coofee.github.io/</loc>
-    <lastmod>2019-08-12T19:18:58+08:00</lastmod>
+    <lastmod>2019-09-12T15:40:14+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>http://coofee.github.io/tags/</loc>
-    <lastmod>2019-08-12T19:18:58+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://coofee.github.io/series/android/</loc>
-    <lastmod>2019-08-12T19:18:58+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://coofee.github.io/tags/android/</loc>
-    <lastmod>2019-08-12T19:18:58+08:00</lastmod>
+    <lastmod>2019-09-12T15:40:14+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>http://coofee.github.io/categories/android/</loc>
-    <lastmod>2019-08-12T19:18:58+08:00</lastmod>
+    <lastmod>2019-09-12T15:40:14+08:00</lastmod>
     <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://coofee.github.io/series/android/</loc>
+    <lastmod>2019-09-12T15:40:14+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://coofee.github.io/tags/android/</loc>
+    <lastmod>2019-09-12T15:40:14+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://coofee.github.io/categories/view/</loc>
+    <lastmod>2019-09-12T15:40:14+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://coofee.github.io/tags/view/</loc>
+    <lastmod>2019-09-12T15:40:14+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://coofee.github.io/tags/view-lifecycle/</loc>
+    <lastmod>2019-09-12T15:40:14+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://coofee.github.io/post/view-visibility/</loc>
+    <lastmod>2019-09-12T15:40:14+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://coofee.github.io/post/how_to_write_sqlites_extension/</loc>
+    <lastmod>2019-08-12T19:18:58+08:00</lastmod>
   </url>
   
   <url>
@@ -68,13 +91,13 @@
   </url>
   
   <url>
-    <loc>http://coofee.github.io/tags/sqlite3-extension/</loc>
+    <loc>http://coofee.github.io/categories/sqlite3-extension/</loc>
     <lastmod>2019-08-12T19:18:58+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>http://coofee.github.io/categories/sqlite3-extension/</loc>
+    <loc>http://coofee.github.io/tags/sqlite3-extension/</loc>
     <lastmod>2019-08-12T19:18:58+08:00</lastmod>
     <priority>0</priority>
   </url>
@@ -95,13 +118,13 @@
   </url>
   
   <url>
-    <loc>http://coofee.github.io/tags/rxjava/</loc>
+    <loc>http://coofee.github.io/categories/rxjava/</loc>
     <lastmod>2017-11-06T20:35:58+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>http://coofee.github.io/categories/rxjava/</loc>
+    <loc>http://coofee.github.io/tags/rxjava/</loc>
     <lastmod>2017-11-06T20:35:58+08:00</lastmod>
     <priority>0</priority>
   </url>
@@ -161,6 +184,12 @@
   </url>
   
   <url>
+    <loc>http://coofee.github.io/categories/react-native/</loc>
+    <lastmod>2017-07-21T17:44:38+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>http://coofee.github.io/series/react-native/</loc>
     <lastmod>2017-07-21T17:44:38+08:00</lastmod>
     <priority>0</priority>
@@ -168,12 +197,6 @@
   
   <url>
     <loc>http://coofee.github.io/tags/react-native/</loc>
-    <lastmod>2017-07-21T17:44:38+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://coofee.github.io/categories/react-native/</loc>
     <lastmod>2017-07-21T17:44:38+08:00</lastmod>
     <priority>0</priority>
   </url>
@@ -292,13 +315,13 @@
   </url>
   
   <url>
-    <loc>http://coofee.github.io/tags/groovy/</loc>
+    <loc>http://coofee.github.io/categories/groovy/</loc>
     <lastmod>2016-06-30T00:04:39+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>http://coofee.github.io/categories/groovy/</loc>
+    <loc>http://coofee.github.io/tags/groovy/</loc>
     <lastmod>2016-06-30T00:04:39+08:00</lastmod>
     <priority>0</priority>
   </url>
@@ -315,13 +338,13 @@
   </url>
   
   <url>
-    <loc>http://coofee.github.io/tags/proxy/</loc>
+    <loc>http://coofee.github.io/categories/proxy/</loc>
     <lastmod>2016-03-25T13:14:08+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>http://coofee.github.io/categories/proxy/</loc>
+    <loc>http://coofee.github.io/tags/proxy/</loc>
     <lastmod>2016-03-25T13:14:08+08:00</lastmod>
     <priority>0</priority>
   </url>
